@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Work — Amidyala Sai Sumanth, 3D Environment Artist</title>
+<meta name="description" content="The flat portfolio of Amidyala Sai Sumanth: three personal worlds, sixteen commercial clients, thirty-nine studies and commissions. 3D environment artist and visual designer in Hyderabad.">
+<link rel="canonical" href="https://www.thesumanth.com/work.html">
+<meta name="theme-color" content="#030605">
+<meta property="og:title" content="Amidyala Sai Sumanth — Work">
+<meta property="og:image" content="https://www.thesumanth.com/assets/images/japa-render-1.webp">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<script type="module" src="/src/work.ts"></script>
+</head>
+<body class="flat">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <filter id="moss-rough" x="-5%" y="-10%" width="110%" height="120%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="4" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="2.6" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
+<header class="fbar">
+  <a class="logo" href="#top"><i></i><b>SUMANTH</b><span>苔の経蔵</span></a>
+  <nav class="fnav" aria-label="Sections">
+    <a href="#worlds">Worlds</a><a href="#clients">Clients</a><a href="#studies">Studies</a><a href="#commissions">Commissions</a><a href="#contact">Contact</a>
+  </nav>
+  <a class="btn btn--neon" href="index.html">Walk the forest</a>
+</header>
+
+<main id="top" class="fmain">
+  <p class="notice mono" id="notice" hidden>Your browser couldn't start the 3D forest, so this is the flat version. Everything is here.</p>
+
+  <section class="fhero">
+    <p class="mono fhero__who">3D Environment Artist · Visual Designer · Hyderabad 17.38°N</p>
+    <h1 class="moss">Amidyala Sai Sumanth</h1>
+    <p class="fhero__line">I build places that don't exist, then decide how the light behaves once it gets there.</p>
+    <div class="fhero__about" id="about"></div>
+    <dl class="specs" id="specs"></dl>
+  </section>
+
+  <section class="fsec" id="worlds" aria-labelledby="fw">
+    <header class="fhead"><span class="mono"><b class="jp">世界</b> 01 · Selected worlds</span><h2 class="moss" id="fw">Three places, built to be stood in.</h2></header>
+    <div class="fworlds" id="f-worlds"></div>
+  </section>
+
+  <section class="fsec" id="method" aria-labelledby="fm">
+    <header class="fhead"><span class="mono"><b class="jp">七手</b> 02 · Method</span><h2 class="moss" id="fm">Seven moves, every time.</h2></header>
+    <ol class="fsteps" id="f-steps"></ol>
+  </section>
+
+  <section class="fsec" id="clients" aria-labelledby="fc">
+    <header class="fhead"><span class="mono"><b class="jp">顧客</b> 03 · Commercial</span><h2 class="moss" id="fc">Sixteen clients who needed it Tuesday.</h2>
+      <p>Through The Classic Partnership (Toronto) and VS Design Studio, plus direct freelance.</p></header>
+    <div class="grid" id="f-clients"></div>
+  </section>
+
+  <section class="fsec" id="studies" aria-labelledby="fs">
+    <header class="fhead"><span class="mono"><b class="jp">書庫</b> 04 · Studies &amp; graphics</span><h2 class="moss" id="fs">The other half of the desk.</h2></header>
+    <div class="fmasonry" id="f-studies"></div>
+  </section>
+
+  <section class="fsec" id="commissions" aria-labelledby="fco">
+    <header class="fhead"><span class="mono"><b class="jp">絵馬</b> 05 · Commissions</span><h2 class="moss" id="fco">Buy the scope, not the hours.</h2>
+      <p>Every commission runs concept → blockout → look-dev → final. What changes is how much world you get.</p></header>
+    <div class="ftiers" id="f-tiers"></div>
+  </section>
+
+  <section class="fsec fcontact" id="contact" aria-labelledby="fct">
+    <header class="fhead"><span class="mono"><b class="jp">手紙</b> 06 · Contact</span><h2 class="moss" id="fct">Say hello</h2></header>
+    <a class="mail" href="mailto:sumanth.richie25@icloud.com">sumanth.richie25@icloud.com</a>
+    <div class="links">
+      <a class="btn" href="https://behance.net/sumanthrichie" target="_blank" rel="noopener">Behance ↗</a>
+      <a class="btn" href="https://instagram.com/sumofDanth" target="_blank" rel="noopener">Instagram ↗</a>
+      <a class="btn" href="https://su3doesign.github.io/Resume/" target="_blank" rel="noopener">Résumé ↗</a>
+    </div>
+    <div class="fdesk"><video src="assets/videos/desk-hero.mp4" poster="assets/posters/desk-hero.webp" muted loop playsinline preload="none" aria-label="The desk in Hyderabad" id="desk"></video><p class="mono">The desk it all leaves from — Hyderabad, most nights.</p></div>
+    <footer class="foot mono"><span>© 2026 Amidyala Sai Sumanth</span><a href="index.html">Walk the forest instead →</a></footer>
+  </section>
+</main>
+</body>
+</html>
