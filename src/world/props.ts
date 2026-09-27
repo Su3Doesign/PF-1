@@ -1,7 +1,7 @@
 import {
-  Box3, BufferAttribute, BufferGeometry, CanvasTexture, CircleGeometry, Color, CylinderGeometry, ExtrudeGeometry, Group,
+  Box3, BufferAttribute, BufferGeometry, CanvasTexture, CircleGeometry, Points, PointsMaterial, AdditiveBlending, Color, CylinderGeometry, ExtrudeGeometry, Group,
   InstancedBufferAttribute, InstancedMesh, Matrix4, Mesh, MeshBasicMaterial, MeshLambertMaterial, MeshStandardMaterial,
-  Object3D, PerspectiveCamera, PlaneGeometry, Quaternion, ShaderMaterial, Shape, SRGBColorSpace, Sprite, TorusGeometry,
+  Object3D, PerspectiveCamera, PlaneGeometry, Quaternion, ShaderMaterial, Shape, SRGBColorSpace, TorusGeometry,
   Vector3, Vector4, VideoTexture, DoubleSide, BoxGeometry, CatmullRomCurve3, TubeGeometry, UniformsLib, UniformsUtils
 } from 'three';
 import type { Assets } from './assets';
@@ -10,7 +10,7 @@ import {
   heightAt, pathCurve, pathDistance, pondFactor, inClearing
 } from './layout';
 import { mossMaterial, neonMaterial, screenMaterial } from './materials';
-import { NEON, glowSprite, neonSign, neonTube } from './neon';
+import { NEON, glowTexture, neonSign, neonTube } from './neon';
 
 export type TargetKind = 'world' | 'client' | 'study' | 'tier' | 'contact' | 'home';
 export interface Target { object: Object3D; kind: TargetKind; index: number }
@@ -89,7 +89,10 @@ export class Props {
   letterTilt: Vector3[] = [];
   plinth!: Mesh;
   toriiNeon: Mesh[] = [];
-  lanternLights: { mat: MeshBasicMaterial; sprite: Sprite; level: number; target: number; method: boolean }[] = [];
+  lanternLights: { level: number; target: number; method: boolean; x: number; z: number }[] = [];
+  lanternMesh!: InstancedMesh;
+  lanternGlow!: Points;
+  private lcol = new Color();
   worldScreens: ShaderMaterial[] = [];
   clientScreens: ShaderMaterial[] = [];
   ring = new Group();
@@ -103,6 +106,7 @@ export class Props {
   deskScreen!: ShaderMaterial;
   deskVideo: HTMLVideoElement | null = null;
   deskOn = 0;
+  private playTried = -1e9;
   koi!: ShaderMaterial;
   signs: Mesh[] = [];
   guide!: Mesh;
@@ -202,7 +206,7 @@ export class Props {
     this.emitters = this.emitters.filter((e) => !(e as Emitter & { letter?: boolean }).letter);
     this.letterPivots.forEach((p, i) => {
       const e: Emitter & { letter?: boolean } = {
-        pos: p.position.clone().add(new Vector3(0, 1.4, 0.9)), color: new Color(NEON.teal), intensity: 5, range: 9,
+        pos: p.position.clone().add(new Vector3(0, 1.4, 1.1)), color: new Color(NEON.teal), intensity: 2.4, range: 8,
         level: () => this.letterPower[i]
       };
       e.letter = true;
@@ -249,7 +253,7 @@ export class Props {
     }
   }
 
-  // ── stone lanterns ───────────────────────────────────────────────────────
+  // ── stone lanterns (instanced: stone, paper light, glow) ─────────────────
   private buildLanterns() {
     const scene = this.a.models.toro;
     const stoneMat = this.mossMat('stone', 'aoToro', { baseScale: 0.9, mossScale: 1.1, mossAmount: 1.15 });
@@ -262,31 +266,42 @@ export class Props {
       { x: -3.9, z: -154.4 }, { x: 1.9, z: -154.6 },
       { x: -7.6, z: -173.2 }, { x: -0.6, z: -173.4 }
     ];
-    for (const sp of spots) {
-      const g = scene.clone(true);
-      let lightMat: MeshBasicMaterial | null = null;
-      for (const m of meshesOf(g)) {
-        if (m.name.startsWith('toro_light')) {
-          lightMat = new MeshBasicMaterial({ color: new Color(NEON.amber).multiplyScalar(sp.method ? 0 : 3.2) });
-          m.material = lightMat;
-        } else {
-          m.material = stoneMat;
-          m.castShadow = this.shadows;
-          m.receiveShadow = true;
-        }
-      }
+    const stoneGeo = bakedGeometry(scene.getObjectByName('toro') as Mesh);
+    const lightGeo = bakedGeometry(scene.getObjectByName('toro_light') as Mesh);
+    stoneGeo.computeVertexNormals();
+    const n = spots.length;
+    const stone = new InstancedMesh(stoneGeo, stoneMat, n);
+    const lights = new InstancedMesh(lightGeo, new MeshBasicMaterial({ color: 0xffffff }), n);
+    const glowPos = new Float32Array(n * 3), glowCol = new Float32Array(n * 3);
+    const m4 = new Matrix4(), q = new Quaternion(), sc = new Vector3(), pv = new Vector3(), up = new Vector3(0, 1, 0);
+    spots.forEach((sp, i) => {
+      const k = sp.s ?? 1;
       const y = heightAt(sp.x, sp.z) - (sp.sink ?? 0.05);
-      g.position.set(sp.x, y, sp.z);
-      g.rotation.y = Math.random() * Math.PI;
-      g.scale.setScalar(sp.s ?? 1);
-      this.group.add(g);
-      const spr = glowSprite(NEON.amber, 2.2, sp.method ? 0 : 1.3);
-      spr.position.set(sp.x, y + 1.6 * (sp.s ?? 1), sp.z);
-      this.group.add(spr);
-      const rec = { mat: lightMat!, sprite: spr, level: sp.method ? 0 : 1, target: sp.method ? 0 : 1, method: !!sp.method };
+      q.setFromAxisAngle(up, (i * 2.399) % (Math.PI * 2));
+      m4.compose(pv.set(sp.x, y, sp.z), q, sc.set(k, k, k));
+      stone.setMatrixAt(i, m4);
+      lights.setMatrixAt(i, m4);
+      lights.setColorAt(i, new Color(0, 0, 0));
+      glowPos.set([sp.x, y + 1.6 * k, sp.z], i * 3);
+      const rec = { level: sp.method ? 0 : 1, target: sp.method ? 0 : 1, method: !!sp.method, x: sp.x, z: sp.z };
       this.lanternLights.push(rec);
-      this.emitters.push({ pos: spr.position.clone(), color: new Color(NEON.amber), intensity: 4, range: 8, level: () => rec.level });
-    }
+      this.emitters.push({ pos: new Vector3(sp.x, y + 1.6 * k, sp.z), color: new Color(NEON.amber), intensity: 4, range: 8, level: () => rec.level });
+    });
+    stone.castShadow = this.shadows;
+    stone.receiveShadow = true;
+    stone.computeBoundingSphere();
+    lights.computeBoundingSphere();
+    stone.name = 'lanterns';
+    lights.name = 'lantern-lights';
+    const gg = new BufferGeometry();
+    gg.setAttribute('position', new BufferAttribute(glowPos, 3));
+    gg.setAttribute('color', new BufferAttribute(glowCol, 3));
+    const glow = new Points(gg, new PointsMaterial({ size: 2.4, map: glowTexture(), vertexColors: true, transparent: true, depthWrite: false, blending: AdditiveBlending, sizeAttenuation: true }));
+    glow.name = 'lantern-glow';
+    glow.renderOrder = 6;
+    this.lanternMesh = lights;
+    this.lanternGlow = glow;
+    this.group.add(stone, lights, glow);
   }
 
   /** Method stop: light lanterns up to `n` (0–7, fractional). */
@@ -310,7 +325,7 @@ export class Props {
       for (const m of meshesOf(g)) {
         if (m.name.includes('screen')) {
           ensurePlanarUV(m);
-          const sm = screenMaterial({ map: worlds[i], tint: tints[i], gain: 1.45, curve: 0.04, lines: 220 });
+          const sm = screenMaterial({ map: worlds[i], tint: tints[i], gain: 1.4, curve: 0.04, lines: 220, noise: 0.02, scan: 0.1 });
           m.material = sm;
           this.worldScreens.push(sm);
           this.targets.push({ object: m, kind: 'world', index: i });
@@ -369,7 +384,7 @@ export class Props {
     const idx = new Float32Array(count);
     for (let i = 0; i < count; i += 1) idx[i] = i;
     geo.setAttribute('aIndex', new InstancedBufferAttribute(idx, 1));
-    this.ringMat = screenMaterial({ map: t.studiesAtlas, instanced: true, grid: [8, 5], tint: new Color(NEON.teal), gain: 1.3, curve: 0.02, lines: 150 });
+    this.ringMat = screenMaterial({ map: t.studiesAtlas, instanced: true, grid: [8, 5], tint: new Color(NEON.teal), gain: 1.25, curve: 0.02, lines: 150, noise: 0.012, scan: 0.07 });
     this.ringMesh = new InstancedMesh(geo, this.ringMat, count);
     const m4 = new Matrix4(), q = new Quaternion(), s = new Vector3(1, 1, 1), p = new Vector3(), y = new Vector3(0, 1, 0);
     const R = LIBRARY_TREE.ringR;
@@ -534,7 +549,9 @@ export class Props {
       this.deskScreen.uniforms.map.value = vt;
     }
     if (!this.deskVideo) return;
-    if (on && this.deskVideo.paused) {
+    const now = performance.now();
+    if (on && this.deskVideo.paused && now - this.playTried > 2500) {
+      this.playTried = now;
       this.deskVideo.play().then(() => { this.deskOn = 1; }).catch(() => { this.deskOn = 1; });
     }
     if (!on && !this.deskVideo.paused) this.deskVideo.pause();
@@ -705,12 +722,17 @@ export class Props {
       const k = this.letterPower[i] * f * (0.93 + 0.07 * Math.sin(t * 3 + i));
       m.color.copy(m.userData.base).multiplyScalar(7.5 * k);
     });
-    for (const l of this.lanternLights) {
+    const gc = this.lanternGlow.geometry.getAttribute('color') as BufferAttribute;
+    this.lanternLights.forEach((l, i) => {
       l.level += (l.target - l.level) * Math.min(1, dt * 2.5);
-      const fl = 0.88 + 0.12 * Math.sin(t * 11 + l.sprite.position.x) * Math.sin(t * 7.3 + l.sprite.position.z);
-      l.mat.color.set(NEON.amber).multiplyScalar(3.2 * l.level * fl);
-      l.sprite.material.color.set(NEON.amber).multiplyScalar(1.3 * l.level * fl);
-    }
+      const fl = 0.88 + 0.12 * Math.sin(t * 11 + l.x) * Math.sin(t * 7.3 + l.z);
+      this.lcol.set(NEON.amber).multiplyScalar(3.2 * l.level * fl);
+      this.lanternMesh.setColorAt(i, this.lcol);
+      this.lcol.set(NEON.amber).multiplyScalar(1.1 * l.level * fl);
+      gc.setXYZ(i, this.lcol.r, this.lcol.g, this.lcol.b);
+    });
+    this.lanternMesh.instanceColor!.needsUpdate = true;
+    gc.needsUpdate = true;
     // ring: idle drift, drag, or a spin toward a chosen panel
     if (this.ringTarget !== null) {
       this.ring.rotation.y += (this.ringTarget - this.ring.rotation.y) * Math.min(1, dt * 3);

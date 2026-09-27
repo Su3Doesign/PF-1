@@ -96,6 +96,7 @@ async function boot() {
     study: (i) => panels.setStudy(i)
   }, reduced);
   world.deskVideo = asset(content.profile.desk);
+  if (/[?&]debug/.test(location.search)) (window as unknown as { __world: World }).__world = world;
 
   await fontsReady();
   let lastLabel = '';
@@ -128,6 +129,10 @@ function enter(withSound: boolean) {
   syncSoundBtn();
   loader.classList.add('is-done');
   document.body.classList.remove('is-loading');
+  if (!reduced && !/[?&]skipintro/.test(location.search)) {
+    document.body.classList.add('is-entering');
+    setTimeout(() => document.body.classList.remove('is-entering'), 5200);
+  }
   window.scrollTo(0, 0);
   setupScroll();
   world.start();

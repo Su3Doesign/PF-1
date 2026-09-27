@@ -115,7 +115,7 @@ export function neonTube(points: Vector3[], color: number, radius = 0.03, intens
 }
 
 let glowTex: Texture | null = null;
-function glowTexture(): Texture {
+export function glowTexture(): Texture {
   if (glowTex) return glowTex;
   const c = document.createElement('canvas');
   c.width = c.height = 128;

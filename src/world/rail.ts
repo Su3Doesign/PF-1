@@ -19,9 +19,9 @@ export class Rail {
     const pts = RAIL.map((r) => new Vector3(...r.pos));
     const looks = RAIL.map((r) => new Vector3(...r.look));
     if (tall) {
-      pts[0].set(0, 1.9, 17.5);
-      looks[0].set(0, 2.6, -12);
-      pts[1].set(0.3, 3.2, 2);
+      pts[0].set(0, 2.5, 21.5);
+      looks[0].set(0, 2.9, -12);
+      pts[1].set(0.3, 3.4, 4);
     }
     this.pos = new CatmullRomCurve3(pts, false, 'catmullrom', 0.3);
     this.look = new CatmullRomCurve3(looks, false, 'catmullrom', 0.3);

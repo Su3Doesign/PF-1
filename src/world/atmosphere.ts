@@ -27,8 +27,8 @@ export function buildSky(): Mesh {
         vec3 top = vec3(0.006, 0.012, 0.028);
         vec3 col = mix(fog * 1.15, top, smoothstep(-0.02, 0.55, up));
         float m = max(dot(d, moonDir), 0.0);
-        col += vec3(0.55, 0.68, 0.9) * pow(m, 18.0) * 0.35 + vec3(0.35, 0.5, 0.7) * pow(m, 4.0) * 0.08;
-        col += vec3(1.6, 1.7, 1.8) * smoothstep(0.99955, 0.99975, m);
+        col += vec3(0.55, 0.68, 0.9) * pow(m, 24.0) * 0.2 + vec3(0.35, 0.5, 0.7) * pow(m, 5.0) * 0.03;
+        col += vec3(1.15, 1.2, 1.3) * smoothstep(0.99955, 0.99975, m);
         vec3 sp = floor(d * 380.0);
         float st = step(0.9975, h(sp)) * smoothstep(0.05, 0.4, up);
         col += st * (0.5 + 0.5 * sin(time * 2.0 + h(sp + 3.0) * 30.0)) * 0.6;

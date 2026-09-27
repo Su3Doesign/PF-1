@@ -86,7 +86,7 @@ export function buildFoliage(o: FoliageOpts): Group {
   const blade = bladeGeometry();
   const grassMat = windLambert({ vertexColors: true, bend: 0.35, translucency: 0.35 });
   const chunks = new Map<string, number[]>();
-  const CH = 16;
+  const CH = 28;
   let placed = 0, tries = 0;
   while (placed < o.grass && tries < o.grass * 6) {
     tries += 1;

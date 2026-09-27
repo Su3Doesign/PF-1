@@ -152,7 +152,7 @@ const SCREEN_FRAG = /* glsl */ `
 uniform sampler2D map;
 uniform vec4 uvRect;
 uniform vec2 grid;
-uniform float time, hover, power, gain, curve, lines, seed, hoverIndex;
+uniform float time, hover, power, gain, curve, lines, seed, hoverIndex, noiseAmt, scanAmt;
 uniform vec3 tint;
 varying vec2 vUv;
 #ifdef INSTANCED_SCREEN
@@ -173,12 +173,12 @@ void main(){
   float glitch = step(0.985, h1(vec2(floor(time * 9.0 + seed), 1.0))) * (h1(vec2(floor(uv.y * 24.0), floor(time * 30.0))) - 0.5) * 0.04;
   vec2 auv = rect.xy + clamp(uv + vec2(glitch, 0.0), 0.0, 1.0) * rect.zw;
   vec3 c = texture2D(map, auv).rgb;
-  float scan = 0.82 + 0.18 * sin(uv.y * lines * 6.2831 - time * 3.0);
+  float scan = 1.0 - scanAmt + scanAmt * sin(uv.y * lines * 6.2831 - time * 3.0);
   c *= scan;
   float vig = smoothstep(0.78, 0.18, length(cc * vec2(1.0, 1.15)));
   c *= mix(0.45, 1.0, vig);
   float n = h1(floor(vUv * vec2(320.0, 220.0)) + floor(time * 20.0));
-  c += (n - 0.5) * 0.045;
+  c += (n - 0.5) * noiseAmt;
   float flick = 0.94 + 0.06 * sin(time * 50.0 + seed * 10.0);
   float on = smoothstep(0.0, 1.0, power);
   c *= (gain + hv * 0.55) * on * flick;
@@ -198,6 +198,8 @@ export interface ScreenOpts {
   lines?: number;
   grid?: [number, number];
   instanced?: boolean;
+  noise?: number;
+  scan?: number;
 }
 
 export function screenMaterial(o: ScreenOpts): ShaderMaterial {
@@ -205,7 +207,8 @@ export function screenMaterial(o: ScreenOpts): ShaderMaterial {
     uniforms: UniformsUtils.merge([UniformsLib.fog, {
       map: { value: null }, uvRect: { value: new Vector4(0, 0, 1, 1) }, grid: { value: [1, 1] },
       time: { value: 0 }, hover: { value: 0 }, power: { value: 1 }, gain: { value: 1.35 }, curve: { value: 0.12 },
-      lines: { value: 180 }, seed: { value: Math.random() * 10 }, hoverIndex: { value: -1 }, tint: { value: new Color(0x3dffd0) }
+      lines: { value: 180 }, seed: { value: Math.random() * 10 }, hoverIndex: { value: -1 }, tint: { value: new Color(0x3dffd0) },
+      noiseAmt: { value: 0.045 }, scanAmt: { value: 0.18 }
     }]),
     vertexShader: SCREEN_VERT,
     fragmentShader: SCREEN_FRAG,
@@ -219,6 +222,8 @@ export function screenMaterial(o: ScreenOpts): ShaderMaterial {
   if (o.lines !== undefined) m.uniforms.lines.value = o.lines;
   if (o.grid) m.uniforms.grid.value = o.grid;
   if (o.instanced) m.defines = { INSTANCED_SCREEN: '' };
+  if (o.noise !== undefined) m.uniforms.noiseAmt.value = o.noise;
+  if (o.scan !== undefined) m.uniforms.scanAmt.value = o.scan;
   m.uniforms.time = shared.time;
   return m;
 }

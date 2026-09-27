@@ -1,9 +1,8 @@
 import {
   WebGLRenderer, Scene, PerspectiveCamera, FogExp2, SRGBColorSpace, NoToneMapping, PCFSoftShadowMap, HemisphereLight,
   DirectionalLight, PointLight, Color, Vector2, Vector3, Raycaster, PMREMGenerator, Mesh, SphereGeometry, MeshBasicMaterial,
-  BackSide, PlaneGeometry, Object3D, Points, ShaderMaterial, MathUtils, HalfFloatType, RectAreaLight
+  BackSide, PlaneGeometry, Object3D, Points, ShaderMaterial, MathUtils, HalfFloatType, SpotLight
 } from 'three';
-import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib.js';
 import {
   EffectComposer, RenderPass, EffectPass, BloomEffect, ToneMappingEffect, ToneMappingMode, VignetteEffect, NoiseEffect,
   ChromaticAberrationEffect, SMAAEffect, BlendFunction, SMAAPreset
@@ -32,7 +31,7 @@ const FOG_DENSITY = 0.032;
 export class World {
   renderer: WebGLRenderer;
   scene = new Scene();
-  camera = new PerspectiveCamera(45, 1, 0.1, 700);
+  camera = new PerspectiveCamera(45, 1, 0.1, 120); // fog swallows everything past ~100 m
   q!: Quality;
   composer!: EffectComposer;
   pond!: Pond;
@@ -78,6 +77,7 @@ export class World {
     const tier = detectTier(r.getContext());
     this.q = qualityFor(tier);
     r.outputColorSpace = SRGBColorSpace;
+    r.info.autoReset = false;
     r.toneMapping = NoToneMapping;
     r.setClearColor(FOG_COLOR);
     r.shadowMap.enabled = this.q.shadows;
@@ -96,7 +96,7 @@ export class World {
     s.add(buildTerrain({ ground: a.tex.ground, groundN: a.tex.groundN, moss: a.tex.moss, noise: a.tex.noise }));
     this.pond = new Pond({ waterN: a.tex.waterN, noise: a.tex.noise }, this.q.reflection);
     s.add(this.pond);
-    const trees = buildTrees(this.q.trees, { bark: a.tex.bark, barkN: a.tex.barkN, moss: a.tex.moss, noise: a.tex.noise }, this.q.shadows);
+    const trees = buildTrees(this.q.trees, { bark: a.tex.bark, barkN: a.tex.barkN, moss: a.tex.moss, noise: a.tex.noise }, this.q.shadows, this.q.tier === 'high' ? 1 : 0);
     s.add(trees.group);
     await nextFrame();
     s.add(buildFoliage({ grass: this.q.grass, ferns: this.q.ferns, fern: a.tex.fern, fern2: a.tex.fern2 }));
@@ -133,15 +133,15 @@ export class World {
       this.pool.push({ l, e: null, fade: 0 });
     }
     this.environment();
-    RectAreaLightUniformsLib.init();
-    const wash = new RectAreaLight(0x3dffd0, 0.75, 26, 1.2);
-    wash.position.set(0, 0.35, LETTERS_Z + 2.2);
-    wash.lookAt(0, 1.4, LETTERS_Z);
-    s.add(wash);
-    const toriiWash = new RectAreaLight(0xff3b2e, 1.6, 9, 0.8);
-    toriiWash.position.set(0, 7.1, TORII.z + 1.6);
-    toriiWash.lookAt(0, 4, TORII.z);
-    s.add(toriiWash);
+    // neon spill: a low teal wash across the letters and a red one under the torii's lintel
+    const wash = new SpotLight(0x3dffd0, 38, 30, 1.05, 1, 2);
+    wash.position.set(0, 0.45, LETTERS_Z + 7);
+    wash.target.position.set(0, 1.2, LETTERS_Z);
+    s.add(wash, wash.target);
+    const toriiWash = new SpotLight(0xff3b2e, 30, 16, 0.9, 1, 2);
+    toriiWash.position.set(0, 7.3, TORII.z + 3.5);
+    toriiWash.target.position.set(0, 3, TORII.z);
+    s.add(toriiWash, toriiWash.target);
 
     this.camera.layers.enable(LAYER_NO_REFLECT);
     this.rail = new Rail(innerWidth / innerHeight < 0.95);
@@ -181,7 +181,7 @@ export class World {
   private setupPost() {
     this.composer = new EffectComposer(this.renderer, { frameBufferType: HalfFloatType, multisampling: this.q.msaa });
     this.composer.addPass(new RenderPass(this.scene, this.camera));
-    this.bloom = new BloomEffect({ mipmapBlur: true, intensity: 1.25, luminanceThreshold: 0.72, luminanceSmoothing: 0.22, radius: 0.78 });
+    this.bloom = new BloomEffect({ mipmapBlur: true, intensity: 1.1, luminanceThreshold: 0.78, luminanceSmoothing: 0.2, radius: 0.66 });
     const tone = new ToneMappingEffect({ mode: ToneMappingMode.ACES_FILMIC });
     const vig = new VignetteEffect({ offset: 0.28, darkness: 0.62 });
     const passes = [new EffectPass(this.camera, this.bloom, tone, vig)];
@@ -426,8 +426,9 @@ export class World {
 
     // grass sway reacts a touch to scrolling speed
     shared.wind.value = 1 + Math.min(1.5, Math.abs(this.rail.tAt(this.scrollY) - this.tCur) * 30);
-    this.bloom.intensity = 1.2 + 0.1 * Math.sin(this.time * 0.7);
+    this.bloom.intensity = 1.05 + 0.08 * Math.sin(this.time * 0.7);
 
+    this.renderer.info.reset();
     if (!this.overlay) this.pond.renderReflection(this.renderer, this.scene, this.camera);
     this.composer.render(dt);
     this.gov.tick(dt);

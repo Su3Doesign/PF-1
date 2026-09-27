@@ -111,7 +111,8 @@ export class Panels {
   }
 
   measure() {
-    for (const s of this.secs) s.el.style.height = `${Number(s.el.dataset.h || 200)}svh`;
+    const unit = CSS.supports('height', '1svh') ? 'svh' : 'vh';
+    for (const s of this.secs) s.el.style.height = `${Number(s.el.dataset.h || 200)}${unit}`;
     for (const s of this.secs) { s.top = s.el.offsetTop; s.height = s.el.offsetHeight; }
   }
 

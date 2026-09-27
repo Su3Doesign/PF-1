@@ -39,17 +39,17 @@
 
 <canvas id="gl" aria-hidden="true"></canvas>
 
-<div class="loader" id="loader" role="status" aria-live="polite">
+<div class="loader" id="loader">
   <div class="loader__core">
     <div class="loader__kanji" aria-hidden="true">苔</div>
-    <div class="loader__log" id="loader-log"></div>
+    <div class="loader__log" id="loader-log" aria-hidden="true"></div>
     <div class="loader__bar"><i id="loader-bar"></i></div>
-    <div class="loader__row"><span id="loader-label">booting the signal</span><span id="loader-pct">000</span></div>
+    <div class="loader__row" role="status" aria-live="polite"><span id="loader-label">booting the signal</span><span id="loader-pct" aria-hidden="true">000</span></div>
     <div class="loader__enter">
       <button class="btn btn--neon" id="enter-sound" type="button">Enter with sound</button>
       <button class="btn" id="enter-quiet" type="button">Enter quietly</button>
     </div>
-    <p class="loader__note">The forest runs in your browser. A flat version of everything is one tap away in the top bar.</p>
+    <p class="loader__note">The forest runs in your browser. In a hurry? <a href="work.html">Open the flat portfolio</a>.</p>
   </div>
 </div>
 

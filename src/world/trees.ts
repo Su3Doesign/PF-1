@@ -73,7 +73,7 @@ function barkMaterial(tex: { bark: Texture; barkN: Texture; moss: Texture; noise
 
 export interface TreeResult { group: Group; positions: { x: number; z: number; h: number }[] }
 
-export function buildTrees(count: number, tex: { bark: Texture; barkN: Texture; moss: Texture; noise: Texture }, shadows: boolean): TreeResult {
+export function buildTrees(count: number, tex: { bark: Texture; barkN: Texture; moss: Texture; noise: Texture }, shadows: boolean, detail = 1): TreeResult {
   const group = new Group();
   group.name = 'trees';
   const rand = rng(77);
@@ -82,7 +82,8 @@ export function buildTrees(count: number, tex: { bark: Texture; barkN: Texture; 
     { r: 0.58, H: 22, flare: 1.3 },
     { r: 0.8, H: 24, flare: 1.5 }
   ];
-  const geos = variants.map((v, i) => trunkGeometry(v.r, v.H, 11 + i * 7, v.flare));
+  const radial = detail >= 1 ? 22 : 13, rows = detail >= 1 ? 30 : 18;
+  const geos = variants.map((v, i) => trunkGeometry(v.r, v.H, 11 + i * 7, v.flare, radial, rows));
   const mat = barkMaterial(tex);
   const pts: { x: number; z: number; v: number; s: number; h: number }[] = [];
   const grid = new Map<string, { x: number; z: number }[]>();
@@ -128,7 +129,7 @@ export function buildTrees(count: number, tex: { bark: Texture; barkN: Texture; 
     // split into rows along z for culling
     const bands = new Map<number, typeof list>();
     for (const p of list) {
-      const b = Math.floor(p.z / 40);
+      const b = Math.floor(p.z / 60);
       if (!bands.has(b)) bands.set(b, []);
       bands.get(b)!.push(p);
     }
