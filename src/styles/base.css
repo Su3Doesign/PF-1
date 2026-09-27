@@ -1,0 +1,148 @@
+@font-face {
+  font-family: 'Shippori Mincho B1';
+  font-weight: 800;
+  font-display: swap;
+  src: url('/fonts/shippori-800-subset.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Shippori Mincho B1';
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/shippori-500-subset.woff2') format('woff2');
+}
+
+:root {
+  color-scheme: dark;
+  --bg: #030605;
+  --bg-2: #07100d;
+  --glass: rgba(5, 11, 9, 0.66);
+  --glass-2: rgba(10, 20, 16, 0.78);
+  --ink: #e3ebe1;
+  --ink-2: #a7b5a8;
+  --ink-3: #6f7d71;
+  --line: rgba(227, 235, 225, 0.11);
+  --line-2: rgba(227, 235, 225, 0.22);
+  --moss: #9bc24a;
+  --moss-deep: #4f6b1c;
+  --teal: #3dffd0;
+  --amber: #ffb45e;
+  --red: #ff3b2e;
+  --magenta: #ff4fa3;
+  --f-display: 'Archivo Variable', 'Archivo', 'Arial Black', system-ui, sans-serif;
+  --f-body: 'Archivo Variable', 'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-jp: 'Shippori Mincho B1', 'Hiragino Mincho ProN', 'Yu Mincho', 'Noto Serif JP', serif;
+  --f-mono: 'Martian Mono Variable', 'Martian Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --e-kiri: cubic-bezier(0.16, 1, 0.3, 1);
+  --e-nami: cubic-bezier(0.65, 0, 0.35, 1);
+  --e-tok: cubic-bezier(0.2, 0, 0, 1);
+  --gutter: clamp(16px, 4vw, 56px);
+  --hud-h: 64px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--bg); -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 16px/1.6 var(--f-body);
+  font-stretch: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+img, video { max-width: 100%; display: block; }
+a { color: inherit; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+:focus-visible { outline: 1.5px solid var(--teal); outline-offset: 3px; }
+::selection { background: var(--teal); color: #03110c; }
+h1, h2, h3, p { margin: 0; }
+h1, h2, h3 { text-wrap: balance; }
+
+.sr-only {
+  position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+.skip {
+  position: fixed; left: 12px; top: -60px; z-index: 200; padding: 10px 14px; background: var(--teal); color: #031; font: 600 13px var(--f-mono);
+  text-decoration: none; transition: top 0.2s var(--e-tok);
+}
+.skip:focus { top: 12px; }
+
+/* ── type ─────────────────────────────────────────────────── */
+.mono {
+  font-family: var(--f-mono);
+  font-stretch: 87.5%;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.jp { font-family: var(--f-jp); font-weight: 800; }
+
+/* moss-grown display type: moss texture clipped to the glyphs, a rough edge, neon bleed */
+.moss {
+  font-family: var(--f-display);
+  font-weight: 900;
+  font-stretch: 125%;
+  text-transform: uppercase;
+  letter-spacing: -0.015em;
+  line-height: 0.92;
+  color: #9fc257;
+  background-image:
+    radial-gradient(120% 90% at 30% 10%, rgba(226, 255, 170, 0.55), rgba(226, 255, 170, 0) 45%),
+    url('/assets/tex/moss_type.webp');
+  background-size: 100% 100%, 240px 240px;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: url(#moss-rough) drop-shadow(0 1px 0 rgba(0, 0, 0, 0.6)) drop-shadow(0 0 14px rgba(61, 255, 208, 0.18));
+}
+.moss--quiet { filter: drop-shadow(0 0 10px rgba(61, 255, 208, 0.12)); }
+
+.neon-text {
+  color: #effff9;
+  text-shadow: 0 0 4px rgba(61, 255, 208, 0.9), 0 0 14px rgba(61, 255, 208, 0.55), 0 0 36px rgba(61, 255, 208, 0.35);
+}
+
+/* ── buttons ──────────────────────────────────────────────── */
+.btn {
+  position: relative;
+  display: inline-flex; align-items: center; gap: 12px;
+  padding: 13px 18px 12px;
+  font: 500 11.5px/1 var(--f-mono);
+  font-stretch: 87.5%;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--ink);
+  border: 1px solid var(--line-2);
+  background: rgba(3, 8, 6, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: border-color 0.18s var(--e-tok), background 0.18s var(--e-tok), color 0.18s var(--e-tok), box-shadow 0.25s var(--e-tok);
+}
+.btn:hover { border-color: var(--teal); box-shadow: 0 0 0 1px rgba(61, 255, 208, 0.25), 0 0 24px rgba(61, 255, 208, 0.18); }
+.btn--neon {
+  color: #03110c;
+  background: var(--teal);
+  border-color: var(--teal);
+  box-shadow: 0 0 18px rgba(61, 255, 208, 0.45), 0 0 60px rgba(61, 255, 208, 0.15);
+}
+.btn--neon:hover { background: #7affe0; }
+.btn--ghost { background: transparent; }
+.btn i { font-style: normal; }
+
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 9px;
+  border: 1px solid var(--line-2);
+  font: 400 10.5px/1 var(--f-mono);
+  font-stretch: 87.5%;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
+}

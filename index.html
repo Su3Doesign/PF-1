@@ -1,263 +1,180 @@
-<!DOCTYPE html>
-<html lang="en" data-pass="beauty">
+<!doctype html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Amidyala Sai Sumanth — 3D Environment Artist &amp; Visual Designer</title>
-<meta name="description" content="3D environment artist and visual designer in Hyderabad. Shrines, ponds and pagodas lit at the one hour they make sense — plus commercial campaign work for Midea Canada, Home Depot Canada, GC Burger and more.">
+<meta name="description" content="Portfolio of Amidyala Sai Sumanth, 3D environment artist and visual designer in Hyderabad. Walk an overgrown neon forest archive: shrines, ponds and pagodas, sixteen commercial clients, and thirty-nine studies.">
 <link rel="canonical" href="https://www.thesumanth.com/">
-<meta name="theme-color" content="#0E0E10">
-
+<meta name="theme-color" content="#030605">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://www.thesumanth.com/">
 <meta property="og:title" content="Amidyala Sai Sumanth — 3D Environment Artist">
-<meta property="og:description" content="Worlds built in Maya, lit in Arnold, finished on deadline.">
+<meta property="og:description" content="An overgrown neon forest archive of worlds built in Maya, lit in Arnold, finished on deadline.">
 <meta property="og:image" content="https://www.thesumanth.com/assets/images/japa-render-1.webp">
 <meta name="twitter:card" content="summary_large_image">
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="image" href="assets/images/japa-render-1.webp" fetchpriority="high">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,200;0,6..72,300;0,6..72,400;1,6..72,300&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
-
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preload" href="assets/tex/moss_type.webp" as="image">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"Person","name":"Amidyala Sai Sumanth","url":"https://www.thesumanth.com/","jobTitle":"3D Environment Artist","address":{"@type":"PostalAddress","addressLocality":"Hyderabad","addressCountry":"IN"},"email":"sumanth.richie25@icloud.com","sameAs":["https://behance.net/sumanthrichie","https://instagram.com/sumofDanth"]}
 </script>
+<script>
+  // no WebGL2 → the flat portfolio, before anything heavy loads
+  (function () {
+    try { var c = document.createElement('canvas'); if (!c.getContext('webgl2')) location.replace('work.html?from=forest'); }
+    catch (e) { location.replace('work.html?from=forest'); }
+  })();
+</script>
+<script type="module" src="/src/main.ts"></script>
 </head>
+<body class="is-loading">
+<a class="skip" href="work.html">Skip to the flat portfolio</a>
 
-<body class="is-booting">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <filter id="moss-rough" x="-5%" y="-10%" width="110%" height="120%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="4" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="2.6" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
 
-<!-- ───────────────────────────  BOOT  ─────────────────────────── -->
-<div class="boot" id="boot" aria-hidden="true">
-  <div class="boot__grid" id="bootGrid"></div>
-  <div class="boot__meta">
-    <span class="boot__name">AMIDYALA SAI SUMANTH</span>
-    <span class="boot__task" id="bootTask">allocating buckets</span>
-    <span class="boot__pct" id="bootPct">000</span>
+<canvas id="gl" aria-hidden="true"></canvas>
+
+<div class="loader" id="loader" role="status" aria-live="polite">
+  <div class="loader__core">
+    <div class="loader__kanji" aria-hidden="true">苔</div>
+    <div class="loader__log" id="loader-log"></div>
+    <div class="loader__bar"><i id="loader-bar"></i></div>
+    <div class="loader__row"><span id="loader-label">booting the signal</span><span id="loader-pct">000</span></div>
+    <div class="loader__enter">
+      <button class="btn btn--neon" id="enter-sound" type="button">Enter with sound</button>
+      <button class="btn" id="enter-quiet" type="button">Enter quietly</button>
+    </div>
+    <p class="loader__note">The forest runs in your browser. A flat version of everything is one tap away in the top bar.</p>
   </div>
 </div>
 
-<div class="grain" aria-hidden="true"></div>
-
-<!-- ───────────────────────────  CHROME  ─────────────────────────── -->
-<header class="topbar" data-wire="header.topbar">
-  <a class="topbar__mark" href="#top" aria-label="Back to top">
-    <span class="topbar__sig">SUMANTH</span>
-    <span class="topbar__role">3D ENV / VISUAL DESIGN</span>
-  </a>
-  <nav class="topbar__nav" aria-label="Sections">
-    <a href="#worlds">Worlds</a>
-    <a href="#pipeline">Method</a>
-    <a href="#clients">Clients</a>
-    <a href="#studies">Studies</a>
-    <a href="#contact">Contact</a>
-  </nav>
-  <a class="topbar__status" href="#contact"><i></i>OPEN FOR WORK</a>
+<header class="hud">
+  <a class="logo" href="#top" aria-label="Back to the pond"><i></i><b>SUMANTH</b><span>苔の経蔵</span></a>
+  <div class="hud__stop mono" aria-live="polite"><b id="hud-k">池</b><span data-name id="hud-name">THE POND</span><span id="hud-idx">01 / 07</span></div>
+  <div class="hud__end">
+    <button class="btn hud__btn snd" id="snd" type="button" aria-pressed="false" aria-label="Sound"><i aria-hidden="true"><s></s><s></s><s></s></i><span class="hud__label">Sound</span></button>
+    <a class="btn hud__btn" href="work.html">Flat view</a>
+    <button class="btn hud__btn" id="menu-btn" type="button" aria-haspopup="dialog">Index</button>
+  </div>
 </header>
 
-<div class="passbar" id="passbar" role="group" aria-label="Render pass">
-  <span class="passbar__label">PASS</span>
-  <button data-pass-btn="beauty" class="is-on" aria-pressed="true">Beauty</button>
-  <button data-pass-btn="clay" aria-pressed="false">Clay</button>
-  <button data-pass-btn="wire" aria-pressed="false">Wire</button>
-  <button data-pass-btn="depth" aria-pressed="false">Depth</button>
-  <span class="passbar__hint">keys 1–4</span>
-</div>
+<nav class="rail" id="rail" aria-label="Stops in the forest"></nav>
 
 <main id="top">
-
-<!-- ───────────────────────────  HERO  ─────────────────────────── -->
-<section class="hero" id="hero" data-wire="section#hero">
-  <div class="hero__stage" id="heroStage">
-    <canvas id="heroCanvas"></canvas>
-    <img id="heroFallback" class="hero__fallback" src="assets/images/japa-render-1.webp" alt="Rōman no Yoake — a pagoda above the treeline at first light">
-    <div class="hero__vig"></div>
-  </div>
-
-  <div class="hero__type">
-    <p class="hero__eyebrow"><span>3D ENVIRONMENT ARTIST</span><span>VISUAL DESIGNER</span><span>HYDERABAD · 17.38°N</span></p>
-    <h1 class="hero__name"><span class="hero__given">Amidyala Sai</span><span class="hero__family" data-chars>SUMANTH</span></h1>
-    <p class="hero__line">I build places that don't exist, then decide<br> how the light behaves once it gets there.</p>
-  </div>
-
-  <div class="hero__hud" data-wire="hero.readout">
-    <div class="hud__row"><b id="hudShot">SHOT 01/03</b><span id="hudName">roman-no-yoake</span></div>
-    <div class="hud__row"><span id="hudRes">2000 × 1125</span><span id="hudSpp">512 spp</span><span id="hudTime">00:00:00</span></div>
-    <div class="hud__bar"><i id="hudFill"></i></div>
-  </div>
-
-  <a class="hero__scroll" href="#thesis"><span>SCROLL</span><i></i></a>
-</section>
-
-<!-- ───────────────────────────  THESIS  ─────────────────────────── -->
-<section class="thesis" id="thesis" data-wire="section#thesis">
-  <p class="eyebrow"><span class="eyebrow__n">00</span> THE PASS BEFORE THE BEAUTY PASS</p>
-
-  <h2 class="thesis__head" data-split>Every frame on this site began as grey boxes and one light that had to justify itself.</h2>
-
-  <div class="thesis__cols">
-    <div class="thesis__body">
-      <p>I'm Sumanth. Half of my work is quiet — shrines, ponds, pagodas, held at the one hour they actually make sense. The other half ships on a Friday for agencies in Toronto and San Juan: air conditioners, burgers, jewellery, bank ads. Both halves want the same thing from me. A place that looks kept. Light with somewhere to be.</p>
-      <p>Trained through the agency pipeline, raised on anime frames I paused too long. The two don't argue. They argue with the work, and the work answers.</p>
-    </div>
-    <figure class="thesis__clay" data-wire="figure.grey-ball">
-      <div class="media media--4x3"><img data-src="assets/images/19.webp" alt="Grey primitive lighting study — sphere, cylinder and cube on a neutral backdrop" width="1400" height="1050"></div>
-      <figcaption>18% grey, three primitives, one key. Where every scene starts and what this site is painted in.</figcaption>
-    </figure>
-  </div>
-
-  <dl class="specs" data-wire="dl.specs">
-    <div><dt>Based</dt><dd>Hyderabad, India</dd></div>
-    <div><dt>Core</dt><dd>Maya · ZBrush · Substance · Arnold</dd></div>
-    <div><dt>Also</dt><dd>Unreal · After Effects · Photoshop · Illustrator</dd></div>
-    <div><dt>Works in</dt><dd>Environments · Product viz · Campaign design</dd></div>
-    <div><dt>Status</dt><dd class="is-live">Open — commission, full-time, collaboration</dd></div>
-  </dl>
-</section>
-
-<!-- ───────────────────────────  WORLDS  ─────────────────────────── -->
-<section class="worlds" id="worlds" data-wire="section#worlds">
-  <div class="section-head">
-    <p class="eyebrow"><span class="eyebrow__n">01</span> SELECTED WORLDS</p>
-    <h2 class="section-head__h" data-split>Three places, built to be stood in.</h2>
-  </div>
-  <div id="worldsMount"></div>
-</section>
-
-<!-- ───────────────────────────  PIPELINE  ─────────────────────────── -->
-<section class="pipeline" id="pipeline" data-wire="section#pipeline">
-  <div class="pipe__sticky">
-    <div class="pipe__head">
-      <p class="eyebrow"><span class="eyebrow__n">02</span> METHOD</p>
-      <h2 class="pipe__h">Seven moves,<br>every single time.</h2>
-      <p class="pipe__sub">In order. Skipping one shows up in the render three weeks later.</p>
-    </div>
-    <ol class="pipe__track" id="pipeTrack"></ol>
-  </div>
-</section>
-
-<!-- ───────────────────────────  CLIENTS  ─────────────────────────── -->
-<section class="clients" id="clients" data-wire="section#clients">
-  <div class="section-head">
-    <p class="eyebrow"><span class="eyebrow__n">03</span> COMMERCIAL</p>
-    <h2 class="section-head__h" data-split>Sixteen clients who needed it Tuesday.</h2>
-    <p class="section-head__sub">Through The Classic Partnership (Toronto) and VS Design Studio, plus direct freelance. Pick a client to solo it — everything else drops to clay.</p>
-  </div>
-
-  <div class="solo" data-wire="div.solo-rig">
-    <div class="solo__list" id="soloList" role="tablist" aria-label="Clients"></div>
-    <div class="solo__wall">
-      <div class="solo__bar">
-        <span id="soloName">ALL CLIENTS</span>
-        <span id="soloRole">2023 — 2025 · agency, studio &amp; freelance</span>
-        <button id="soloClear" class="solo__clear" hidden>UNSOLO ✕</button>
+  <section class="st st--landing is-live" data-station="landing" data-h="210">
+    <div class="st__sticky">
+      <div class="hero">
+        <div class="hero__who mono"><h1>Amidyala Sai Sumanth</h1><span>3D Environment Artist</span><span>Visual Designer</span><span>Hyderabad · 17.38°N</span></div>
+        <p class="hero__line">I build places that don't exist, then decide how the light behaves once it gets there.</p>
+        <div class="hero__cta">
+          <button class="btn btn--neon" type="button" data-go="worlds">Enter the forest <i aria-hidden="true">↓</i></button>
+          <a class="btn btn--ghost" href="work.html">Flat view</a>
+        </div>
       </div>
-      <div class="wall" id="clientWall"></div>
+      <div class="scrollcue mono" aria-hidden="true"><span>Scroll</span><i></i></div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ───────────────────────────  STUDIES  ─────────────────────────── -->
-<section class="studies" id="studies" data-wire="section#studies">
-  <div class="section-head">
-    <p class="eyebrow"><span class="eyebrow__n">04</span> STUDIES &amp; GRAPHICS</p>
-    <h2 class="section-head__h" data-split>The other half of the desk.</h2>
-    <p class="section-head__sub">Packaging, posters, automotive viz, hard-surface practice, and the occasional Sunday illustration.</p>
-  </div>
-  <div class="bento" id="studyGrid"></div>
-</section>
+  <section class="st" data-station="worlds" id="worlds" data-h="250">
+    <div class="st__sticky">
+      <article class="panel" aria-labelledby="h-worlds">
+        <div class="panel__eyebrow mono"><b>世界</b><span>01 · Selected worlds</span></div>
+        <h2 class="moss" id="h-worlds">Three places, built to be stood in.</h2>
+        <p>Personal environments: modelled in Maya, sculpted in ZBrush, textured in Substance, lit in Arnold. Pick a screen in the clearing, or a title below.</p>
+        <div class="cards" id="world-cards"></div>
+      </article>
+    </div>
+  </section>
 
-<!-- ───────────────────────────  COMMISSIONS  ─────────────────────────── -->
-<section class="tiers" id="tiers" data-wire="section#tiers">
-  <div class="section-head">
-    <p class="eyebrow"><span class="eyebrow__n">05</span> COMMISSIONS</p>
-    <h2 class="section-head__h" data-split>Buy the scope, not the hours.</h2>
-    <p class="section-head__sub">Every commission runs concept → blockout → look-dev → final. What changes is how much world you get.</p>
-  </div>
+  <section class="st" data-station="method" id="method" data-h="300">
+    <div class="st__sticky">
+      <article class="panel panel--right" aria-labelledby="h-method">
+        <div class="panel__eyebrow mono"><b>七手</b><span>02 · Method</span></div>
+        <h2 class="moss" id="h-method">Seven moves, every time.</h2>
+        <p>In order. Skipping one shows up in the render three weeks later. A lantern lights for each.</p>
+        <ol class="steps" id="steps"></ol>
+      </article>
+    </div>
+  </section>
 
-  <div class="tiers__grid">
-    <article class="tier" data-wire="article.tier-01">
-      <p class="tier__n">01</p>
-      <h3 class="tier__name">One Frame</h3>
-      <p class="tier__for">Album art, key frames, cover stills.</p>
-      <ul>
-        <li>1 hero render</li><li>2 alternate angles</li><li>2 light revisions</li><li>10–14 days</li>
-      </ul>
-    </article>
-    <article class="tier tier--flag" data-wire="article.tier-02">
-      <p class="tier__n">02</p>
-      <h3 class="tier__name">The World</h3>
-      <p class="tier__for">Editorial, brand campaigns, visual development.</p>
-      <ul>
-        <li>4–6 hero renders</li><li>Props, set dressing, full atmosphere</li><li>Turntable or parallax pass</li><li>Light revisions included</li><li>3–5 weeks</li>
-      </ul>
-      <span class="tier__flag">MOST COMMISSIONED</span>
-    </article>
-    <article class="tier" data-wire="article.tier-03">
-      <p class="tier__n">03</p>
-      <h3 class="tier__name">The Pipeline</h3>
-      <p class="tier__for">Studios, agencies, films, product launches.</p>
-      <ul>
-        <li>Full visual development</li><li>Animated turntables · pre-viz</li><li>Farm-ready hand-off, named and tidy</li><li>On call two months after delivery</li><li>6–10 weeks</li>
-      </ul>
-    </article>
-  </div>
-</section>
+  <section class="st" data-station="clients" id="clients" data-h="240">
+    <div class="st__sticky">
+      <article class="panel" aria-labelledby="h-clients">
+        <div class="panel__eyebrow mono"><b>顧客</b><span>03 · Commercial</span></div>
+        <h2 class="moss" id="h-clients">Sixteen clients who needed it Tuesday.</h2>
+        <p>Through The Classic Partnership (Toronto) and VS Design Studio, plus direct freelance. Each monitor in the rack is a client.</p>
+        <div class="clients" id="client-list"></div>
+      </article>
+    </div>
+  </section>
 
-<!-- ───────────────────────────  CONTACT  ─────────────────────────── -->
-<section class="contact" id="contact" data-wire="section#contact">
-  <p class="eyebrow"><span class="eyebrow__n">06</span> CONTACT</p>
-  <h2 class="contact__h" data-chars>SAY HELLO</h2>
-  <a class="contact__mail" href="mailto:sumanth.richie25@icloud.com">sumanth.richie25@icloud.com</a>
+  <section class="st" data-station="studies" id="studies" data-h="260">
+    <div class="st__sticky">
+      <article class="panel panel--right" aria-labelledby="h-studies">
+        <div class="panel__eyebrow mono"><b>書庫</b><span>04 · The library</span></div>
+        <h2 class="moss" id="h-studies">The other half of the desk.</h2>
+        <p>Packaging, posters, automotive viz, hard-surface practice and the occasional Sunday illustration, shelved around the oldest tree in the forest. Drag the ring to spin it.</p>
+        <div class="now" id="study-now" aria-live="polite">
+          <img alt="" id="study-img" width="96" height="120">
+          <div><b id="study-name">—</b><small id="study-kind">—</small><em id="study-count">01 / 39</em></div>
+        </div>
+        <div class="row">
+          <button class="btn" type="button" id="study-prev" aria-label="Previous study">←</button>
+          <button class="btn btn--neon" type="button" id="study-open">Open</button>
+          <button class="btn" type="button" id="study-next" aria-label="Next study">→</button>
+          <button class="btn btn--ghost" type="button" id="study-all">All 39</button>
+        </div>
+      </article>
+    </div>
+  </section>
 
-  <div class="contact__links">
-    <a href="https://behance.net/sumanthrichie" target="_blank" rel="noopener">Behance <i>↗</i></a>
-    <a href="https://instagram.com/sumofDanth" target="_blank" rel="noopener">Instagram <i>↗</i></a>
-    <a href="https://su3doesign.github.io/Resume/" target="_blank" rel="noopener">Résumé <i>↗</i></a>
-  </div>
+  <section class="st" data-station="commissions" id="commissions" data-h="220">
+    <div class="st__sticky">
+      <article class="panel" aria-labelledby="h-comm">
+        <div class="panel__eyebrow mono"><b>絵馬</b><span>05 · Commissions</span></div>
+        <h2 class="moss" id="h-comm">Buy the scope, not the hours.</h2>
+        <p>Every commission runs concept → blockout → look-dev → final. What changes is how much world you get.</p>
+        <div class="tiers" id="tiers"></div>
+        <div class="row" style="margin-top:14px"><a class="btn btn--neon" href="mailto:sumanth.richie25@icloud.com?subject=Commission%20enquiry">Start a commission</a></div>
+      </article>
+    </div>
+  </section>
 
-  <figure class="desk" data-wire="figure.desk">
-    <div id="deskMount"></div>
-    <figcaption>The desk it all leaves from — Hyderabad, most nights.</figcaption>
-  </figure>
-
-  <footer class="foot">
-    <span>© 2026 Amidyala Sai Sumanth</span>
-    <span>Built in Hyderabad · rendered in the browser</span>
-    <span class="foot__egg" id="egg" title="oi">🎩</span>
-  </footer>
-</section>
-
-<noscript>
-  <p style="padding:2rem;font-family:monospace;color:#A9A6A0">
-    This portfolio renders its galleries with JavaScript. Enable it, or write to
-    sumanth.richie25@icloud.com and the work will come to you as a PDF.
-  </p>
-</noscript>
-
+  <section class="st" data-station="contact" id="contact" data-h="190">
+    <div class="st__sticky">
+      <article class="panel contact" aria-labelledby="h-contact">
+        <div class="panel__eyebrow mono"><b>手紙</b><span>06 · Contact</span></div>
+        <h2 class="moss" id="h-contact">Say hello</h2>
+        <a class="mail" href="mailto:sumanth.richie25@icloud.com">sumanth.richie25@icloud.com</a>
+        <div class="links">
+          <button class="btn" type="button" id="copy-mail">Copy email</button>
+          <a class="btn" href="https://behance.net/sumanthrichie" target="_blank" rel="noopener">Behance ↗</a>
+          <a class="btn" href="https://instagram.com/sumofDanth" target="_blank" rel="noopener">Instagram ↗</a>
+          <a class="btn" href="https://su3doesign.github.io/Resume/" target="_blank" rel="noopener">Résumé ↗</a>
+        </div>
+        <dl class="meta">
+          <dt>Status</dt><dd class="live">Open — commission, full-time, collaboration</dd>
+          <dt>Core</dt><dd>Maya · ZBrush · Substance · Arnold</dd>
+          <dt>Also</dt><dd>Unreal · After Effects · Photoshop · Illustrator</dd>
+          <dt>Local time</dt><dd id="hyd-time">Hyderabad</dd>
+        </dl>
+        <div class="foot mono"><span>© 2026 Amidyala Sai Sumanth</span><span>Rendered in your browser</span><button class="hat" type="button" id="egg" aria-label="Straw hat">🎩</button></div>
+      </article>
+    </div>
+  </section>
 </main>
 
-<!-- ───────────────────────────  LIGHTBOX  ─────────────────────────── -->
-<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Media viewer" hidden>
-  <div class="lb__bar">
-    <span id="lbTitle">—</span>
-    <span id="lbCount">1 / 1</span>
-    <button id="lbClose" aria-label="Close viewer">CLOSE ✕</button>
-  </div>
-  <button class="lb__nav lb__nav--prev" id="lbPrev" aria-label="Previous">←</button>
-  <div class="lb__stage" id="lbStage"></div>
-  <button class="lb__nav lb__nav--next" id="lbNext" aria-label="Next">→</button>
-  <p class="lb__hint">← → to browse · ESC to close</p>
-</div>
+<div class="cursor" id="cursor" aria-hidden="true"><div class="cursor__ring"></div><div class="cursor__label" id="cursor-label"></div></div>
 
-<div class="cursor" id="cursor" aria-hidden="true"><span id="cursorLabel"></span></div>
-
-<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
-<script src="app.js"></script>
-<script src="hero.js"></script>
+<noscript>
+  <p style="position:fixed;inset:auto 0 0 0;padding:24px;background:#030605;color:#e3ebe1;font-family:monospace;z-index:999">
+    The forest needs JavaScript. The <a href="work.html">flat portfolio</a> works without it, or write to sumanth.richie25@icloud.com.
+  </p>
+</noscript>
 </body>
 </html>

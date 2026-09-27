@@ -1,0 +1,1719 @@
+{
+ "profile": {
+  "name": "Amidyala Sai Sumanth",
+  "short": "Sumanth",
+  "role": "3D Environment Artist & Visual Designer",
+  "city": "Hyderabad, India",
+  "coords": "17.38°N 78.48°E",
+  "email": "sumanth.richie25@icloud.com",
+  "line": "I build places that don't exist, then decide how the light behaves once it gets there.",
+  "about": [
+   "Half of my work is quiet — shrines, ponds, pagodas, held at the one hour they actually make sense. The other half ships on a Friday for agencies in Toronto and San Juan: air conditioners, burgers, jewellery, bank ads. Both halves want the same thing from me. A place that looks kept. Light with somewhere to be.",
+   "Trained through the agency pipeline, raised on anime frames I paused too long. The two don't argue. They argue with the work, and the work answers."
+  ],
+  "tools": {
+   "Core": "Maya · ZBrush · Substance · Arnold",
+   "Also": "Unreal · After Effects · Photoshop · Illustrator",
+   "Works in": "Environments · Product viz · Campaign design"
+  },
+  "links": [
+   [
+    "Behance",
+    "https://behance.net/sumanthrichie"
+   ],
+   [
+    "Instagram",
+    "https://instagram.com/sumofDanth"
+   ],
+   [
+    "Résumé",
+    "https://su3doesign.github.io/Resume/"
+   ]
+  ],
+  "desk": "assets/videos/desk-hero.mp4"
+ },
+ "worlds": [
+  {
+   "id": "roman-no-yoake",
+   "title": "Rōman no Yoake",
+   "jp": "浪漫の夜明け",
+   "sub": "Pagoda, first light, and a sea that has not started talking yet",
+   "year": "2025",
+   "note": "The hour before anything is awake. I wanted the fog to do the modelling — the pagoda barely earns its silhouette, the treeline dissolves, and the only hard edge in the frame is the sun clearing the ridge. Five renders, one sunrise, roughly four hundred rejected sun angles.",
+   "tags": [
+    "Maya",
+    "Arnold",
+    "Substance",
+    "After Effects",
+    "Fog volumes",
+    "5 renders"
+   ],
+   "plate": {
+    "src": "assets/images/japa-render-1.webp",
+    "w": 2000,
+    "h": 1125,
+    "type": "image",
+    "thumb": "assets/thumbs/640/japa-render-1.webp"
+   },
+   "alt": "A pagoda above a misty treeline at sunrise",
+   "shots": [
+    {
+     "src": "assets/images/japa-render-3.webp",
+     "w": 2000,
+     "h": 1125,
+     "type": "image",
+     "thumb": "assets/thumbs/640/japa-render-3.webp",
+     "label": "Pink hour"
+    },
+    {
+     "src": "assets/images/japa-render-5.webp",
+     "w": 1920,
+     "h": 1080,
+     "type": "image",
+     "thumb": "assets/thumbs/640/japa-render-5.webp",
+     "label": "Eclipse"
+    },
+    {
+     "src": "assets/videos/Japa-Turntable-1.mp4",
+     "w": 1280,
+     "h": 720,
+     "type": "video",
+     "poster": "assets/posters/Japa-Turntable-1.webp",
+     "thumb": "assets/thumbs/640/Japa-Turntable-1.webp",
+     "label": "Turntable"
+    },
+    {
+     "src": "assets/videos/Japa-Panningshot-2.mp4",
+     "w": 1280,
+     "h": 720,
+     "type": "video",
+     "poster": "assets/posters/Japa-Panningshot-2.webp",
+     "thumb": "assets/thumbs/640/Japa-Panningshot-2.webp",
+     "label": "Panning shot"
+    },
+    {
+     "src": "assets/images/japa-render-2.webp",
+     "w": 1920,
+     "h": 1080,
+     "type": "image",
+     "thumb": "assets/thumbs/640/japa-render-2.webp",
+     "label": "Tower, night sea"
+    },
+    {
+     "src": "assets/images/japa-render-4.webp",
+     "w": 1920,
+     "h": 1080,
+     "type": "image",
+     "thumb": "assets/thumbs/640/japa-render-4.webp",
+     "label": "Grass, moon"
+    }
+   ],
+   "screen": "assets/thumbs/screens/roman-no-yoake.webp"
+  },
+  {
+   "id": "fudo-myo-o",
+   "title": "Fudō Myō-ō",
+   "jp": "不動明王",
+   "sub": "A forest shrine at the hour the candles take over from the sun",
+   "year": "2025",
+   "note": "Built around a single practical light. Everything else in the scene is either reflecting that candle or hiding from it. The foxes have stopped expecting visitors but they still keep watch, and the moss has opinions about where the water goes.",
+   "tags": [
+    "Maya",
+    "ZBrush",
+    "Arnold",
+    "Substance",
+    "Practical light",
+    "Turntable"
+   ],
+   "plate": {
+    "src": "assets/images/fudomyo-render-1.webp",
+    "w": 2000,
+    "h": 1125,
+    "type": "image",
+    "thumb": "assets/thumbs/640/fudomyo-render-1.webp"
+   },
+   "alt": "A forest shrine lit by candlelight through the trees",
+   "shots": [
+    {
+     "src": "assets/videos/Fudomyo-Turntable-1.mp4",
+     "w": 1280,
+     "h": 720,
+     "type": "video",
+     "poster": "assets/posters/Fudomyo-Turntable-1.webp",
+     "thumb": "assets/thumbs/640/Fudomyo-Turntable-1.webp",
+     "label": "Turntable"
+    },
+    {
+     "src": "assets/images/fudomyo-render-mobile-1.webp",
+     "w": 1125,
+     "h": 2000,
+     "type": "image",
+     "thumb": "assets/thumbs/640/fudomyo-render-mobile-1.webp",
+     "label": "Vertical cut"
+    },
+    {
+     "src": "assets/images/fudomyo-render-2.webp",
+     "w": 2000,
+     "h": 1125,
+     "type": "image",
+     "thumb": "assets/thumbs/640/fudomyo-render-2.webp",
+     "label": "Approach"
+    }
+   ],
+   "screen": "assets/thumbs/screens/fudo-myo-o.webp"
+  },
+  {
+   "id": "koi-pond",
+   "title": "Koi Pond",
+   "jp": "錦鯉の池",
+   "sub": "Bioluminescence, autumn, and light that comes from under the water",
+   "year": "2024",
+   "note": "The rule for this one: no light from above. Everything is lit from inside the water, so the caustics run the wrong way up the rocks and the leaves get their colour from below. Rendered twice — once in high summer, once after the maples turned.",
+   "tags": [
+    "Maya",
+    "Arnold",
+    "Substance",
+    "Photoshop",
+    "Caustics",
+    "Two seasons"
+   ],
+   "plate": {
+    "src": "assets/images/koipond-render-2.webp",
+    "w": 1920,
+    "h": 1080,
+    "type": "image",
+    "thumb": "assets/thumbs/640/koipond-render-2.webp"
+   },
+   "alt": "A glowing teal pond surrounded by rocks and palms at night",
+   "shots": [
+    {
+     "src": "assets/images/koipond-render-1.webp",
+     "w": 1920,
+     "h": 1080,
+     "type": "image",
+     "thumb": "assets/thumbs/640/koipond-render-1.webp",
+     "label": "Shallows"
+    },
+    {
+     "src": "assets/images/koipond-render-4.webp",
+     "w": 1920,
+     "h": 1080,
+     "type": "image",
+     "thumb": "assets/thumbs/640/koipond-render-4.webp",
+     "label": "Overgrowth"
+    },
+    {
+     "src": "assets/images/koipond-render-5.webp",
+     "w": 1920,
+     "h": 1080,
+     "type": "image",
+     "thumb": "assets/thumbs/640/koipond-render-5.webp",
+     "label": "Wide, night"
+    },
+    {
+     "src": "assets/images/koipond-render-3.webp",
+     "w": 1920,
+     "h": 1080,
+     "type": "image",
+     "thumb": "assets/thumbs/640/koipond-render-3.webp",
+     "label": "Autumn pass"
+    },
+    {
+     "src": "assets/images/koipond-render-6.webp",
+     "w": 1723,
+     "h": 732,
+     "type": "image",
+     "thumb": "assets/thumbs/640/koipond-render-6.webp",
+     "label": "Last light"
+    }
+   ],
+   "screen": "assets/thumbs/screens/koi-pond.webp"
+  }
+ ],
+ "steps": [
+  [
+   "Reference",
+   "Look at the real thing for longer than is comfortable. Then keep looking."
+  ],
+  [
+   "Blockout",
+   "Grey boxes, honest proportions. If it is boring in clay it will be boring in colour."
+  ],
+  [
+   "Hard-surface",
+   "Edges that hold a highlight. Bevels you could run a thumb along."
+  ],
+  [
+   "Sculpt",
+   "Wear where hands have been. Nothing in a lived world is factory-new."
+  ],
+  [
+   "Texture",
+   "A working life: dust settles, paint chips, water always stains downward."
+  ],
+  [
+   "Light",
+   "One key that tells the truth. Everything after it is support and flattery."
+  ],
+  [
+   "Comp",
+   "Grade it, then remove half of what you just added."
+  ]
+ ],
+ "clients": [
+  {
+   "name": "Classic Partnership",
+   "group": "Agency",
+   "role": "Calendar campaigns · visual design",
+   "files": [
+    {
+     "src": "assets/images/tcp-calendarposts-1.webp",
+     "w": 1080,
+     "h": 1350,
+     "type": "image",
+     "thumb": "assets/thumbs/640/tcp-calendarposts-1.webp"
+    },
+    {
+     "src": "assets/images/tcp-calendarposts-2.webp",
+     "w": 1080,
+     "h": 1350,
+     "type": "image",
+     "thumb": "assets/thumbs/640/tcp-calendarposts-2.webp"
+    },
+    {
+     "src": "assets/images/tcp-calendarposts-3.webp",
+     "w": 1080,
+     "h": 1350,
+     "type": "image",
+     "thumb": "assets/thumbs/640/tcp-calendarposts-3.webp"
+    },
+    {
+     "src": "assets/images/tcp-calendarposts-4.webp",
+     "w": 1080,
+     "h": 1350,
+     "type": "image",
+     "thumb": "assets/thumbs/640/tcp-calendarposts-4.webp"
+    },
+    {
+     "src": "assets/images/tcp-calendarposts-5.webp",
+     "w": 1080,
+     "h": 1350,
+     "type": "image",
+     "thumb": "assets/thumbs/640/tcp-calendarposts-5.webp"
+    },
+    {
+     "src": "assets/images/tcp-calendarposts-6.webp",
+     "w": 1080,
+     "h": 1350,
+     "type": "image",
+     "thumb": "assets/thumbs/640/tcp-calendarposts-6.webp"
+    },
+    {
+     "src": "assets/images/tcp-calendarposts-7.webp",
+     "w": 1080,
+     "h": 1350,
+     "type": "image",
+     "thumb": "assets/thumbs/640/tcp-calendarposts-7.webp"
+    },
+    {
+     "src": "assets/images/tcp-calendarposts-8.webp",
+     "w": 1080,
+     "h": 1350,
+     "type": "image",
+     "thumb": "assets/thumbs/640/tcp-calendarposts-8.webp"
+    },
+    {
+     "src": "assets/images/tcp-calendarposts-9.webp",
+     "w": 1080,
+     "h": 1350,
+     "type": "image",
+     "thumb": "assets/thumbs/640/tcp-calendarposts-9.webp"
+    },
+    {
+     "src": "assets/images/tcp-calendarposts-10.webp",
+     "w": 1080,
+     "h": 1350,
+     "type": "image",
+     "thumb": "assets/thumbs/640/tcp-calendarposts-10.webp"
+    },
+    {
+     "src": "assets/images/tcp-calendarposts-11.webp",
+     "w": 1080,
+     "h": 1350,
+     "type": "image",
+     "thumb": "assets/thumbs/640/tcp-calendarposts-11.webp"
+    },
+    {
+     "src": "assets/images/tcp-calendarposts-12.webp",
+     "w": 1080,
+     "h": 1350,
+     "type": "image",
+     "thumb": "assets/thumbs/640/tcp-calendarposts-12.webp"
+    },
+    {
+     "src": "assets/images/tcp-calendarposts-13.webp",
+     "w": 1080,
+     "h": 1350,
+     "type": "image",
+     "thumb": "assets/thumbs/640/tcp-calendarposts-13.webp"
+    }
+   ],
+   "cover": "assets/images/tcp-calendarposts-1.webp"
+  },
+  {
+   "name": "Midea Canada",
+   "group": "Agency",
+   "role": "Social overlays · PWHL · Pelonis",
+   "files": [
+    {
+     "src": "assets/images/midea-posts-1.webp",
+     "w": 1080,
+     "h": 1350,
+     "type": "image",
+     "thumb": "assets/thumbs/640/midea-posts-1.webp"
+    },
+    {
+     "src": "assets/images/midea-posts-2.webp",
+     "w": 800,
+     "h": 1064,
+     "type": "image",
+     "thumb": "assets/thumbs/640/midea-posts-2.webp"
+    },
+    {
+     "src": "assets/images/midea-posts-3.webp",
+     "w": 1080,
+     "h": 1350,
+     "type": "image",
+     "thumb": "assets/thumbs/640/midea-posts-3.webp"
+    },
+    {
+     "src": "assets/images/midea-posts-4.webp",
+     "w": 1080,
+     "h": 1350,
+     "type": "image",
+     "thumb": "assets/thumbs/640/midea-posts-4.webp"
+    },
+    {
+     "src": "assets/images/midea-posts-5.webp",
+     "w": 1080,
+     "h": 1080,
+     "type": "image",
+     "thumb": "assets/thumbs/640/midea-posts-5.webp"
+    },
+    {
+     "src": "assets/images/midea-posts-6.webp",
+     "w": 933,
+     "h": 1400,
+     "type": "image",
+     "thumb": "assets/thumbs/640/midea-posts-6.webp"
+    },
+    {
+     "src": "assets/videos/midea-overlays-1.mp4",
+     "w": 444,
+     "h": 720,
+     "type": "video",
+     "poster": "assets/posters/midea-overlays-1.webp",
+     "thumb": "assets/thumbs/640/midea-overlays-1.webp"
+    },
+    {
+     "src": "assets/videos/midea-overlays-2.mp4",
+     "w": 444,
+     "h": 720,
+     "type": "video",
+     "poster": "assets/posters/midea-overlays-2.webp",
+     "thumb": "assets/thumbs/640/midea-overlays-2.webp"
+    },
+    {
+     "src": "assets/videos/midea-overlays-3.mp4",
+     "w": 404,
+     "h": 720,
+     "type": "video",
+     "poster": "assets/posters/midea-overlays-3.webp",
+     "thumb": "assets/thumbs/640/midea-overlays-3.webp"
+    },
+    {
+     "src": "assets/videos/midea-overlays-4.mp4",
+     "w": 576,
+     "h": 720,
+     "type": "video",
+     "poster": "assets/posters/midea-overlays-4.webp",
+     "thumb": "assets/thumbs/640/midea-overlays-4.webp"
+    },
+    {
+     "src": "assets/videos/midea-overlays-5.mp4",
+     "w": 404,
+     "h": 720,
+     "type": "video",
+     "poster": "assets/posters/midea-overlays-5.webp",
+     "thumb": "assets/thumbs/640/midea-overlays-5.webp"
+    },
+    {
+     "src": "assets/videos/midea-overlays-6.mp4",
+     "w": 576,
+     "h": 720,
+     "type": "video",
+     "poster": "assets/posters/midea-overlays-6.webp",
+     "thumb": "assets/thumbs/640/midea-overlays-6.webp"
+    },
+    {
+     "src": "assets/videos/midea-overlays-7.mp4",
+     "w": 404,
+     "h": 720,
+     "type": "video",
+     "poster": "assets/posters/midea-overlays-7.webp",
+     "thumb": "assets/thumbs/640/midea-overlays-7.webp"
+    },
+    {
+     "src": "assets/videos/midea-overlays-8.mp4",
+     "w": 404,
+     "h": 720,
+     "type": "video",
+     "poster": "assets/posters/midea-overlays-8.webp",
+     "thumb": "assets/thumbs/640/midea-overlays-8.webp"
+    },
+    {
+     "src": "assets/images/midea-PWHL-banner.webp",
+     "w": 1400,
+     "h": 663,
+     "type": "image",
+     "thumb": "assets/thumbs/640/midea-PWHL-banner.webp"
+    },
+    {
+     "src": "assets/images/midea-pelonis-banner-1.webp",
+     "w": 750,
+     "h": 1300,
+     "type": "image",
+     "thumb": "assets/thumbs/640/midea-pelonis-banner-1.webp"
+    }
+   ],
+   "cover": "assets/images/midea-posts-1.webp"
+  },
+  {
+   "name": "Eureka",
+   "group": "Agency",
+   "role": "Product social · reels",
+   "files": [
+    {
+     "src": "assets/images/midea-eureka-overlays-1.webp",
+     "w": 1080,
+     "h": 1080,
+     "type": "image",
+     "thumb": "assets/thumbs/640/midea-eureka-overlays-1.webp"
+    },
+    {
+     "src": "assets/images/midea-eureka-overlays-2.webp",
+     "w": 1080,
+     "h": 1080,
+     "type": "image",
+     "thumb": "assets/thumbs/640/midea-eureka-overlays-2.webp"
+    },
+    {
+     "src": "assets/images/midea-eureka-overlays-3.webp",
+     "w": 1080,
+     "h": 1080,
+     "type": "image",
+     "thumb": "assets/thumbs/640/midea-eureka-overlays-3.webp"
+    },
+    {
+     "src": "assets/images/midea-eureka-overlays-4.webp",
+     "w": 1080,
+     "h": 1080,
+     "type": "image",
+     "thumb": "assets/thumbs/640/midea-eureka-overlays-4.webp"
+    },
+    {
+     "src": "assets/videos/midea-eureka-1.mp4",
+     "w": 720,
+     "h": 720,
+     "type": "video",
+     "poster": "assets/posters/midea-eureka-1.webp",
+     "thumb": "assets/thumbs/640/midea-eureka-1.webp"
+    },
+    {
+     "src": "assets/videos/midea-eureka-2.mp4",
+     "w": 720,
+     "h": 720,
+     "type": "video",
+     "poster": "assets/posters/midea-eureka-2.webp",
+     "thumb": "assets/thumbs/640/midea-eureka-2.webp"
+    },
+    {
+     "src": "assets/videos/midea-eureka-3.mp4",
+     "w": 720,
+     "h": 720,
+     "type": "video",
+     "poster": "assets/posters/midea-eureka-3.webp",
+     "thumb": "assets/thumbs/640/midea-eureka-3.webp"
+    }
+   ],
+   "cover": "assets/images/midea-eureka-overlays-1.webp"
+  },
+  {
+   "name": "Comfee",
+   "group": "Agency",
+   "role": "Social campaign",
+   "files": [
+    {
+     "src": "assets/images/midea-comfee-post-01.webp",
+     "w": 1080,
+     "h": 1080,
+     "type": "image",
+     "thumb": "assets/thumbs/640/midea-comfee-post-01.webp"
+    },
+    {
+     "src": "assets/images/midea-comfee-post-02.webp",
+     "w": 1080,
+     "h": 1080,
+     "type": "image",
+     "thumb": "assets/thumbs/640/midea-comfee-post-02.webp"
+    },
+    {
+     "src": "assets/videos/midea-comfee-social-1.mp4",
+     "w": 720,
+     "h": 720,
+     "type": "video",
+     "poster": "assets/posters/midea-comfee-social-1.webp",
+     "thumb": "assets/thumbs/640/midea-comfee-social-1.webp"
+    },
+    {
+     "src": "assets/videos/midea-comfee-social-2.mp4",
+     "w": 720,
+     "h": 720,
+     "type": "video",
+     "poster": "assets/posters/midea-comfee-social-2.webp",
+     "thumb": "assets/thumbs/640/midea-comfee-social-2.webp"
+    }
+   ],
+   "cover": "assets/images/midea-comfee-post-01.webp"
+  },
+  {
+   "name": "Home Depot Canada",
+   "group": "Agency",
+   "role": "RAC advertisements",
+   "files": [
+    {
+     "src": "assets/images/midea-rac-advertisements-01.webp",
+     "w": 1200,
+     "h": 1200,
+     "type": "image",
+     "thumb": "assets/thumbs/640/midea-rac-advertisements-01.webp"
+    },
+    {
+     "src": "assets/images/midea-rac-advertisements-02.webp",
+     "w": 1200,
+     "h": 1200,
+     "type": "image",
+     "thumb": "assets/thumbs/640/midea-rac-advertisements-02.webp"
+    },
+    {
+     "src": "assets/images/midea-rac-advertisements-03.webp",
+     "w": 1200,
+     "h": 1200,
+     "type": "image",
+     "thumb": "assets/thumbs/640/midea-rac-advertisements-03.webp"
+    },
+    {
+     "src": "assets/images/midea-rac-advertisements-04.webp",
+     "w": 1200,
+     "h": 1200,
+     "type": "image",
+     "thumb": "assets/thumbs/640/midea-rac-advertisements-04.webp"
+    },
+    {
+     "src": "assets/images/midea-rac-advertisements-05.webp",
+     "w": 1200,
+     "h": 1200,
+     "type": "image",
+     "thumb": "assets/thumbs/640/midea-rac-advertisements-05.webp"
+    },
+    {
+     "src": "assets/images/midea-rac-advertisements-06.webp",
+     "w": 1200,
+     "h": 1200,
+     "type": "image",
+     "thumb": "assets/thumbs/640/midea-rac-advertisements-06.webp"
+    },
+    {
+     "src": "assets/images/midea-rac-advertisements-07.webp",
+     "w": 1200,
+     "h": 1200,
+     "type": "image",
+     "thumb": "assets/thumbs/640/midea-rac-advertisements-07.webp"
+    },
+    {
+     "src": "assets/images/midea-rac-advertisements-08.webp",
+     "w": 1200,
+     "h": 1200,
+     "type": "image",
+     "thumb": "assets/thumbs/640/midea-rac-advertisements-08.webp"
+    }
+   ],
+   "cover": "assets/images/midea-rac-advertisements-01.webp"
+  },
+  {
+   "name": "KD Displays",
+   "group": "Agency",
+   "role": "Retail display content",
+   "files": [
+    {
+     "src": "assets/images/kddisplays-posts-1.webp",
+     "w": 1080,
+     "h": 1350,
+     "type": "image",
+     "thumb": "assets/thumbs/640/kddisplays-posts-1.webp"
+    },
+    {
+     "src": "assets/images/kddisplays-posts-2.webp",
+     "w": 1080,
+     "h": 1350,
+     "type": "image",
+     "thumb": "assets/thumbs/640/kddisplays-posts-2.webp"
+    },
+    {
+     "src": "assets/images/kddisplays-posts-3.webp",
+     "w": 1080,
+     "h": 1350,
+     "type": "image",
+     "thumb": "assets/thumbs/640/kddisplays-posts-3.webp"
+    },
+    {
+     "src": "assets/images/kddisplays-posts-4.webp",
+     "w": 1080,
+     "h": 1350,
+     "type": "image",
+     "thumb": "assets/thumbs/640/kddisplays-posts-4.webp"
+    },
+    {
+     "src": "assets/images/kddisplays-posts-5.webp",
+     "w": 1120,
+     "h": 1400,
+     "type": "image",
+     "thumb": "assets/thumbs/640/kddisplays-posts-5.webp"
+    },
+    {
+     "src": "assets/images/kddisplays-posts-6.webp",
+     "w": 1120,
+     "h": 1400,
+     "type": "image",
+     "thumb": "assets/thumbs/640/kddisplays-posts-6.webp"
+    },
+    {
+     "src": "assets/images/kddisplays-posts-7.webp",
+     "w": 1080,
+     "h": 1350,
+     "type": "image",
+     "thumb": "assets/thumbs/640/kddisplays-posts-7.webp"
+    },
+    {
+     "src": "assets/images/kddisplays-posts-8.webp",
+     "w": 1080,
+     "h": 1350,
+     "type": "image",
+     "thumb": "assets/thumbs/640/kddisplays-posts-8.webp"
+    },
+    {
+     "src": "assets/images/kddisplays-posts-9.webp",
+     "w": 1120,
+     "h": 1400,
+     "type": "image",
+     "thumb": "assets/thumbs/640/kddisplays-posts-9.webp"
+    },
+    {
+     "src": "assets/images/kddisplays-posts-10.webp",
+     "w": 1080,
+     "h": 1350,
+     "type": "image",
+     "thumb": "assets/thumbs/640/kddisplays-posts-10.webp"
+    },
+    {
+     "src": "assets/videos/kddisplays-posts-1.mp4",
+     "w": 404,
+     "h": 720,
+     "type": "video",
+     "poster": "assets/posters/kddisplays-posts-1.webp",
+     "thumb": "assets/thumbs/640/kddisplays-posts-1.webp"
+    }
+   ],
+   "cover": "assets/images/kddisplays-posts-1.webp"
+  },
+  {
+   "name": "GC Burger",
+   "group": "Agency",
+   "role": "Campaign · five locations",
+   "files": [
+    {
+     "src": "assets/images/gcburger-campaign-1.webp",
+     "w": 788,
+     "h": 1400,
+     "type": "image",
+     "thumb": "assets/thumbs/640/gcburger-campaign-1.webp"
+    },
+    {
+     "src": "assets/images/gcburger-campaign-2.webp",
+     "w": 1400,
+     "h": 1400,
+     "type": "image",
+     "thumb": "assets/thumbs/640/gcburger-campaign-2.webp"
+    },
+    {
+     "src": "assets/images/gcburger-campaign-3.webp",
+     "w": 987,
+     "h": 1400,
+     "type": "image",
+     "thumb": "assets/thumbs/640/gcburger-campaign-3.webp"
+    },
+    {
+     "src": "assets/images/gcburger-campaign-4.webp",
+     "w": 1400,
+     "h": 1400,
+     "type": "image",
+     "thumb": "assets/thumbs/640/gcburger-campaign-4.webp"
+    },
+    {
+     "src": "assets/images/gcburger-campaign-5.webp",
+     "w": 987,
+     "h": 1400,
+     "type": "image",
+     "thumb": "assets/thumbs/640/gcburger-campaign-5.webp"
+    },
+    {
+     "src": "assets/images/gcburger-campaign-6.webp",
+     "w": 1400,
+     "h": 1400,
+     "type": "image",
+     "thumb": "assets/thumbs/640/gcburger-campaign-6.webp"
+    },
+    {
+     "src": "assets/images/gcburger-campaign-7.webp",
+     "w": 987,
+     "h": 1400,
+     "type": "image",
+     "thumb": "assets/thumbs/640/gcburger-campaign-7.webp"
+    },
+    {
+     "src": "assets/images/gcburger-campaign-8.webp",
+     "w": 1400,
+     "h": 1400,
+     "type": "image",
+     "thumb": "assets/thumbs/640/gcburger-campaign-8.webp"
+    },
+    {
+     "src": "assets/images/gcburger-campaign-9.webp",
+     "w": 987,
+     "h": 1400,
+     "type": "image",
+     "thumb": "assets/thumbs/640/gcburger-campaign-9.webp"
+    },
+    {
+     "src": "assets/images/gcburger-campaign-10.webp",
+     "w": 1400,
+     "h": 1400,
+     "type": "image",
+     "thumb": "assets/thumbs/640/gcburger-campaign-10.webp"
+    },
+    {
+     "src": "assets/images/gcburger-campaign-11.webp",
+     "w": 987,
+     "h": 1400,
+     "type": "image",
+     "thumb": "assets/thumbs/640/gcburger-campaign-11.webp"
+    },
+    {
+     "src": "assets/images/gcburger-campaign-12.webp",
+     "w": 1400,
+     "h": 1400,
+     "type": "image",
+     "thumb": "assets/thumbs/640/gcburger-campaign-12.webp"
+    },
+    {
+     "src": "assets/images/gcburger-campaign-13.webp",
+     "w": 987,
+     "h": 1400,
+     "type": "image",
+     "thumb": "assets/thumbs/640/gcburger-campaign-13.webp"
+    },
+    {
+     "src": "assets/images/gcburger-campaign-14.webp",
+     "w": 987,
+     "h": 1400,
+     "type": "image",
+     "thumb": "assets/thumbs/640/gcburger-campaign-14.webp"
+    },
+    {
+     "src": "assets/images/gcburger-campaign-15.webp",
+     "w": 987,
+     "h": 1400,
+     "type": "image",
+     "thumb": "assets/thumbs/640/gcburger-campaign-15.webp"
+    },
+    {
+     "src": "assets/images/gcburger-campaign-16.webp",
+     "w": 987,
+     "h": 1400,
+     "type": "image",
+     "thumb": "assets/thumbs/640/gcburger-campaign-16.webp"
+    },
+    {
+     "src": "assets/images/gcburger-campaign-17.webp",
+     "w": 987,
+     "h": 1400,
+     "type": "image",
+     "thumb": "assets/thumbs/640/gcburger-campaign-17.webp"
+    },
+    {
+     "src": "assets/images/gcburger-campaign-18.webp",
+     "w": 987,
+     "h": 1400,
+     "type": "image",
+     "thumb": "assets/thumbs/640/gcburger-campaign-18.webp"
+    },
+    {
+     "src": "assets/images/gcburger-campaign-19.webp",
+     "w": 987,
+     "h": 1400,
+     "type": "image",
+     "thumb": "assets/thumbs/640/gcburger-campaign-19.webp"
+    },
+    {
+     "src": "assets/images/gcburger-campaign-20.webp",
+     "w": 1400,
+     "h": 933,
+     "type": "image",
+     "thumb": "assets/thumbs/640/gcburger-campaign-20.webp"
+    },
+    {
+     "src": "assets/images/gcburger-campaign-21.webp",
+     "w": 987,
+     "h": 1400,
+     "type": "image",
+     "thumb": "assets/thumbs/640/gcburger-campaign-21.webp"
+    },
+    {
+     "src": "assets/images/gcburger-campaign-22.webp",
+     "w": 987,
+     "h": 1400,
+     "type": "image",
+     "thumb": "assets/thumbs/640/gcburger-campaign-22.webp"
+    },
+    {
+     "src": "assets/images/gcburger-campaign-23.webp",
+     "w": 987,
+     "h": 1400,
+     "type": "image",
+     "thumb": "assets/thumbs/640/gcburger-campaign-23.webp"
+    },
+    {
+     "src": "assets/images/gcburger-campaign-24.webp",
+     "w": 987,
+     "h": 1400,
+     "type": "image",
+     "thumb": "assets/thumbs/640/gcburger-campaign-24.webp"
+    },
+    {
+     "src": "assets/images/gcburger-campaign-25.webp",
+     "w": 987,
+     "h": 1400,
+     "type": "image",
+     "thumb": "assets/thumbs/640/gcburger-campaign-25.webp"
+    },
+    {
+     "src": "assets/images/gcburger-campaign-26.webp",
+     "w": 900,
+     "h": 750,
+     "type": "image",
+     "thumb": "assets/thumbs/640/gcburger-campaign-26.webp"
+    },
+    {
+     "src": "assets/images/gcburger-campaign-27.webp",
+     "w": 900,
+     "h": 750,
+     "type": "image",
+     "thumb": "assets/thumbs/640/gcburger-campaign-27.webp"
+    },
+    {
+     "src": "assets/images/gcburger-campaign-28.webp",
+     "w": 900,
+     "h": 750,
+     "type": "image",
+     "thumb": "assets/thumbs/640/gcburger-campaign-28.webp"
+    }
+   ],
+   "cover": "assets/images/gcburger-campaign-1.webp"
+  },
+  {
+   "name": "Investohome PR",
+   "group": "Agency",
+   "role": "Google ads · social · web",
+   "files": [
+    {
+     "src": "assets/images/investohome-googleads-banners-1.webp",
+     "w": 1200,
+     "h": 1200,
+     "type": "image",
+     "thumb": "assets/thumbs/640/investohome-googleads-banners-1.webp"
+    },
+    {
+     "src": "assets/images/investohome-googleads-banners-2.webp",
+     "w": 1200,
+     "h": 1200,
+     "type": "image",
+     "thumb": "assets/thumbs/640/investohome-googleads-banners-2.webp"
+    },
+    {
+     "src": "assets/images/investohome-googleads-banners-3.webp",
+     "w": 1200,
+     "h": 1200,
+     "type": "image",
+     "thumb": "assets/thumbs/640/investohome-googleads-banners-3.webp"
+    },
+    {
+     "src": "assets/images/investohome-googleads-banners-4.webp",
+     "w": 1200,
+     "h": 1200,
+     "type": "image",
+     "thumb": "assets/thumbs/640/investohome-googleads-banners-4.webp"
+    },
+    {
+     "src": "assets/images/investohome-googleads-banners-5.webp",
+     "w": 1200,
+     "h": 1200,
+     "type": "image",
+     "thumb": "assets/thumbs/640/investohome-googleads-banners-5.webp"
+    },
+    {
+     "src": "assets/images/investohome-socialads-banners-1.webp",
+     "w": 1200,
+     "h": 1200,
+     "type": "image",
+     "thumb": "assets/thumbs/640/investohome-socialads-banners-1.webp"
+    },
+    {
+     "src": "assets/images/investohome-socialads-banners-2.webp",
+     "w": 1200,
+     "h": 1200,
+     "type": "image",
+     "thumb": "assets/thumbs/640/investohome-socialads-banners-2.webp"
+    },
+    {
+     "src": "assets/images/investohome-socialads-banners-3.webp",
+     "w": 1200,
+     "h": 1200,
+     "type": "image",
+     "thumb": "assets/thumbs/640/investohome-socialads-banners-3.webp"
+    },
+    {
+     "src": "assets/images/investohome-socialads-banners-4.webp",
+     "w": 1200,
+     "h": 1200,
+     "type": "image",
+     "thumb": "assets/thumbs/640/investohome-socialads-banners-4.webp"
+    },
+    {
+     "src": "assets/images/investohome-socialads-banners-5.webp",
+     "w": 1200,
+     "h": 1200,
+     "type": "image",
+     "thumb": "assets/thumbs/640/investohome-socialads-banners-5.webp"
+    },
+    {
+     "src": "assets/images/investohome-websitebanner-1.webp",
+     "w": 1400,
+     "h": 614,
+     "type": "image",
+     "thumb": "assets/thumbs/640/investohome-websitebanner-1.webp"
+    },
+    {
+     "src": "assets/images/investohome-websitebanner-2.webp",
+     "w": 1400,
+     "h": 614,
+     "type": "image",
+     "thumb": "assets/thumbs/640/investohome-websitebanner-2.webp"
+    },
+    {
+     "src": "assets/images/investohome-websitebanner-3.webp",
+     "w": 1400,
+     "h": 614,
+     "type": "image",
+     "thumb": "assets/thumbs/640/investohome-websitebanner-3.webp"
+    },
+    {
+     "src": "assets/images/investohome-websitebanner-4.webp",
+     "w": 1400,
+     "h": 614,
+     "type": "image",
+     "thumb": "assets/thumbs/640/investohome-websitebanner-4.webp"
+    },
+    {
+     "src": "assets/videos/investohome-outro-1.mp4",
+     "w": 1280,
+     "h": 720,
+     "type": "video",
+     "poster": "assets/posters/investohome-outro-1.webp",
+     "thumb": "assets/thumbs/640/investohome-outro-1.webp"
+    }
+   ],
+   "cover": "assets/images/investohome-googleads-banners-1.webp"
+  },
+  {
+   "name": "Amaya Restaurant",
+   "group": "Agency",
+   "role": "Calendar posts · reel",
+   "files": [
+    {
+     "src": "assets/images/amayarestaurant-calendarposts-1.webp",
+     "w": 1080,
+     "h": 1080,
+     "type": "image",
+     "thumb": "assets/thumbs/640/amayarestaurant-calendarposts-1.webp"
+    },
+    {
+     "src": "assets/images/amayarestaurant-calendarposts-2.webp",
+     "w": 1080,
+     "h": 1080,
+     "type": "image",
+     "thumb": "assets/thumbs/640/amayarestaurant-calendarposts-2.webp"
+    },
+    {
+     "src": "assets/images/amayarestaurant-calendarposts-3.webp",
+     "w": 1080,
+     "h": 1350,
+     "type": "image",
+     "thumb": "assets/thumbs/640/amayarestaurant-calendarposts-3.webp"
+    },
+    {
+     "src": "assets/images/amayarestaurant-calendarposts-4.webp",
+     "w": 1080,
+     "h": 1350,
+     "type": "image",
+     "thumb": "assets/thumbs/640/amayarestaurant-calendarposts-4.webp"
+    },
+    {
+     "src": "assets/images/amayarestaurant-calendarposts-5.webp",
+     "w": 1080,
+     "h": 1350,
+     "type": "image",
+     "thumb": "assets/thumbs/640/amayarestaurant-calendarposts-5.webp"
+    },
+    {
+     "src": "assets/videos/amayarestaurant-reel-1.mp4",
+     "w": 404,
+     "h": 720,
+     "type": "video",
+     "poster": "assets/posters/amayarestaurant-reel-1.webp",
+     "thumb": "assets/thumbs/640/amayarestaurant-reel-1.webp"
+    }
+   ],
+   "cover": "assets/images/amayarestaurant-calendarposts-1.webp"
+  },
+  {
+   "name": "VS Design Studio",
+   "group": "Studio",
+   "role": "Event & brand posts",
+   "files": [
+    {
+     "src": "assets/images/vsdesignstudio-posts-1.webp",
+     "w": 1080,
+     "h": 1350,
+     "type": "image",
+     "thumb": "assets/thumbs/640/vsdesignstudio-posts-1.webp"
+    },
+    {
+     "src": "assets/images/vsdesignstudio-posts-2.webp",
+     "w": 1080,
+     "h": 1350,
+     "type": "image",
+     "thumb": "assets/thumbs/640/vsdesignstudio-posts-2.webp"
+    },
+    {
+     "src": "assets/images/vsdesignstudio-posts-3.webp",
+     "w": 1080,
+     "h": 1350,
+     "type": "image",
+     "thumb": "assets/thumbs/640/vsdesignstudio-posts-3.webp"
+    },
+    {
+     "src": "assets/images/vsdesignstudio-posts-4.webp",
+     "w": 1080,
+     "h": 1080,
+     "type": "image",
+     "thumb": "assets/thumbs/640/vsdesignstudio-posts-4.webp"
+    },
+    {
+     "src": "assets/videos/vsdesignstudio-event-1.mp4",
+     "w": 1012,
+     "h": 720,
+     "type": "video",
+     "poster": "assets/posters/vsdesignstudio-event-1.webp",
+     "thumb": "assets/thumbs/640/vsdesignstudio-event-1.webp"
+    }
+   ],
+   "cover": "assets/images/vsdesignstudio-posts-1.webp"
+  },
+  {
+   "name": "nxtwave",
+   "group": "Freelance",
+   "role": "Slide system",
+   "files": [
+    {
+     "src": "assets/images/nxtwave-slide-1.webp",
+     "w": 960,
+     "h": 540,
+     "type": "image",
+     "thumb": "assets/thumbs/640/nxtwave-slide-1.webp"
+    },
+    {
+     "src": "assets/images/nxtwave-slide-2.webp",
+     "w": 960,
+     "h": 540,
+     "type": "image",
+     "thumb": "assets/thumbs/640/nxtwave-slide-2.webp"
+    },
+    {
+     "src": "assets/images/nxtwave-slide-3.webp",
+     "w": 960,
+     "h": 540,
+     "type": "image",
+     "thumb": "assets/thumbs/640/nxtwave-slide-3.webp"
+    },
+    {
+     "src": "assets/images/nxtwave-slide-4.webp",
+     "w": 960,
+     "h": 540,
+     "type": "image",
+     "thumb": "assets/thumbs/640/nxtwave-slide-4.webp"
+    },
+    {
+     "src": "assets/images/nxtwave-slide-5.webp",
+     "w": 960,
+     "h": 540,
+     "type": "image",
+     "thumb": "assets/thumbs/640/nxtwave-slide-5.webp"
+    },
+    {
+     "src": "assets/images/nxtwave-slide-6.webp",
+     "w": 960,
+     "h": 540,
+     "type": "image",
+     "thumb": "assets/thumbs/640/nxtwave-slide-6.webp"
+    },
+    {
+     "src": "assets/images/nxtwave-slide-7.webp",
+     "w": 960,
+     "h": 540,
+     "type": "image",
+     "thumb": "assets/thumbs/640/nxtwave-slide-7.webp"
+    }
+   ],
+   "cover": "assets/images/nxtwave-slide-1.webp"
+  },
+  {
+   "name": "Tamada Media",
+   "group": "Freelance",
+   "role": "Branding",
+   "files": [
+    {
+     "src": "assets/images/tamadamedia-branding-1.webp",
+     "w": 1400,
+     "h": 1332,
+     "type": "image",
+     "thumb": "assets/thumbs/640/tamadamedia-branding-1.webp"
+    },
+    {
+     "src": "assets/videos/tamadamedia-branding-2.mp4",
+     "w": 404,
+     "h": 720,
+     "type": "video",
+     "poster": "assets/posters/tamadamedia-branding-2.webp",
+     "thumb": "assets/thumbs/640/tamadamedia-branding-2.webp"
+    }
+   ],
+   "cover": "assets/images/tamadamedia-branding-1.webp"
+  },
+  {
+   "name": "Lakshmi Bakers",
+   "group": "Freelance",
+   "role": "Identity · via Tamada Media",
+   "files": [
+    {
+     "src": "assets/images/tamadamedia-laxmibakery-1.webp",
+     "w": 1120,
+     "h": 1400,
+     "type": "image",
+     "thumb": "assets/thumbs/640/tamadamedia-laxmibakery-1.webp"
+    },
+    {
+     "src": "assets/images/tamadamedia-laxmibakery-2.webp",
+     "w": 1120,
+     "h": 1400,
+     "type": "image",
+     "thumb": "assets/thumbs/640/tamadamedia-laxmibakery-2.webp"
+    },
+    {
+     "src": "assets/images/tamadamedia-laxmibakery-3.webp",
+     "w": 1120,
+     "h": 1400,
+     "type": "image",
+     "thumb": "assets/thumbs/640/tamadamedia-laxmibakery-3.webp"
+    }
+   ],
+   "cover": "assets/images/tamadamedia-laxmibakery-1.webp"
+  },
+  {
+   "name": "Inertia Productions",
+   "group": "Freelance",
+   "role": "Motion graphics",
+   "files": [
+    {
+     "src": "assets/videos/motiongraphicsmozilla-3.mp4",
+     "w": 1280,
+     "h": 720,
+     "type": "video",
+     "poster": "assets/posters/motiongraphicsmozilla-3.webp",
+     "thumb": "assets/thumbs/640/motiongraphicsmozilla-3.webp"
+    },
+    {
+     "src": "assets/videos/motiongraphicsnews-1.mp4",
+     "w": 1280,
+     "h": 720,
+     "type": "video",
+     "poster": "assets/posters/motiongraphicsnews-1.webp",
+     "thumb": "assets/thumbs/640/motiongraphicsnews-1.webp"
+    },
+    {
+     "src": "assets/videos/motiongraphicsnews-2.mp4",
+     "w": 1280,
+     "h": 716,
+     "type": "video",
+     "poster": "assets/posters/motiongraphicsnews-2.webp",
+     "thumb": "assets/thumbs/640/motiongraphicsnews-2.webp"
+    }
+   ],
+   "cover": "assets/posters/motiongraphicsmozilla-3.webp"
+  },
+  {
+   "name": "LLT Overseas",
+   "group": "Freelance",
+   "role": "Illustration",
+   "files": [
+    {
+     "src": "assets/images/overseas-illustration-1.webp",
+     "w": 1024,
+     "h": 1024,
+     "type": "image",
+     "thumb": "assets/thumbs/640/overseas-illustration-1.webp"
+    }
+   ],
+   "cover": "assets/images/overseas-illustration-1.webp"
+  },
+  {
+   "name": "AZ Coffee",
+   "group": "Freelance",
+   "role": "Via Coalition Technologies · under NDA",
+   "files": [],
+   "cover": null
+  }
+ ],
+ "clientsAtlas": {
+  "src": "assets/thumbs/clients-atlas.webp",
+  "cols": 4,
+  "rows": 4,
+  "count": 16
+ },
+ "studies": [
+  {
+   "src": "assets/images/1.webp",
+   "w": 1500,
+   "h": 2000,
+   "type": "image",
+   "thumb": "assets/thumbs/640/1.webp",
+   "name": "Magma",
+   "kind": "Beverage identity"
+  },
+  {
+   "src": "assets/images/3.webp",
+   "w": 1414,
+   "h": 2000,
+   "type": "image",
+   "thumb": "assets/thumbs/640/3.webp",
+   "name": "Magma",
+   "kind": "Can · product viz"
+  },
+  {
+   "src": "assets/images/2.webp",
+   "w": 1500,
+   "h": 2000,
+   "type": "image",
+   "thumb": "assets/thumbs/640/2.webp",
+   "name": "Magma",
+   "kind": "Strawberry key art"
+  },
+  {
+   "src": "assets/images/10.webp",
+   "w": 1520,
+   "h": 2000,
+   "type": "image",
+   "thumb": "assets/thumbs/640/10.webp",
+   "name": "Nike Phantom",
+   "kind": "Sport campaign"
+  },
+  {
+   "src": "assets/images/12.webp",
+   "w": 1545,
+   "h": 2000,
+   "type": "image",
+   "thumb": "assets/thumbs/640/12.webp",
+   "name": "Reebok",
+   "kind": "Sport campaign"
+  },
+  {
+   "src": "assets/images/7.webp",
+   "w": 1080,
+   "h": 1350,
+   "type": "image",
+   "thumb": "assets/thumbs/640/7.webp",
+   "name": "Messi × Ronaldo",
+   "kind": "Match poster"
+  },
+  {
+   "src": "assets/images/16.webp",
+   "w": 2000,
+   "h": 1125,
+   "type": "image",
+   "thumb": "assets/thumbs/640/16.webp",
+   "name": "Cloudbank",
+   "kind": "Sky study"
+  },
+  {
+   "src": "assets/images/8.webp",
+   "w": 2000,
+   "h": 1125,
+   "type": "image",
+   "thumb": "assets/thumbs/640/8.webp",
+   "name": "Mustang",
+   "kind": "Automotive"
+  },
+  {
+   "src": "assets/images/octavia-night.webp",
+   "w": 1566,
+   "h": 2000,
+   "type": "image",
+   "thumb": "assets/thumbs/640/octavia-night.webp",
+   "name": "Octavia",
+   "kind": "Automotive · night"
+  },
+  {
+   "src": "assets/images/octavia-forest.webp",
+   "w": 1502,
+   "h": 2000,
+   "type": "image",
+   "thumb": "assets/thumbs/640/octavia-forest.webp",
+   "name": "Octavia",
+   "kind": "Automotive · forest"
+  },
+  {
+   "src": "assets/images/car-render-2.webp",
+   "w": 1920,
+   "h": 1080,
+   "type": "image",
+   "thumb": "assets/thumbs/640/car-render-2.webp",
+   "name": "Supra",
+   "kind": "Studio viz"
+  },
+  {
+   "src": "assets/images/car-render-1.webp",
+   "w": 1920,
+   "h": 1080,
+   "type": "image",
+   "thumb": "assets/thumbs/640/car-render-1.webp",
+   "name": "Supra",
+   "kind": "Three-quarter"
+  },
+  {
+   "src": "assets/images/car-render-3.webp",
+   "w": 1920,
+   "h": 1080,
+   "type": "image",
+   "thumb": "assets/thumbs/640/car-render-3.webp",
+   "name": "Supra",
+   "kind": "Rear detail"
+  },
+  {
+   "src": "assets/images/car-render-4.webp",
+   "w": 1920,
+   "h": 1080,
+   "type": "image",
+   "thumb": "assets/thumbs/640/car-render-4.webp",
+   "name": "Supra",
+   "kind": "Profile"
+  },
+  {
+   "src": "assets/images/car2-shadowmatte-1.webp",
+   "w": 1920,
+   "h": 1080,
+   "type": "image",
+   "thumb": "assets/thumbs/640/car2-shadowmatte-1.webp",
+   "name": "Ferrari",
+   "kind": "Shadow matte"
+  },
+  {
+   "src": "assets/images/11.webp",
+   "w": 1414,
+   "h": 2000,
+   "type": "image",
+   "thumb": "assets/thumbs/640/11.webp",
+   "name": "Titan",
+   "kind": "Product advert"
+  },
+  {
+   "src": "assets/images/op-perfume-1.webp",
+   "w": 1493,
+   "h": 2000,
+   "type": "image",
+   "thumb": "assets/thumbs/640/op-perfume-1.webp",
+   "name": "Perfume",
+   "kind": "Fragrance key art"
+  },
+  {
+   "src": "assets/images/21.webp",
+   "w": 1080,
+   "h": 1080,
+   "type": "image",
+   "thumb": "assets/thumbs/640/21.webp",
+   "name": "Nipura Luxe",
+   "kind": "Jewellery · cool"
+  },
+  {
+   "src": "assets/images/22.webp",
+   "w": 1080,
+   "h": 1080,
+   "type": "image",
+   "thumb": "assets/thumbs/640/22.webp",
+   "name": "Nipura Luxe",
+   "kind": "Jewellery · warm"
+  },
+  {
+   "src": "assets/images/cd.webp",
+   "w": 1080,
+   "h": 1080,
+   "type": "image",
+   "thumb": "assets/thumbs/640/cd.webp",
+   "name": "Nipura",
+   "kind": "Seasonal post"
+  },
+  {
+   "src": "assets/images/15.webp",
+   "w": 1817,
+   "h": 1254,
+   "type": "image",
+   "thumb": "assets/thumbs/640/15.webp",
+   "name": "FittR",
+   "kind": "Food packaging"
+  },
+  {
+   "src": "assets/images/4.webp",
+   "w": 1423,
+   "h": 2000,
+   "type": "image",
+   "thumb": "assets/thumbs/640/4.webp",
+   "name": "Science Focus",
+   "kind": "Editorial cover"
+  },
+  {
+   "src": "assets/images/5.webp",
+   "w": 2000,
+   "h": 1960,
+   "type": "image",
+   "thumb": "assets/thumbs/640/5.webp",
+   "name": "The Alchemist",
+   "kind": "Cover · mockup"
+  },
+  {
+   "src": "assets/images/6.webp",
+   "w": 800,
+   "h": 420,
+   "type": "image",
+   "thumb": "assets/thumbs/640/6.webp",
+   "name": "The Alchemist",
+   "kind": "Title lockup"
+  },
+  {
+   "src": "assets/images/13.webp",
+   "w": 1414,
+   "h": 2000,
+   "type": "image",
+   "thumb": "assets/thumbs/640/13.webp",
+   "name": "Yesteryay Land",
+   "kind": "Event poster"
+  },
+  {
+   "src": "assets/images/sensei-mugen.webp",
+   "w": 1493,
+   "h": 2000,
+   "type": "image",
+   "thumb": "assets/thumbs/640/sensei-mugen.webp",
+   "name": "Sensei",
+   "kind": "Character"
+  },
+  {
+   "src": "assets/images/manwiththestrawhat-onhead.webp",
+   "w": 2000,
+   "h": 2000,
+   "type": "image",
+   "thumb": "assets/thumbs/640/manwiththestrawhat-onhead.webp",
+   "name": "Straw hat",
+   "kind": "Fan illustration"
+  },
+  {
+   "src": "assets/images/9.webp",
+   "w": 1414,
+   "h": 2000,
+   "type": "image",
+   "thumb": "assets/thumbs/640/9.webp",
+   "name": "The lamppost",
+   "kind": "Illustration"
+  },
+  {
+   "src": "assets/images/14.webp",
+   "w": 2000,
+   "h": 1125,
+   "type": "image",
+   "thumb": "assets/thumbs/640/14.webp",
+   "name": "Ship, dusk",
+   "kind": "Illustration"
+  },
+  {
+   "src": "assets/images/18.webp",
+   "w": 2000,
+   "h": 1005,
+   "type": "image",
+   "thumb": "assets/thumbs/640/18.webp",
+   "name": "Dead wood",
+   "kind": "Matte illustration"
+  },
+  {
+   "src": "assets/images/17.webp",
+   "w": 2000,
+   "h": 1125,
+   "type": "image",
+   "thumb": "assets/thumbs/640/17.webp",
+   "name": "Late room",
+   "kind": "Interior light study"
+  },
+  {
+   "src": "assets/images/conceptdesign-2.webp",
+   "w": 2000,
+   "h": 844,
+   "type": "image",
+   "thumb": "assets/thumbs/640/conceptdesign-2.webp",
+   "name": "Red tree",
+   "kind": "Concept"
+  },
+  {
+   "src": "assets/images/conceptdesign-1.webp",
+   "w": 2000,
+   "h": 844,
+   "type": "image",
+   "thumb": "assets/thumbs/640/conceptdesign-1.webp",
+   "name": "Moon field",
+   "kind": "Concept"
+  },
+  {
+   "src": "assets/images/cylinder-1.webp",
+   "w": 2000,
+   "h": 1500,
+   "type": "image",
+   "thumb": "assets/thumbs/640/cylinder-1.webp",
+   "name": "Hard-surface",
+   "kind": "Practice"
+  },
+  {
+   "src": "assets/images/cylinder-2.webp",
+   "w": 2000,
+   "h": 1500,
+   "type": "image",
+   "thumb": "assets/thumbs/640/cylinder-2.webp",
+   "name": "Hard-surface",
+   "kind": "Wear pass"
+  },
+  {
+   "src": "assets/images/cylinder-3.webp",
+   "w": 2000,
+   "h": 1500,
+   "type": "image",
+   "thumb": "assets/thumbs/640/cylinder-3.webp",
+   "name": "Extinguisher",
+   "kind": "Texture study"
+  },
+  {
+   "src": "assets/images/conceptdesign-3.webp",
+   "w": 2000,
+   "h": 1125,
+   "type": "image",
+   "thumb": "assets/thumbs/640/conceptdesign-3.webp",
+   "name": "Clay pass",
+   "kind": "Hard-surface"
+  },
+  {
+   "src": "assets/images/19.webp",
+   "w": 2000,
+   "h": 1414,
+   "type": "image",
+   "thumb": "assets/thumbs/640/19.webp",
+   "name": "Grey ball",
+   "kind": "Lighting primitive"
+  },
+  {
+   "src": "assets/images/carousel_banner_full.webp",
+   "w": 2000,
+   "h": 400,
+   "type": "image",
+   "thumb": "assets/thumbs/640/carousel_banner_full.webp",
+   "name": "Web carousel",
+   "kind": "Banner system"
+  }
+ ],
+ "studiesAtlas": {
+  "src": "assets/thumbs/studies-atlas.webp",
+  "cols": 8,
+  "rows": 5,
+  "count": 39
+ },
+ "tiers": [
+  {
+   "n": "01",
+   "name": "One Frame",
+   "for": "Album art, key frames, cover stills.",
+   "items": [
+    "1 hero render",
+    "2 alternate angles",
+    "2 light revisions",
+    "10–14 days"
+   ]
+  },
+  {
+   "n": "02",
+   "name": "The World",
+   "for": "Editorial, brand campaigns, visual development.",
+   "items": [
+    "4–6 hero renders",
+    "Props, set dressing, full atmosphere",
+    "Turntable or parallax pass",
+    "Light revisions included",
+    "3–5 weeks"
+   ],
+   "flag": "Most commissioned"
+  },
+  {
+   "n": "03",
+   "name": "The Pipeline",
+   "for": "Studios, agencies, films, product launches.",
+   "items": [
+    "Full visual development",
+    "Animated turntables · pre-viz",
+    "Farm-ready hand-off, named and tidy",
+    "On call two months after delivery",
+    "6–10 weeks"
+   ]
+  }
+ ]
+}
