@@ -53,6 +53,12 @@ body.is-loading { overflow: hidden; }
 .hud__stop [data-name] { color: var(--ink); }
 .hud__end { justify-self: end; display: flex; align-items: center; gap: 8px; }
 .hud__btn { padding: 9px 11px 8px; }
+.hud__end > * { flex-shrink: 0; white-space: nowrap; }
+/* once the kodama counter joins the bar, narrower screens drop the text labels to keep one row */
+@media (max-width: 1180px) {
+  .hud__end:has(.kodama-count:not([hidden])) .hud__label { display: none; }
+  .kodama-count span { display: none; }
+}
 .snd i { width: 14px; height: 10px; display: inline-flex; align-items: flex-end; gap: 2px; }
 .snd i s { display: block; width: 2px; height: 30%; background: currentColor; text-decoration: none; }
 .snd[aria-pressed='true'] i s { animation: eq 0.9s infinite var(--e-nami) alternate; }

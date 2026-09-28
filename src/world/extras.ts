@@ -4,13 +4,12 @@
 // of light crossing the sky over the sea.
 import {
   AdditiveBlending, BufferGeometry, CanvasTexture, Color, CylinderGeometry, DoubleSide, Float32BufferAttribute, FrontSide, Group,
-  InstancedMesh, Mesh, MeshBasicMaterial, MeshStandardMaterial, Object3D, PlaneGeometry, Points, PointsMaterial, ShaderMaterial, SRGBColorSpace,
+  InstancedMesh, Mesh, MeshBasicMaterial, MeshStandardMaterial, Object3D, PlaneGeometry, Points, ShaderMaterial, SRGBColorSpace,
   Texture, Vector3, VideoTexture, UniformsLib, UniformsUtils
 } from 'three';
 import { bakedGeometry, Emitter } from './props';
 import { heightAt, SHORE } from './layout';
 import { mossMaterial, screenMaterial, shared } from './materials';
-import { glowTexture } from './neon';
 import { rng } from './treegen';
 import { rockGeometry } from './cave';
 
@@ -358,6 +357,8 @@ export function buildExtras(a: ExtrasAssets): Extras {
     k.position.set(x, gy - ps * 0.25 + ps * 0.62, z);
     k.rotation.y = ry;
     k.scale.setScalar(1.7 + (i % 3) * 0.2);
+    k.userData.s = k.scale.x;
+    k.userData.y = k.position.y;
     k.userData.head = head;
     kodama.push(k);
   });
@@ -376,14 +377,45 @@ export function buildExtras(a: ExtrasAssets): Extras {
   poseKodama();
   for (const im of [kBody, kHead]) { im.computeBoundingSphere(); im.castShadow = true; im.name = 'kodama'; }
   group.add(perches, kBody, kHead);
-  const sparkPos = new Float32Array(KODAMA_SPOTS.length * 3);
-  const sparkGeo = new BufferGeometry();
-  sparkGeo.setAttribute('position', new Float32BufferAttribute(sparkPos, 3));
-  const sparkMat = new PointsMaterial({ size: 1.4, map: glowTexture(), color: new Color(0.6, 1.2, 0.9), transparent: true, depthWrite: false, blending: AdditiveBlending, opacity: 0 });
-  const sparks = new Points(sparkGeo, sparkMat);
-  sparks.frustumCulled = false;
-  group.add(sparks);
-  let sparkT = -10;
+  // when one is found it goes up in a small swarm of motes
+  const MOTES = 48;
+  const moteSeed = new Float32Array(MOTES * 4);
+  const mr = rng(4242);
+  for (let i = 0; i < moteSeed.length; i += 1) moteSeed[i] = mr();
+  const moteGeo = new BufferGeometry();
+  moteGeo.setAttribute('position', new Float32BufferAttribute(new Float32Array(MOTES * 3), 3));
+  moteGeo.setAttribute('seed', new Float32BufferAttribute(moteSeed, 4));
+  const moteMat = new ShaderMaterial({
+    uniforms: { origin: { value: new Vector3() }, age: { value: 10 }, pr: { value: 1 } },
+    vertexShader: /* glsl */ `
+      uniform vec3 origin; uniform float age, pr; attribute vec4 seed; varying float vA;
+      void main(){
+        float a = age - seed.w * 0.35;
+        float spread = 1.0 - exp(-max(a, 0.0) * 2.2);
+        float ang = seed.x * 6.2832;
+        float rad = 0.15 + seed.y * 0.55;
+        vec3 p = origin + vec3(cos(ang) * rad * spread, max(a, 0.0) * (0.35 + seed.z * 0.7), sin(ang) * rad * spread);
+        p.x += sin(a * 2.7 + seed.y * 30.0) * 0.07;
+        p.z += cos(a * 2.3 + seed.x * 30.0) * 0.07;
+        vA = smoothstep(0.0, 0.12, a) * (1.0 - smoothstep(1.0 + seed.z, 2.2 + seed.z, a));
+        vec4 mv = modelViewMatrix * vec4(p, 1.0);
+        gl_Position = projectionMatrix * mv;
+        gl_PointSize = pr * (5.0 + 5.0 * seed.y) / max(1.0, -mv.z * 0.35);
+      }`,
+    fragmentShader: /* glsl */ `
+      varying float vA;
+      void main(){
+        float d = length(gl_PointCoord - 0.5);
+        float g = smoothstep(0.5, 0.0, d);
+        gl_FragColor = vec4(vec3(0.62, 1.0, 0.82) * g * g * vA * 1.6, 1.0);
+      }`,
+    transparent: true, depthWrite: false, blending: AdditiveBlending
+  });
+  const motes = new Points(moteGeo, moteMat);
+  motes.frustumCulled = false;
+  motes.visible = false;
+  motes.name = 'kodama-motes';
+  group.add(motes);
 
   // ── the spirit deer in the mist ──
   const deer = new Group();
@@ -421,9 +453,9 @@ export function buildExtras(a: ExtrasAssets): Extras {
       state[i].found = true;
       state[i].rattle = 1.2;
       const k = kodama[i];
-      sparkPos.set([k.position.x, k.position.y + 0.5, k.position.z], i * 3);
-      sparkGeo.getAttribute('position').needsUpdate = true;
-      sparkT = performance.now() / 1000;
+      moteMat.uniforms.origin.value.set(k.position.x, k.position.y + 0.3 * k.scale.y, k.position.z);
+      moteMat.uniforms.age.value = 0;
+      motes.visible = true;
       return true;
     },
     found() { return state.filter((s) => s.found).length; },
@@ -472,14 +504,19 @@ export function buildExtras(a: ExtrasAssets): Extras {
         const want = Math.atan2(tmp.x, tmp.z);
         k.rotation.y += Math.atan2(Math.sin(want - k.rotation.y), Math.cos(want - k.rotation.y)) * Math.min(1, dt * 0.8);
         if (s.found && s.fade > 0) {
-          s.fade = Math.max(0, s.fade - dt * 0.8);
-          k.position.y -= dt * 0.25;
-          if (s.fade === 0) k.scale.setScalar(0.0001);
+          // a beat of rattling, then it folds away into the moss
+          s.fade = Math.max(0, s.fade - Math.min(dt, 0.1) * 0.7);
+          const f = Math.min(1, s.fade / 0.7);
+          const e = f * f * (3 - 2 * f);
+          k.scale.setScalar(k.userData.s * Math.max(0.0001, e));
+          k.position.y = k.userData.y - (1 - e) * 0.25;
         }
       });
       if (cz > -170) poseKodama();
-      const age = performance.now() / 1000 - sparkT;
-      sparkMat.opacity = age < 2 ? Math.max(0, 1 - age / 2) : 0;
+      if (motes.visible) {
+        moteMat.uniforms.age.value += Math.min(dt, 0.1);
+        if (moteMat.uniforms.age.value > 3.6) motes.visible = false;
+      }
       // deer: turns its head toward the visitor, dissolves if you get too close
       tmp.set(cam.x - deer.position.x, 0, cam.z - deer.position.z);
       const d = tmp.length();

@@ -204,7 +204,7 @@ export class World {
     for (const k of this.extras.kodama) this.props.targets.push({ object: k, kind: 'kodama', index: -1 });
     s.add(this.fauna.group);
     this.emitters = [...this.props.emitters, ...landing.emitters, ...cave.emitters, ...hall.emitters, ...shore.emitters, ...this.extras.emitters];
-    for (const g of [cave.group, hall.group]) {
+    for (const g of [cave.group, hall.group, this.extras.group]) {
       g.traverse((o) => {
         const m = (o as Points).material as ShaderMaterial;
         if ((o as Points).isPoints && m?.uniforms?.pr) this.pointMats.push(m);
@@ -599,10 +599,11 @@ export class World {
     shared.wind.value = 1 + Math.min(1.5, Math.abs(this.rail.tAt(this.scrollY) - this.tCur) * 30);
     this.bloom.intensity = this.bloomBase + 0.08 * Math.sin(this.time * 0.7);
 
+    // resize before drawing: resizing after would clear the finished frame and flash black
+    this.gov.tick(dt);
     this.renderer.info.reset();
     if (!this.overlay) this.reflector.render(this.renderer, this.scene, this.camera, this.camera.position.z > -160 ? 70 : this.camera.far);
     this.composer.render(dt);
-    this.gov.tick(dt);
   };
 
   pause() { this.running = false; }
