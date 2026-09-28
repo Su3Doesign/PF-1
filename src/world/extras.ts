@@ -5,7 +5,7 @@
 import {
   AdditiveBlending, BufferGeometry, CanvasTexture, Color, CylinderGeometry, DoubleSide, Float32BufferAttribute, FrontSide, Group,
   InstancedMesh, Mesh, MeshBasicMaterial, MeshStandardMaterial, Object3D, PlaneGeometry, Points, ShaderMaterial, SRGBColorSpace,
-  Texture, Vector3, VideoTexture, UniformsLib, UniformsUtils
+  Texture, TextureLoader, Vector3, VideoTexture, UniformsLib, UniformsUtils
 } from 'three';
 import { bakedGeometry, Emitter } from './props';
 import { heightAt, SHORE } from './layout';
@@ -29,7 +29,7 @@ export interface Extras {
   findKodama(i: number): boolean;
   found(): number;
   update(t: number, dt: number, cam: Vector3): void;
-  setFilm(src: string): void;
+  setFilm(src: string, poster: string): void;
 }
 
 const part = (root: Object3D, name: string) => bakedGeometry(root.getObjectByName(name) as Mesh);
@@ -248,15 +248,15 @@ export function buildExtras(a: ExtrasAssets): Extras {
       float h(float x){ return fract(sin(x * 91.7) * 43758.5); }
       void main(){
         vec2 uv = vUv;
-        float weave = 0.9 + 0.1 * sin(uv.x * 900.0) * sin(uv.y * 540.0);
-        vec3 cloth = vec3(0.16, 0.16, 0.15) * weave;
+        // bare cloth, a touch darker where it gathers toward the hem
+        vec3 cloth = vec3(0.16, 0.16, 0.15) * (0.86 + 0.14 * uv.y);
         // the film, a little soft, with a hot centre, gate weave and the flicker of the shutter
         vec2 fuv = uv + vec2(h(floor(time * 18.0)) - 0.5, h(floor(time * 18.0) + 7.0) - 0.5) * 0.0025;
         vec3 film = on > 0.5 ? texture2D(map, fuv).rgb : vec3(0.0);
         float hot = 1.0 - 0.45 * length((uv - 0.5) * vec2(1.2, 1.6));
         float flick = 0.92 + 0.08 * h(floor(time * 24.0));
         float frame = smoothstep(0.0, 0.02, uv.x) * smoothstep(1.0, 0.98, uv.x) * smoothstep(0.0, 0.03, uv.y) * smoothstep(1.0, 0.97, uv.y);
-        vec3 c = cloth + film * hot * flick * frame * 1.6 + vec3(1.0, 0.95, 0.85) * frame * 0.06 * flick;
+        vec3 c = cloth + film * hot * flick * frame * 1.3 + vec3(1.0, 0.95, 0.85) * frame * 0.06 * flick;
         gl_FragColor = vec4(c, 1.0);
       }`,
     side: DoubleSide
@@ -320,8 +320,11 @@ export function buildExtras(a: ExtrasAssets): Extras {
   const beam = new Mesh(beamGeo, beamMat);
   group.add(beam);
   emitters.push({ pos: sheetPos.clone().add(new Vector3(0, 0, 1.5).applyQuaternion(sheet.quaternion)), color: new Color(0.9, 0.85, 0.75), intensity: 2.4, range: 7, level: () => beamMat.uniforms.on.value });
-  let filmSrc = '';
+  let filmSrc = '', posterSrc = '';
   let video: HTMLVideoElement | null = null;
+  let videoTex: VideoTexture | null = null;
+  let posterTex: Texture | null = null;
+  let playing = false;
   let playTried = -1e9;
 
   // ── kodama ──
@@ -459,7 +462,7 @@ export function buildExtras(a: ExtrasAssets): Extras {
       return true;
     },
     found() { return state.filter((s) => s.found).length; },
-    setFilm(src: string) { filmSrc = src; },
+    setFilm(src: string, poster: string) { filmSrc = src; posterSrc = poster; },
     update(time: number, dt: number, cam: Vector3) {
       const cz = cam.z;
       // television: flip to the next fact now and then; the hover flash decays
@@ -471,21 +474,33 @@ export function buildExtras(a: ExtrasAssets): Extras {
       }
       // projector: runs while the visitor is nearby
       const near = cz < -95 && cz > -150;
+      // until the reel runs (or if the browser refuses to autoplay) the sheet holds the film's poster frame
+      if (near && !posterTex && posterSrc) {
+        posterTex = new TextureLoader().load(posterSrc, (tx) => {
+          if (playing) return;
+          filmMat.uniforms.map.value = tx;
+          filmMat.uniforms.on.value = 1;
+        });
+        posterTex.colorSpace = SRGBColorSpace;
+      }
       if (near && !video && filmSrc) {
         video = document.createElement('video');
         video.src = filmSrc;
         video.muted = true; video.loop = true; video.playsInline = true;
         video.setAttribute('playsinline', '');
         video.crossOrigin = 'anonymous';
-        const vt = new VideoTexture(video);
-        vt.colorSpace = SRGBColorSpace;
-        filmMat.uniforms.map.value = vt;
+        videoTex = new VideoTexture(video);
+        videoTex.colorSpace = SRGBColorSpace;
       }
       if (video) {
         const now = performance.now();
         if (near && video.paused && now - playTried > 2500) {
           playTried = now;
-          video.play().then(() => { filmMat.uniforms.on.value = 1; }).catch(() => { /* retry later */ });
+          video.play().then(() => {
+            playing = true;
+            filmMat.uniforms.map.value = videoTex;
+            filmMat.uniforms.on.value = 1;
+          }).catch(() => { /* retry later */ });
         }
         if (!near && !video.paused) video.pause();
       }

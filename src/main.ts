@@ -135,7 +135,7 @@ async function boot() {
     study: (i) => panels.setStudy(i)
   }, reduced);
   world.deskVideo = asset(content.profile.desk);
-  if (film) world.filmVideo = asset(film.media.src);
+  if (film) { world.filmVideo = asset(film.media.src); world.filmPoster = film.media.poster ? asset(film.media.poster) : ''; }
   if (/[?&]debug/.test(location.search)) (window as unknown as { __world: World }).__world = world;
 
   await fontsReady();

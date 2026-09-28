@@ -58,6 +58,7 @@ export class World {
   private art: Mesh[] = [];
   extras!: Extras;
   filmVideo = '';
+  filmPoster = '';
   private pointMats: ShaderMaterial[] = [];
   private updaters: ((t: number, camZ: number) => void)[] = [];
   private zoneNow: ZoneLook = cloneZone(ZONES.forest);
@@ -198,7 +199,7 @@ export class World {
       models: { tv: a.models.tv, projector: a.models.projector, kodama: a.models.kodama, deer: a.models.deer, whale: a.models.whale },
       tex: { aoTv: t.aoTv, aoProjector: t.aoProjector, lacquer: t.lacquer, lacquerN: t.lacquerN, metal: t.metal, metalN: t.metalN, moss: t.moss, mossN: t.mossN, noise: t.noise, stone: t.stone, stoneN: t.stoneN }
     });
-    this.extras.setFilm(this.filmVideo);
+    this.extras.setFilm(this.filmVideo, this.filmPoster);
     s.add(this.extras.group);
     this.props.targets.push({ object: this.extras.tv, kind: 'fact', index: 0 }, { object: this.extras.sheet, kind: 'film', index: 0 });
     for (const k of this.extras.kodama) this.props.targets.push({ object: k, kind: 'kodama', index: -1 });
