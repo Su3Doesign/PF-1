@@ -28,6 +28,8 @@ Scrolling walks the camera along a rail and pauses at each stop. Every stop has 
 
 ## Run it
 
+Needs Node.js 20.19 or newer (22 recommended, as in CI). Older versions cannot run Vite 7.
+
 ```bash
 npm install
 npm run dev        # http://localhost:5173
