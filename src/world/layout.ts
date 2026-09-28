@@ -7,7 +7,7 @@ export const LETTERS_Z = -9;
 export const LETTER_SCALE = 1.25;
 export const TORII = { x: 0, z: -18, scale: 1.3 };
 
-export type StationId = 'landing' | 'worlds' | 'method' | 'clients' | 'studies' | 'commissions' | 'contact';
+export type StationId = 'landing' | 'worlds' | 'method' | 'clients' | 'studies' | 'commissions' | 'about' | 'archive' | 'contact';
 
 /** Clearings: no trees or tall foliage inside `r`. */
 export const CLEARINGS: { x: number; z: number; r: number }[] = [
@@ -15,7 +15,7 @@ export const CLEARINGS: { x: number; z: number; r: number }[] = [
   { x: -3, z: -112, r: 8 },
   { x: 4, z: -140, r: 11 },
   { x: -1, z: -157, r: 6 },
-  { x: -4, z: -176, r: 9 }
+  { x: -3, z: -167, r: 6 }
 ];
 
 export const WORLD_MONOLITHS = [
@@ -33,16 +33,44 @@ export const LANTERNS = Array.from({ length: 7 }, (_, i) => {
 export const RACK = { x: -3, z: -114 };
 export const LIBRARY_TREE = { x: 4, z: -141, ringR: 6.6 };
 export const EMA = { x: -1, z: -158 };
-export const DESK = { x: -4, z: -177 };
+/** The finale. The forest ends at a cliff; a flooded cave runs through it to an
+ *  overgrown hall, whose far door opens onto a terrace over the sea. */
+export const CLIFF_Z = -171;
+export const CAVE_MOUTH = { x: -3, z: -170, w: 7.5, h: 6.5 };
+export const CAVE_PATH: [number, number][] = [[-3, -161], [-3, -170], [-2.2, -179], [-4.3, -189], [-3.9, -199], [-3.1, -207], [-3, -215]];
+export const HALL = { x: -3, z0: -214, z1: -252, halfW: 9, wall: 9.5, vault: 13.5, pool: 4.6, floor: 0.35 };
+export const SHORE = { z0: -252, z1: -265, y: 0.45 };
+export const DESK = { x: 1.0, z: -261.0 };
+// the gate stands on the moon's bearing from the contact stop, so the moon sets inside it
+export const SEA_TORII = { x: 4.6, z: -332, scale: 2.6 };
+export const MOON_SET = new Vector3(0.1, 0.1, -1).normalize();
+
+/** Standing height for props: forest ground, the hall floor, or the terrace. */
+export function floorAt(x: number, z: number): number {
+  if (z < SHORE.z0) return SHORE.y;
+  if (z < HALL.z0) return HALL.floor;
+  return heightAt(x, z);
+}
 
 /** Forest walking path (x, z). The camera rail follows it at head height. */
 export const PATH_POINTS: [number, number][] = [
   [0, -16], [0.5, -24], [1.5, -32], [-1.5, -40], [-2.5, -46], [-1, -60], [2, -68],
   [2.2, -80], [1.2, -92], [-1.5, -100], [-2.8, -106], [0, -120], [3, -126],
-  [2.5, -136], [0, -146], [-1, -151], [-2.5, -162], [-4, -170], [-4, -180]
+  [2.5, -136], [0, -146], [-1, -151], [-2.5, -160], [-3, -164]
 ];
 
 export const pathCurve = new CatmullRomCurve3(PATH_POINTS.map(([x, z]) => new Vector3(x, 0, z)), false, 'centripetal');
+export const caveCurve = new CatmullRomCurve3(CAVE_PATH.map(([x, z]) => new Vector3(x, 0, z)), false, 'centripetal');
+
+/** Where the camera is: 0 forest, then cave, hall and shore, blended over a few metres. */
+export function zoneWeights(z: number) {
+  const s = (a: number, b: number) => smooth(a, b, z);
+  const cave = s(-164, -173) * (1 - s(-209, -217));
+  const hall = s(-209, -217) * (1 - s(-247, -255));
+  const shore = s(-247, -255);
+  const forest = Math.max(0, 1 - cave - hall - shore);
+  return { forest, cave, hall, shore };
+}
 const PATH_SAMPLES: Vector2[] = pathCurve.getSpacedPoints(600).map((p) => new Vector2(p.x, p.z));
 
 /** Distance in the XZ plane from (x, z) to the forest path. The path only ever
@@ -118,11 +146,15 @@ export function heightAt(x: number, z: number, pathD?: number): number {
   h = h * (1 - basin) + (-1.3 - (1 - Math.min(pf, 1)) * 0.6) * basin;
   // the bank where the visitor stands is a little higher and flatter
   if (z > 6 && Math.abs(x) < 8) h = h * 0.4 + 0.25;
+  // a spring pool where the cave's channel spills into the forest
+  const sx = x - CAVE_MOUTH.x, sz = (z - (CAVE_MOUTH.z + 4)) / 1.6;
+  const spring = smooth(4.2, 2.4, Math.sqrt(sx * sx + sz * sz)) * smooth(-158, -163, z);
   // flatten the path
   if (z < -14) {
     const p = smooth(2.6, 0.6, d);
     h = h * (1 - p * 0.85) + (0.18 + (fbm(x * 0.1, z * 0.1) - 0.5) * 0.3) * p * 0.85;
   }
+  if (spring > 0) h = h * (1 - spring) + -0.9 * spring;
   return h;
 }
 
@@ -144,8 +176,15 @@ export const RAIL: { pos: [number, number, number]; look: [number, number, numbe
   { pos: [3.9, 2.25, -128.8], look: [4, 2.1, -141], station: 'studies' },
   { pos: [0.6, 1.9, -144], look: [-1, 1.8, -158] },
   { pos: [-1.1, 1.85, -151.8], look: [-1, 2.0, -158], station: 'commissions' },
-  { pos: [-2.8, 1.9, -161], look: [-4, 1.7, -176] },
-  { pos: [-4, 1.85, -169.8], look: [-4, 1.55, -177], station: 'contact' }
+  { pos: [-2.2, 1.9, -160.5], look: [-3, 2.4, -176] },
+  { pos: [-3, 1.65, -168.5], look: [-2.4, 1.5, -184] },
+  { pos: [-2.4, 1.5, -178.5], look: [-4.3, 3.1, -194], station: 'about' },
+  { pos: [-4.1, 1.55, -192], look: [-3.3, 1.8, -208] },
+  { pos: [-3, 1.7, -207], look: [-3, 8.2, -226] },
+  { pos: [-3, 1.75, -219.5], look: [-3, 4.4, -242], station: 'archive' },
+  { pos: [-3, 1.9, -236], look: [-3, 2.2, -262] },
+  { pos: [-3, 1.95, -249], look: [-3, 1.9, -285] },
+  { pos: [-3.2, 1.95, -254.5], look: [-1.4, 2.5, -330], station: 'contact' }
 ];
 
-export const STATION_ORDER: StationId[] = ['landing', 'worlds', 'method', 'clients', 'studies', 'commissions', 'contact'];
+export const STATION_ORDER: StationId[] = ['landing', 'worlds', 'method', 'clients', 'studies', 'commissions', 'about', 'archive', 'contact'];

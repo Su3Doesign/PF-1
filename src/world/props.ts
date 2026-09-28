@@ -1,18 +1,18 @@
 import {
-  Box3, BufferAttribute, BufferGeometry, CanvasTexture, CircleGeometry, Points, PointsMaterial, AdditiveBlending, Color, CylinderGeometry, ExtrudeGeometry, Group,
+  Box3, BufferAttribute, BufferGeometry, CanvasTexture, Points, PointsMaterial, AdditiveBlending, Color, CylinderGeometry, ExtrudeGeometry, Group,
   InstancedBufferAttribute, InstancedMesh, Matrix4, Mesh, MeshBasicMaterial, MeshLambertMaterial, MeshStandardMaterial,
   Object3D, PerspectiveCamera, PlaneGeometry, Quaternion, ShaderMaterial, Shape, SRGBColorSpace, TorusGeometry,
-  Vector3, Vector4, VideoTexture, DoubleSide, BoxGeometry, CatmullRomCurve3, TubeGeometry, UniformsLib, UniformsUtils
+  Vector3, Vector4, VideoTexture, DoubleSide, BoxGeometry, CatmullRomCurve3, TubeGeometry
 } from 'three';
 import type { Assets } from './assets';
 import {
-  DESK, EMA, LANTERNS, LETTERS_Z, LETTER_SCALE, LIBRARY_TREE, POND, RACK, TORII, WORLD_MONOLITHS,
-  heightAt, pathCurve, pathDistance, pondFactor, inClearing
+  DESK, EMA, LANTERNS, LETTERS_Z, LETTER_SCALE, LIBRARY_TREE, POND, RACK, TORII, WORLD_MONOLITHS, SEA_TORII, HALL, SHORE,
+  heightAt, floorAt, pathCurve, pathDistance, pondFactor, inClearing
 } from './layout';
 import { mossMaterial, neonMaterial, screenMaterial } from './materials';
 import { NEON, glowTexture, neonSign, neonTube } from './neon';
 
-export type TargetKind = 'world' | 'client' | 'study' | 'tier' | 'contact' | 'home';
+export type TargetKind = 'world' | 'client' | 'study' | 'tier' | 'contact' | 'home' | 'art';
 export interface Target { object: Object3D; kind: TargetKind; index: number }
 export interface Emitter { pos: Vector3; color: Color; intensity: number; range: number; level: () => number }
 
@@ -107,7 +107,6 @@ export class Props {
   deskVideo: HTMLVideoElement | null = null;
   deskOn = 0;
   private playTried = -1e9;
-  koi!: ShaderMaterial;
   signs: Mesh[] = [];
   guide!: Mesh;
   private moss: ReturnType<typeof mossMaterial>[] = [];
@@ -246,6 +245,15 @@ export class Props {
     const plaque = neonSign({ lines: [{ text: '苔経蔵', font: '800 {s}px "Shippori Mincho B1", serif', size: 64 }], color: NEON.amber, width: 0.42, vertical: true, intensity: 2.6, pad: 18 });
     plaque.position.set(0, 5.2, 0.2);
     g.add(plaque);
+    const sea = new Group();
+    sea.add(scene.clone(true));
+    const seaNeon = neonTube(under, NEON.red, 0.05, 7);
+    sea.add(seaNeon);
+    this.toriiNeon.push(seaNeon);
+    sea.scale.setScalar(SEA_TORII.scale);
+    sea.position.set(SEA_TORII.x, -1.4, SEA_TORII.z);
+    sea.rotation.y = 0.04;
+    this.group.add(sea);
     const wp = new Vector3();
     for (const x of [-2.7, 0, 2.7]) {
       wp.set(TORII.x + x * TORII.scale, 5.6 * TORII.scale, TORII.z + 0.5);
@@ -264,7 +272,8 @@ export class Props {
       ...LANTERNS.map((l) => ({ ...l, method: true, s: 1.1 })),
       { x: -6.4, z: -110.2 }, { x: 0.5, z: -110.4 },
       { x: -3.9, z: -154.4 }, { x: 1.9, z: -154.6 },
-      { x: -7.6, z: -173.2 }, { x: -0.6, z: -173.4 }
+      { x: -9.2, z: -167.4 }, { x: 3.2, z: -167.8 },
+      { x: HALL.x - 4.6, z: SHORE.z1 + 0.6, s: 1.15 }, { x: HALL.x + 4.6, z: SHORE.z1 + 0.6, s: 1.15 }
     ];
     const stoneGeo = bakedGeometry(scene.getObjectByName('toro') as Mesh);
     const lightGeo = bakedGeometry(scene.getObjectByName('toro_light') as Mesh);
@@ -276,7 +285,7 @@ export class Props {
     const m4 = new Matrix4(), q = new Quaternion(), sc = new Vector3(), pv = new Vector3(), up = new Vector3(0, 1, 0);
     spots.forEach((sp, i) => {
       const k = sp.s ?? 1;
-      const y = heightAt(sp.x, sp.z) - (sp.sink ?? 0.05);
+      const y = floorAt(sp.x, sp.z) - (sp.sink ?? 0.05);
       q.setFromAxisAngle(up, (i * 2.399) % (Math.PI * 2));
       m4.compose(pv.set(sp.x, y, sp.z), q, sc.set(k, k, k));
       stone.setMatrixAt(i, m4);
@@ -493,15 +502,19 @@ export class Props {
   // ── the writing desk + koi basin: contact ────────────────────────────────
   private buildDesk() {
     const stone = this.mossMat('stone', undefined, { baseScale: 0.8, mossAmount: 1.1 });
-    const gy = heightAt(DESK.x, DESK.z);
+    const gy = floorAt(DESK.x, DESK.z);
+    const desk = new Group();
+    desk.position.set(DESK.x, 0, DESK.z);
+    desk.rotation.y = -0.55; // turned toward the visitor on the terrace
+    this.group.add(desk);
     const top = new Mesh(new BoxGeometry(2.3, 0.16, 1.0), stone);
-    top.position.set(DESK.x, gy + 0.86, DESK.z);
+    top.position.set(0, gy + 0.86, 0);
     const legs = [-0.8, 0.8].map((dx) => {
       const l = new Mesh(new BoxGeometry(0.35, 0.8, 0.8), stone);
-      l.position.set(DESK.x + dx, gy + 0.4, DESK.z);
+      l.position.set(dx, gy + 0.4, 0);
       return l;
     });
-    for (const m of [top, ...legs]) { m.castShadow = this.shadows; m.receiveShadow = true; this.group.add(m); }
+    for (const m of [top, ...legs]) { m.castShadow = this.shadows; m.receiveShadow = true; desk.add(m); }
     const crt = this.a.models.desk.clone(true);
     this.deskScreen = screenMaterial({ map: this.a.tex.worldA, tint: new Color(NEON.magenta), gain: 1.4, curve: 0.3, lines: 110 });
     this.deskScreen.uniforms.power.value = 0.001;
@@ -515,24 +528,11 @@ export class Props {
         m.castShadow = this.shadows;
       }
     }
-    crt.position.set(DESK.x + 0.25, gy + 0.94, DESK.z - 0.05);
+    crt.position.set(0.25, gy + 0.94, -0.05);
     crt.rotation.y = -0.18;
     crt.scale.setScalar(1.35);
-    this.group.add(crt);
+    desk.add(crt);
 
-    // koi basin
-    const bx = DESK.x + 4.4, bz = DESK.z + 0.8, by = heightAt(bx, bz);
-    const rim = new Mesh(new TorusGeometry(1.55, 0.24, 10, 48), stone);
-    rim.rotation.x = Math.PI / 2;
-    rim.position.set(bx, by + 0.12, bz);
-    rim.receiveShadow = true;
-    this.group.add(rim);
-    this.koi = koiMaterial();
-    const water = new Mesh(new CircleGeometry(1.5, 48), this.koi);
-    water.rotation.x = -Math.PI / 2;
-    water.position.set(bx, by + 0.16, bz);
-    this.group.add(water);
-    this.emitters.push({ pos: new Vector3(bx, by + 0.8, bz), color: new Color(1, 0.55, 0.25), intensity: 2.5, range: 6, level: () => 1 });
     this.emitters.push({ pos: new Vector3(DESK.x, gy + 1.9, DESK.z + 1.4), color: new Color(NEON.magenta), intensity: 4, range: 9, level: () => 1 });
   }
 
@@ -706,11 +706,15 @@ export class Props {
     make('書庫', 'LIBRARY', NEON.teal, 1.8, 4, 5.6, -134.1, 0);
     make('絵馬', 'COMMISSIONS', NEON.amber, 1.6, -1, 4.1, -158.3, 0);
     const hello = neonSign({ lines: [{ text: 'SAY HELLO', font: latin, size: 96, tracking: 0.08 }], color: NEON.magenta, width: 3.4, intensity: 2.8 });
-    hello.position.set(DESK.x, heightAt(DESK.x, DESK.z) + 3.0, DESK.z - 1.3);
+    hello.position.set(DESK.x + 0.4, floorAt(DESK.x, DESK.z) + 2.55, DESK.z - 1.9);
+    hello.rotation.y = -0.45;
+    hello.scale.setScalar(0.62);
     this.group.add(hello);
     this.signs.push(hello);
     const tegami = neonSign({ lines: [{ text: '手紙', font: kanji, size: 80 }], color: NEON.teal, width: 0.5, vertical: true, intensity: 2.4 });
-    tegami.position.set(DESK.x + 2.1, heightAt(DESK.x, DESK.z) + 2.6, DESK.z - 1.25);
+    tegami.position.set(DESK.x + 2.2, floorAt(DESK.x, DESK.z) + 1.9, DESK.z - 0.9);
+    tegami.rotation.y = -0.45;
+    make('洞', 'ABOUT', NEON.teal, 1.2, -5.6, 3.3, -186.5, 0.45);
     this.group.add(tegami);
     this.signs.push(tegami);
   }
@@ -745,7 +749,6 @@ export class Props {
       e.rotation.z = Math.sin(t * 0.9 + e.userData.phase) * 0.06;
       e.rotation.x = Math.sin(t * 0.7 + e.userData.phase * 1.3) * 0.08;
     }
-    this.koi.uniforms.time.value = t;
     const pw = this.deskScreen.uniforms.power;
     pw.value += (this.deskOn - pw.value) * Math.min(1, dt * 1.5);
   }
@@ -814,54 +817,4 @@ function emaTexture(n: string, name: string): CanvasTexture {
   return t;
 }
 
-function koiMaterial(): ShaderMaterial {
-  return new ShaderMaterial({
-    uniforms: UniformsUtils.merge([UniformsLib.fog, { time: { value: 0 } }]),
-    vertexShader: /* glsl */ `
-      #include <common>
-      #include <fog_pars_vertex>
-      varying vec2 vUv;
-      void main(){ vUv = uv; vec4 mvPosition = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mvPosition;
-      #include <fog_vertex>
-      }`,
-    fragmentShader: /* glsl */ `
-      #include <common>
-      #include <fog_pars_fragment>
-      uniform float time; varying vec2 vUv;
-      float fish(vec2 p, vec2 c, float ang, float len){
-        vec2 d = p - c;
-        float ca = cos(ang), sa = sin(ang);
-        d = vec2(ca * d.x + sa * d.y, -sa * d.x + ca * d.y);
-        float body = length(vec2(d.x / len, d.y / (len * 0.28)));
-        float wig = sin(d.x * 18.0 - time * 7.0) * 0.012 * smoothstep(0.0, -len, d.x);
-        d.y += wig;
-        body = length(vec2(d.x / len, d.y / (len * 0.26)));
-        float tail = length(vec2((d.x + len * 1.1) / (len * 0.35), d.y / (len * 0.3)));
-        return max(smoothstep(1.0, 0.6, body), smoothstep(1.0, 0.5, tail) * 0.8);
-      }
-      void main(){
-        vec2 p = vUv - 0.5;
-        float r = length(p);
-        vec3 col = mix(vec3(0.004, 0.02, 0.024), vec3(0.0, 0.05, 0.05), smoothstep(0.5, 0.0, r));
-        vec3 glow = vec3(0.0);
-        for (int i = 0; i < 5; i++) {
-          float fi = float(i);
-          float sp = 0.25 + fi * 0.07;
-          float a = time * sp * (mod(fi, 2.0) < 0.5 ? 1.0 : -1.0) + fi * 1.7;
-          float rad = 0.14 + 0.055 * fi;
-          vec2 c = vec2(cos(a), sin(a)) * rad;
-          float heading = a + (mod(fi, 2.0) < 0.5 ? 1.5708 : -1.5708);
-          float f = fish(p, c, heading, 0.075 + fi * 0.004);
-          vec3 kc = mod(fi, 3.0) < 1.0 ? vec3(2.4, 0.9, 0.25) : (mod(fi, 3.0) < 2.0 ? vec3(2.2, 2.0, 1.8) : vec3(2.6, 0.35, 0.2));
-          glow += kc * f;
-        }
-        float ripple = 0.5 + 0.5 * sin(r * 60.0 - time * 1.5);
-        col += vec3(0.0, 0.08, 0.07) * ripple * smoothstep(0.5, 0.2, r);
-        col += glow * 0.8;
-        gl_FragColor = vec4(col, 1.0);
-        #include <fog_fragment>
-      }`,
-    fog: true
-  });
-}
 

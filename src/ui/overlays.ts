@@ -58,6 +58,8 @@ export class Overlays {
     el.setAttribute('aria-modal', 'true');
     el.setAttribute('aria-label', label);
     el.tabIndex = -1;
+    // Lenis is stopped while a dialog is open and would otherwise swallow wheel/touch here.
+    el.setAttribute('data-lenis-prevent', '');
     document.body.appendChild(el);
     this.stack.push({ el, restore: document.activeElement as HTMLElement | null, onClose });
     requestAnimationFrame(() => el.classList.add('is-open'));
@@ -117,7 +119,7 @@ export class Overlays {
     const list = h('ol', 'index');
     stops.forEach((s, i) => {
       const li = h('li');
-      const b = h('button', '', `<em>${pad(i)}</em><b class="moss moss--quiet">${esc(s.label)}</b><small>${esc(s.jp)}</small>`);
+      const b = h('button', '', `<em>${pad(i)}</em><b class="display display--quiet">${esc(s.label)}</b><small>${esc(s.jp)}</small>`);
       b.type = 'button';
       b.addEventListener('click', () => { this.close(); go(s.id); });
       li.appendChild(b);
@@ -137,7 +139,7 @@ export class Overlays {
       body.innerHTML = '';
       const head = h('header', 'case__head', `
         <div class="row mono" style="color:var(--ink-2)"><span>World ${pad(idx + 1)} / ${pad(n)}</span><span>·</span><span>${esc(w.year)}</span><span>·</span><span>Personal</span></div>
-        <h2 class="moss">${esc(w.title)}</h2>
+        <h2 class="display">${esc(w.title)}</h2>
         <p class="case__jp">${esc(w.jp)}</p>
         <p class="case__sub">${esc(w.sub)}</p>`);
       const plate = mediaEl(w.plate) as HTMLImageElement;
@@ -181,7 +183,7 @@ export class Overlays {
   openClient(i: number) {
     const c = content.clients[i];
     const { el, body } = this.shell(`Client ${pad(i + 1)} / ${pad(content.clients.length)} · ${c.group}`);
-    body.appendChild(h('header', 'case__head', `<h2 class="moss">${esc(c.name)}</h2><p class="case__sub">${esc(c.role)}</p>`));
+    body.appendChild(h('header', 'case__head', `<h2 class="display">${esc(c.name)}</h2><p class="case__sub">${esc(c.role)}</p>`));
     if (!c.files.length) {
       body.appendChild(h('p', 'case__note', 'This work is under NDA. Ask, and I can walk you through it on a call.'));
     } else {
@@ -204,7 +206,7 @@ export class Overlays {
   // ── all studies ─────────────────────────────────────────────────────────
   openStudies() {
     const { el, body } = this.shell(`The library · ${content.studies.length} studies`);
-    body.appendChild(h('header', 'case__head', '<h2 class="moss">The other half of the desk.</h2><p class="case__sub">Packaging, posters, automotive viz, hard-surface practice, and the occasional Sunday illustration.</p>'));
+    body.appendChild(h('header', 'case__head', '<h2 class="display">The other half of the desk.</h2><p class="case__sub">Packaging, posters, automotive viz, hard-surface practice, and the occasional Sunday illustration.</p>'));
     const grid = h('div', 'grid');
     content.studies.forEach((s, k) => {
       const t = h('button', 'tile');

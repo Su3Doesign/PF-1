@@ -2,7 +2,7 @@ import {
   AdditiveBlending, BackSide, BufferAttribute, BufferGeometry, Color, Group, Mesh, PlaneGeometry, Points, ShaderMaterial,
   SphereGeometry, Texture, Vector3, UniformsLib, UniformsUtils, NormalBlending
 } from 'three';
-import { heightAt, pathCurve, POND, CLEARINGS } from './layout';
+import { heightAt, pathCurve, POND, CLEARINGS, MOON_SET } from './layout';
 import { shared } from './materials';
 import { LAYER_NO_REFLECT } from './water';
 
@@ -14,23 +14,46 @@ function rng(seed: number) {
   return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
 }
 
-export function buildSky(): Mesh {
+/** Night sky over the forest; a rose dawn with the moon setting over the sea. `dawn` blends them. */
+export function buildSky(noise: Texture): Mesh {
   const mat = new ShaderMaterial({
-    uniforms: { moonDir: { value: MOON_DIR }, fog: { value: FOG_COLOR }, time: shared.time },
+    uniforms: {
+      moonDir: { value: MOON_DIR.clone() }, fog: { value: FOG_COLOR.clone() }, time: shared.time, dawn: { value: 0 },
+      moonSize: { value: 1 }, tNoise: { value: noise }
+    },
     vertexShader: 'varying vec3 vDir; void main(){ vDir = normalize(position); vec4 p = projectionMatrix * modelViewMatrix * vec4(position, 1.0); gl_Position = p.xyww; }',
     fragmentShader: /* glsl */ `
-      uniform vec3 moonDir, fog; uniform float time; varying vec3 vDir;
+      uniform vec3 moonDir, fog; uniform float time, dawn, moonSize; uniform sampler2D tNoise; varying vec3 vDir;
       float h(vec3 p){ return fract(sin(dot(p, vec3(12.9898, 78.233, 45.164))) * 43758.5453); }
       void main(){
         vec3 d = normalize(vDir);
         float up = clamp(d.y, -0.2, 1.0);
-        vec3 top = vec3(0.006, 0.012, 0.028);
-        vec3 col = mix(fog * 1.15, top, smoothstep(-0.02, 0.55, up));
+        // night
+        vec3 night = mix(fog * 1.15, vec3(0.006, 0.012, 0.028), smoothstep(-0.02, 0.55, up));
+        // dawn: rose at the horizon, violet above, deep blue overhead, a warm bloom where the sun will rise
+        float hh = max(up, 0.0);
+        vec3 dc = mix(vec3(1.0, 0.58, 0.46), vec3(0.36, 0.22, 0.44), smoothstep(0.0, 0.16, hh));
+        dc = mix(dc, vec3(0.04, 0.05, 0.15), smoothstep(0.12, 0.6, hh));
+        float sunA = max(dot(normalize(vec3(d.x, 0.0, d.z)), normalize(vec3(0.9, 0.0, -0.45))), 0.0);
+        dc += vec3(1.0, 0.55, 0.28) * pow(sunA, 5.0) * exp(-hh * 7.0) * 0.55;
+        dc = mix(dc, fog, smoothstep(0.02, -0.08, d.y));
+        // thin stratus lit from below
+        float az = atan(d.x, -d.z);
+        float cl = texture2D(tNoise, vec2(az * 0.9, hh * 5.0 + 0.2)).r * 0.7 + texture2D(tNoise, vec2(az * 2.7, hh * 14.0)).g * 0.3;
+        float band = smoothstep(0.02, 0.05, hh) * smoothstep(0.24, 0.07, hh);
+        float cloud = smoothstep(0.52, 0.72, cl) * band;
+        dc = mix(dc, mix(vec3(0.42, 0.26, 0.36), vec3(1.0, 0.66, 0.55), smoothstep(0.1, 0.03, hh)), cloud * 0.75);
+        vec3 col = mix(night, dc, dawn);
+        // the moon: larger and warmer as it sets
         float m = max(dot(d, moonDir), 0.0);
-        col += vec3(0.55, 0.68, 0.9) * pow(m, 24.0) * 0.2 + vec3(0.35, 0.5, 0.7) * pow(m, 5.0) * 0.03;
-        col += vec3(1.15, 1.2, 1.3) * smoothstep(0.99955, 0.99975, m);
+        vec3 moonCol = mix(vec3(1.15, 1.2, 1.3), vec3(1.35, 1.2, 0.98), dawn);
+        float r0 = mix(0.99955, 0.99895, dawn * moonSize), r1 = mix(0.99975, 0.99915, dawn * moonSize);
+        float disk = smoothstep(r0, r1, m);
+        float mare = texture2D(tNoise, (d.xy - moonDir.xy) * 22.0 + 0.5).r;
+        col = mix(col, moonCol * (0.82 + 0.3 * mare), disk * (1.0 - cloud * 0.6));
+        col += mix(vec3(0.55, 0.68, 0.9), vec3(1.0, 0.78, 0.62), dawn) * (pow(m, 24.0) * 0.2 + pow(m, 5.0) * 0.03 + pow(m, 300.0) * 0.55 * dawn + pow(m, 60.0) * 0.18 * dawn);
         vec3 sp = floor(d * 380.0);
-        float st = step(0.9975, h(sp)) * smoothstep(0.05, 0.4, up);
+        float st = step(0.9975, h(sp)) * smoothstep(0.05, 0.4, up) * mix(1.0, smoothstep(0.35, 0.8, up) * 0.5, dawn);
         col += st * (0.5 + 0.5 * sin(time * 2.0 + h(sp + 3.0) * 30.0)) * 0.6;
         gl_FragColor = vec4(col, 1.0);
       }`,
@@ -42,8 +65,36 @@ export function buildSky(): Mesh {
   m.renderOrder = -10;
   m.frustumCulled = false;
   m.name = 'sky';
+  // follow the camera so the dome never clips against the far plane
+  m.onBeforeRender = (_r, _s, cam) => { m.position.copy(cam.position); m.updateMatrixWorld(); };
   return m;
 }
+
+/** Look of each zone. The world blends these by where the camera is. */
+export interface ZoneLook {
+  fog: Color; density: number; far: number;
+  hemiSky: Color; hemiGround: Color; hemi: number;
+  sun: Color; sunI: number; sunDir: Vector3;
+  env: number; dawn: number; leafMoon: Color;
+}
+export const ZONES: Record<'forest' | 'cave' | 'hall' | 'shore', ZoneLook> = {
+  forest: {
+    fog: FOG_COLOR.clone(), density: 0.032, far: 120, hemiSky: new Color(0x2f4868), hemiGround: new Color(0x14301a), hemi: 0.5,
+    sun: new Color(0xa9c0ff), sunI: 1.05, sunDir: MOON_DIR.clone(), env: 0.55, dawn: 0, leafMoon: new Color(0.62, 0.72, 1.0)
+  },
+  cave: {
+    fog: new Color(0x050d14), density: 0.036, far: 90, hemiSky: new Color(0x2a5a7a), hemiGround: new Color(0x0c1c22), hemi: 0.62,
+    sun: new Color(0x9ab8ff), sunI: 0.3, sunDir: new Vector3(0.1, 1, -0.25).normalize(), env: 0.35, dawn: 0.6, leafMoon: new Color(0.4, 0.8, 1.0)
+  },
+  hall: {
+    fog: new Color(0x2a1a10), density: 0.024, far: 160, hemiSky: new Color(0x8a6a50), hemiGround: new Color(0x22160c), hemi: 0.62,
+    sun: new Color(0xffc48a), sunI: 1.1, sunDir: new Vector3(0.78, 0.55, 0.3).normalize(), env: 0.75, dawn: 1, leafMoon: new Color(1.0, 0.72, 0.45)
+  },
+  shore: {
+    fog: new Color(0x34263a), density: 0.0032, far: 1800, hemiSky: new Color(0x7a6aa0), hemiGround: new Color(0x2a2030), hemi: 0.62,
+    sun: new Color(0xffd8bc), sunI: 1.0, sunDir: MOON_SET.clone(), env: 0.65, dawn: 1, leafMoon: new Color(1.0, 0.8, 0.66)
+  }
+};
 
 export function buildFireflies(count: number): Points {
   const r = rng(51);

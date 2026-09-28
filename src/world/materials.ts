@@ -1,12 +1,43 @@
 import {
   Color, MeshStandardMaterial, MeshBasicMaterial, ShaderMaterial, Texture, UniformsLib, UniformsUtils,
-  AdditiveBlending, Vector4, MeshLambertMaterial, IUniform, DoubleSide
+  AdditiveBlending, Vector4, MeshLambertMaterial, IUniform, DoubleSide, Vector3, Material
 } from 'three';
 
 export const shared = {
   time: { value: 0 } as IUniform<number>,
-  wind: { value: 1 } as IUniform<number>
+  wind: { value: 1 } as IUniform<number>,
+  /** direction toward the moon (world space) and its light colour; the zones retune these */
+  moonDir: { value: new Vector3(-0.28, 0.34, -1).normalize() } as IUniform<Vector3>,
+  moonColor: { value: new Color(0.62, 0.72, 1.0) } as IUniform<Color>,
+  /** camera z, for flora that unfurls as the visitor approaches */
+  camZ: { value: 1e6 } as IUniform<number>
 };
+
+/** Instanced things ahead of the visitor stay folded into the ground and rise
+ *  as the camera comes within ~15 m. Works on any built-in material. */
+export function withGrowth<T extends Material>(m: T, key: string): T {
+  const prev = m.onBeforeCompile;
+  m.onBeforeCompile = (s, r) => {
+    prev.call(m, s, r);
+    s.uniforms.uCamZ = shared.camZ;
+    s.uniforms.uTimeG = shared.time;
+    s.vertexShader = s.vertexShader
+      .replace('#include <common>', '#include <common>\nuniform float uCamZ, uTimeG;')
+      .replace('#include <begin_vertex>', /* glsl */ `
+        #include <begin_vertex>
+        #ifdef USE_INSTANCING
+          vec3 gip = (instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+          float gAhead = gip.z - uCamZ;
+          float gk = smoothstep(-16.0 - fract(gip.x * 7.13) * 5.0, -4.0, gAhead);
+          gk = gk * gk * (3.0 - 2.0 * gk);
+          transformed *= mix(0.03, 1.0, gk);
+          transformed.x += sin(uTimeG * 1.3 + gip.x * 3.0) * 0.02 * position.y;
+        #endif
+      `);
+  };
+  m.customProgramCacheKey = () => 'grow-' + key;
+  return m;
+}
 
 // ── moss-grown surfaces ─────────────────────────────────────────────────────
 export interface MossOpts {
@@ -25,11 +56,13 @@ export interface MossOpts {
   metalness?: number;
   wet?: number;
   aoStrength?: number;
+  paving?: number; // slab size in metres: lays out flagstones with moss in the joints
 }
 
 const TRIPLANAR = /* glsl */ `
 uniform sampler2D tBase, tBaseN, tMoss, tMossN, tNoise;
-uniform float uBaseScale, uMossScale, uMossAmount, uMossLow, uWet, uAoDirect;
+uniform float uBaseScale, uMossScale, uMossAmount, uMossLow, uWet, uAoDirect, uPave;
+float pHash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 uniform vec3 uTint;
 varying vec3 vMWPos;
 varying vec3 vMWNormal;
@@ -71,7 +104,7 @@ export function mossMaterial(o: MossOpts): MeshStandardMaterial {
     tBase: { value: o.base }, tBaseN: { value: o.baseN }, tMoss: { value: o.moss }, tMossN: { value: o.mossN }, tNoise: { value: o.noise },
     uBaseScale: { value: o.baseScale ?? 0.35 }, uMossScale: { value: o.mossScale ?? 0.9 }, uMossAmount: { value: o.mossAmount ?? 1 },
     uMossLow: { value: o.mossLow ?? 0.6 }, uWet: { value: o.wet ?? 1 }, uTint: { value: o.tint ?? new Color(1, 1, 1) },
-    uAoDirect: { value: o.aoStrength ?? 0.65 }
+    uAoDirect: { value: o.aoStrength ?? 0.65 }, uPave: { value: o.paving ?? 1 }
   };
   m.userData.uniforms = u;
   m.onBeforeCompile = (s) => {
@@ -93,6 +126,14 @@ export function mossMaterial(o: MossOpts): MeshStandardMaterial {
         mossMask = smoothstep(0.2, 0.78, wN.y + (nz - 0.5) * 1.0 + (nz2 - 0.5) * 0.4) * uMossAmount;
         float creep = smoothstep(uMossLow + 0.6, uMossLow - 0.4, vMWPos.y + (nz - 0.5) * 1.6 + (nz2 - 0.5) * 0.5);
         mossMask = clamp(max(mossMask, creep * 0.95 * step(0.001, uMossAmount)), 0.0, 1.0);
+        #ifdef PAVING
+          vec2 pv = vMWPos.xz / vec2(uPave * 1.4, uPave);
+          pv.x += step(1.0, mod(floor(pv.y), 2.0)) * 0.5;
+          vec2 pf = abs(fract(pv) - 0.5);
+          float joint = max(smoothstep(0.482, 0.495, pf.x), smoothstep(0.47, 0.49, pf.y)) * smoothstep(0.7, 0.9, wN.y);
+          baseCol *= mix(0.82 + 0.3 * pHash(floor(pv)), 0.3, joint);
+          mossMask = max(mossMask, joint * smoothstep(0.35, 0.65, nz2 + nz * 0.3));
+        #endif
         float wetBand = smoothstep(0.55, 0.0, vMWPos.y) * uWet;
         baseCol *= mix(1.0, 0.55, wetBand);
         mossCol *= mix(1.0, 0.7, wetBand);
@@ -113,7 +154,8 @@ export function mossMaterial(o: MossOpts): MeshStandardMaterial {
         normal = normalize((viewMatrix * vec4(nW, 0.0)).xyz);
       `);
   };
-  m.customProgramCacheKey = () => 'moss';
+  if (o.paving) m.defines = { PAVING: '' };
+  m.customProgramCacheKey = () => (o.paving ? 'moss-pave' : 'moss');
   return m;
 }
 

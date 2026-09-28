@@ -7,8 +7,8 @@ export interface TerrainTex { ground: Texture; groundN: Texture; moss: Texture; 
 
 /** One ground mesh, denser near the walk, with path and bank tinting in vertex colours. */
 export function buildTerrain(t: TerrainTex): Mesh {
-  const x0 = -70, x1 = 70, z0 = 34, z1 = -206;
-  const nx = 141, nz = 241;
+  const x0 = -70, x1 = 70, z0 = 34, z1 = -180;
+  const nx = 141, nz = 215;
   const pos = new Float32Array(nx * nz * 3);
   const uv = new Float32Array(nx * nz * 2);
   const col = new Float32Array(nx * nz * 3);

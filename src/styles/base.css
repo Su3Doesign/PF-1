@@ -79,25 +79,22 @@ h1, h2, h3 { text-wrap: balance; }
 }
 .jp { font-family: var(--f-jp); font-weight: 800; }
 
-/* moss-grown display type: moss texture clipped to the glyphs, a rough edge, neon bleed */
-.moss {
+/* display type: expanded Archivo, moonlit off-white fading into pale jade, a breath of neon */
+.display {
   font-family: var(--f-display);
-  font-weight: 900;
-  font-stretch: 125%;
-  text-transform: uppercase;
-  letter-spacing: -0.015em;
-  line-height: 0.92;
-  color: #9fc257;
-  background-image:
-    radial-gradient(120% 90% at 30% 10%, rgba(226, 255, 170, 0.55), rgba(226, 255, 170, 0) 45%),
-    url('/assets/tex/moss_type.webp');
-  background-size: 100% 100%, 240px 240px;
+  font-weight: 780;
+  font-stretch: 116%;
+  letter-spacing: -0.038em;
+  line-height: 0.98;
+  padding-bottom: 0.06em;
+  color: #eef3ec;
+  background: linear-gradient(176deg, #fbfcf8 0%, #e6eee6 46%, #a6d6c4 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: url(#moss-rough) drop-shadow(0 1px 0 rgba(0, 0, 0, 0.6)) drop-shadow(0 0 14px rgba(61, 255, 208, 0.18));
+  filter: drop-shadow(0 2px 18px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 26px rgba(61, 255, 208, 0.10));
 }
-.moss--quiet { filter: drop-shadow(0 0 10px rgba(61, 255, 208, 0.12)); }
+.display--quiet { filter: none; }
 
 .neon-text {
   color: #effff9;
