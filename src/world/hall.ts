@@ -131,7 +131,7 @@ function vaultGeometry(): BufferGeometry {
 }
 
 /** A water lily: two rings of pointed petals, pink tips fading to white. */
-function lotusGeometry(): BufferGeometry {
+export function lotusGeometry(): BufferGeometry {
   const pos: number[] = [], col: number[] = [], idx: number[] = [];
   const ring = (n: number, len: number, tilt: number, rot: number) => {
     for (let k = 0; k < n; k += 1) {

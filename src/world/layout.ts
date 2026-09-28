@@ -102,6 +102,26 @@ export function pondFactor(x: number, z: number): number {
   return Math.sqrt(dx * dx + dz * dz); // < 1 inside the pond
 }
 
+/** Spots kept clear of trees and undergrowth so placed things stay visible:
+ *  the television, the projector, its sheet and beam, the kodama, the deer. */
+export const KEEP_CLEAR: { x: number; z: number; r: number }[] = [
+  { x: 4.1, z: -96.2, r: 2.4 }, { x: 5.4, z: -97.3, r: 1.6 },
+  { x: -2.3, z: -120.9, r: 1.6 }, { x: -2.6, z: -125.3, r: 2.2 }, { x: -2.9, z: -129.8, r: 3.4 },
+  { x: -6.8, z: -85.5, r: 2.8 },
+  // a sightline from the method stop to the spirit deer
+  { x: -1.4, z: -75, r: 1.7 }, { x: -3.2, z: -78.6, r: 1.9 }, { x: -5.0, z: -82.1, r: 2.1 },
+  { x: -6.8, z: -31, r: 0.9 }, { x: 5.6, z: -52.5, r: 0.9 }, { x: -7.2, z: -76, r: 0.9 }, { x: 6.4, z: -99, r: 0.9 },
+  { x: -8.5, z: -126, r: 0.9 }, { x: 9.5, z: -146, r: 0.9 }, { x: -6.2, z: -161.5, r: 0.9 }
+];
+
+export function keepClear(x: number, z: number, pad = 0): boolean {
+  for (const c of KEEP_CLEAR) {
+    const dx = x - c.x, dz = z - c.z;
+    if (dx * dx + dz * dz < (c.r + pad) * (c.r + pad)) return true;
+  }
+  return false;
+}
+
 export function inClearing(x: number, z: number, pad = 0): boolean {
   for (const c of CLEARINGS) {
     const dx = x - c.x, dz = z - c.z;
@@ -138,9 +158,15 @@ export function heightAt(x: number, z: number, pathD?: number): number {
   const pf = pondFactor(x, z);
   let h = 0.35 + (fbm(x * 0.06, z * 0.06) - 0.5) * 1.6 + (fbm(x * 0.25 + 9, z * 0.25) - 0.5) * 0.35;
   // valley walls rise away from the path to hide the edge of the world
+  // valley walls rise away from the walk into forested hills, so the forest
+  // closes in on every side instead of thinning out into fog
   const d = pathD ?? pathDistance(x, z);
-  if (z < -14) h += smooth(10, 40, d) * 3.5;
-  else h += smooth(24, 45, Math.abs(x)) * 3;
+  const ridge = (fbm(x * 0.021 + 17, z * 0.021) - 0.5) * 9;
+  const valley = smooth(10, 40, d) * 3.5 + smooth(30, 92, d) * (17 + ridge);
+  const ax = Math.abs(x);
+  const bowl = smooth(24, 45, ax) * 3 + smooth(38, 105, ax) * (15 + ridge);
+  const kf = smooth(-2, -24, z); // blend the pond's bowl into the forest valley
+  h += bowl * (1 - kf) + valley * kf;
   // pond basin
   const basin = smooth(1.15, 0.85, pf);
   h = h * (1 - basin) + (-1.3 - (1 - Math.min(pf, 1)) * 0.6) * basin;

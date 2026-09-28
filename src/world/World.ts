@@ -22,6 +22,9 @@ import { buildCave, caveCenter, caveScale } from './cave';
 import { buildHall } from './hall';
 import { buildShore } from './shore';
 import { buildFauna, Fauna } from './fauna';
+import { buildLanding } from './landing';
+import { buildForestFloor } from './forestfloor';
+import { buildExtras, Extras } from './extras';
 import { archive } from '../data/content';
 
 export interface WorldEvents {
@@ -53,6 +56,8 @@ export class World {
   private fauna!: Fauna;
   private emitters: Emitter[] = [];
   private art: Mesh[] = [];
+  extras!: Extras;
+  filmVideo = '';
   private pointMats: ShaderMaterial[] = [];
   private updaters: ((t: number, camZ: number) => void)[] = [];
   private zoneNow: ZoneLook = cloneZone(ZONES.forest);
@@ -79,6 +84,7 @@ export class World {
   private tmpPos = new Vector3();
   private tmpLook = new Vector3();
   private bloom!: BloomEffect;
+  private bloomBase = 1.05;
   overlay = false;
   ready = false;
   /** ?debug only: pin the camera somewhere for inspection. */
@@ -137,13 +143,19 @@ export class World {
       return [caveCenter(z).x + (Math.random() - 0.5) * 3, z];
     }, [0.35, 0.9]));
     onProgress(0.8, 'growing the forest');
-    const trees = buildTrees(this.q.trees, { bark: a.tex.bark, barkN: a.tex.barkN, moss: a.tex.moss, noise: a.tex.noise, conifer: a.tex.conifer, broad: a.tex.broad }, this.q.shadows, this.q.tier === 'high' ? 1 : 0);
+    const trees = buildTrees(this.q.trees, { bark: a.tex.bark, barkN: a.tex.barkN, moss: a.tex.moss, noise: a.tex.noise, conifer: a.tex.conifer, broad: a.tex.broad }, this.q.shadows, this.q.tier === 'high' ? 1 : 0, this.q.farTrees, this.q.saplings);
     s.add(trees.group);
     await nextFrame();
     s.add(buildFoliage({
       grass: this.q.grass, tufts: this.q.tufts, ferns: this.q.ferns, bushes: this.q.bushes,
       fern: a.tex.fern, fern2: a.tex.fern2, tuft: a.tex.tuft, bush: a.tex.bushLeaves, blossom: a.tex.blossom, trees: trees.positions
     }));
+    const landing = buildLanding({
+      tuft: a.tex.tuft, bamboo: a.tex.bamboo, willow: a.tex.willow, lilypad: a.tex.lilypad, broad: a.tex.broad,
+      stone: a.tex.stone, stoneN: a.tex.stoneN, moss: a.tex.moss, mossN: a.tex.mossN, noise: a.tex.noise, bark: a.tex.bark, barkN: a.tex.barkN
+    }, this.q.tier, this.q.shadows);
+    s.add(landing.group);
+    s.add(buildForestFloor({ stone: a.tex.stone, stoneN: a.tex.stoneN, moss: a.tex.moss, mossN: a.tex.mossN, noise: a.tex.noise, bark: a.tex.bark, barkN: a.tex.barkN }, this.q.tier, this.q.shadows));
     const mush = buildMushrooms(this.q.tier === 'low' ? 120 : 260);
     mush.layers.set(LAYER_NO_REFLECT);
     s.add(mush);
@@ -158,6 +170,8 @@ export class World {
     s.add(buildVolumes(a.tex.noise, this.q.godRays));
 
     // the finale: cave, archive hall, shore
+    onProgress(0.87, 'setting up the projector');
+    await nextFrame();
     onProgress(0.88, 'hollowing the cave');
     await nextFrame();
     const t = a.tex;
@@ -179,9 +193,17 @@ export class World {
       conifer: t.conifer, bushLeaves: t.bushLeaves, blossom: t.blossom, tuft: t.tuft, bark: t.bark, barkN: t.barkN, waterN: t.waterN
     }, this.reflector, this.q.tier, this.q.shadows);
     s.add(shore.group);
-    this.fauna = buildFauna(this.q.tier);
+    this.fauna = buildFauna(this.q.tier, a.models.lantern);
+    this.extras = buildExtras({
+      models: { tv: a.models.tv, projector: a.models.projector, kodama: a.models.kodama, deer: a.models.deer, whale: a.models.whale },
+      tex: { aoTv: t.aoTv, aoProjector: t.aoProjector, lacquer: t.lacquer, lacquerN: t.lacquerN, metal: t.metal, metalN: t.metalN, moss: t.moss, mossN: t.mossN, noise: t.noise, stone: t.stone, stoneN: t.stoneN }
+    });
+    this.extras.setFilm(this.filmVideo);
+    s.add(this.extras.group);
+    this.props.targets.push({ object: this.extras.tv, kind: 'fact', index: 0 }, { object: this.extras.sheet, kind: 'film', index: 0 });
+    for (const k of this.extras.kodama) this.props.targets.push({ object: k, kind: 'kodama', index: -1 });
     s.add(this.fauna.group);
-    this.emitters = [...this.props.emitters, ...cave.emitters, ...hall.emitters, ...shore.emitters];
+    this.emitters = [...this.props.emitters, ...landing.emitters, ...cave.emitters, ...hall.emitters, ...shore.emitters, ...this.extras.emitters];
     for (const g of [cave.group, hall.group]) {
       g.traverse((o) => {
         const m = (o as Points).material as ShaderMaterial;
@@ -273,7 +295,7 @@ export class World {
     const list: [ZoneLook, number][] = [[ZONES.forest, w.forest], [ZONES.cave, w.cave], [ZONES.hall, w.hall], [ZONES.shore, w.shore]];
     z.fog.setRGB(0, 0, 0); z.hemiSky.setRGB(0, 0, 0); z.hemiGround.setRGB(0, 0, 0); z.sun.setRGB(0, 0, 0); z.leafMoon.setRGB(0, 0, 0);
     z.sunDir.set(0, 0, 0);
-    let dens = 0, logFar = 0, hemi = 0, sunI = 0, env = 0, dawn = 0;
+    let dens = 0, logFar = 0, hemi = 0, sunI = 0, env = 0, dawn = 0, bloom = 0, bloomT = 0;
     for (const [L, k] of list) {
       if (k <= 0) continue;
       z.fog.r += L.fog.r * k; z.fog.g += L.fog.g * k; z.fog.b += L.fog.b * k;
@@ -283,6 +305,7 @@ export class World {
       z.leafMoon.r += L.leafMoon.r * k; z.leafMoon.g += L.leafMoon.g * k; z.leafMoon.b += L.leafMoon.b * k;
       z.sunDir.addScaledVector(L.sunDir, k);
       dens += L.density * k; logFar += Math.log(L.far) * k; hemi += L.hemi * k; sunI += L.sunI * k; env += L.env * k; dawn += L.dawn * k;
+      bloom += L.bloom * k; bloomT += L.bloomT * k;
     }
     z.sunDir.normalize();
     if (this.introStart < 0 || this.time - this.introStart > 4.2) this.fog.density = dens;
@@ -299,6 +322,8 @@ export class World {
     sky.uniforms.fog.value.copy(z.fog);
     sky.uniforms.moonDir.value.copy(dawn > 0.5 ? ZONES.shore.sunDir : MOON_DIR);
     this.scene.environmentIntensity = env;
+    this.bloomBase = bloom;
+    this.bloom.luminanceMaterial.threshold = bloomT;
     const envT = w.hall >= Math.max(w.forest, w.cave, w.shore) ? this.envs.hall : w.shore > 0.5 ? this.envs.shore : this.envs.forest;
     if (envT && this.scene.environment !== envT) this.scene.environment = envT;
   }
@@ -360,6 +385,11 @@ export class World {
       if (mat.map) mat.color.setScalar(kind === 'art' && i === index ? 1.18 : 0.9);
     });
   }
+
+  nextFact() { return this.extras?.nextFact() ?? 0; }
+
+  /** Returns how many kodama have been found, or -1 if this one already was. */
+  findKodama(i: number) { return this.extras?.findKodama(i) ? this.extras.found() : -1; }
 
   spinStudies(dir: number) {
     if (!this.props) return;
@@ -429,6 +459,7 @@ export class World {
       if (t) {
         this.hovered = t;
         if (t.kind === 'study') { this.hoverInstance = h.instanceId ?? -1; return { kind: 'study', index: this.hoverInstance }; }
+        if (t.kind === 'kodama') return { kind: 'kodama', index: h.instanceId ?? 0 };
         return { kind: t.kind, index: t.index };
       }
       o = o.parent;
@@ -525,6 +556,7 @@ export class World {
     for (const d of this.drops) d.update(this.time);
     for (const u of this.updaters) u(this.time, cz);
     this.fauna.update(this.time, dt, this.camera.position);
+    this.extras.update(this.time, dt, this.camera.position);
     this.updateZone();
     this.updateLights(dt);
 
@@ -565,10 +597,10 @@ export class World {
 
     // grass sway reacts a touch to scrolling speed
     shared.wind.value = 1 + Math.min(1.5, Math.abs(this.rail.tAt(this.scrollY) - this.tCur) * 30);
-    this.bloom.intensity = 1.05 + 0.08 * Math.sin(this.time * 0.7);
+    this.bloom.intensity = this.bloomBase + 0.08 * Math.sin(this.time * 0.7);
 
     this.renderer.info.reset();
-    if (!this.overlay) this.reflector.render(this.renderer, this.scene, this.camera);
+    if (!this.overlay) this.reflector.render(this.renderer, this.scene, this.camera, this.camera.position.z > -160 ? 70 : this.camera.far);
     this.composer.render(dt);
     this.gov.tick(dt);
   };

@@ -11,6 +11,8 @@ export interface Quality {
   bushes: number;
   ferns: number;
   trees: number;
+  farTrees: number;
+  saplings: number;
   fireflies: number;
   reflection: number; // fraction of drawing-buffer size
   shadows: boolean;
@@ -19,9 +21,9 @@ export interface Quality {
 }
 
 const PRESETS: Record<Tier, Quality> = {
-  high: { tier: 'high', dprMax: 1.75, dprMin: 0.9, grass: 42000, tufts: 9000, bushes: 950, ferns: 1100, trees: 240, fireflies: 520, reflection: 0.5, shadows: true, msaa: 4, godRays: true },
-  medium: { tier: 'medium', dprMax: 1.25, dprMin: 0.75, grass: 22000, tufts: 6000, bushes: 650, ferns: 700, trees: 190, fireflies: 340, reflection: 0.38, shadows: false, msaa: 0, godRays: true },
-  low: { tier: 'low', dprMax: 1.0, dprMin: 0.6, grass: 8000, tufts: 3400, bushes: 380, ferns: 340, trees: 140, fireflies: 180, reflection: 0.28, shadows: false, msaa: 0, godRays: false }
+  high: { tier: 'high', dprMax: 1.75, dprMin: 0.9, grass: 42000, tufts: 9000, bushes: 950, ferns: 1100, trees: 240, farTrees: 520, saplings: 320, fireflies: 520, reflection: 0.5, shadows: true, msaa: 4, godRays: true },
+  medium: { tier: 'medium', dprMax: 1.25, dprMin: 0.75, grass: 22000, tufts: 6000, bushes: 650, ferns: 700, trees: 190, farTrees: 380, saplings: 220, fireflies: 340, reflection: 0.38, shadows: false, msaa: 0, godRays: true },
+  low: { tier: 'low', dprMax: 1.0, dprMin: 0.6, grass: 8000, tufts: 3400, bushes: 380, ferns: 340, trees: 140, farTrees: 260, saplings: 140, fireflies: 180, reflection: 0.28, shadows: false, msaa: 0, godRays: false }
 };
 
 export function detectTier(gl: WebGL2RenderingContext | WebGLRenderingContext): Tier {

@@ -5,14 +5,15 @@ import {
   Vector3, Vector4, VideoTexture, DoubleSide, BoxGeometry, CatmullRomCurve3, TubeGeometry
 } from 'three';
 import type { Assets } from './assets';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import {
   DESK, EMA, LANTERNS, LETTERS_Z, LETTER_SCALE, LIBRARY_TREE, POND, RACK, TORII, WORLD_MONOLITHS, SEA_TORII, HALL, SHORE,
-  heightAt, floorAt, pathCurve, pathDistance, pondFactor, inClearing
+  heightAt, floorAt, pathCurve, pathDistance, pondFactor, inClearing, keepClear
 } from './layout';
 import { mossMaterial, neonMaterial, screenMaterial } from './materials';
 import { NEON, glowTexture, neonSign, neonTube } from './neon';
 
-export type TargetKind = 'world' | 'client' | 'study' | 'tier' | 'contact' | 'home' | 'art';
+export type TargetKind = 'world' | 'client' | 'study' | 'tier' | 'contact' | 'home' | 'art' | 'fact' | 'kodama' | 'film';
 export interface Target { object: Object3D; kind: TargetKind; index: number }
 export interface Emitter { pos: Vector3; color: Color; intensity: number; range: number; level: () => number }
 
@@ -22,7 +23,7 @@ function rng(seed: number) {
 }
 
 /** Quantised glTF attributes → float, with the node transform baked in. */
-function bakedGeometry(mesh: Mesh): BufferGeometry {
+export function bakedGeometry(mesh: Mesh): BufferGeometry {
   mesh.updateWorldMatrix(true, false);
   const src = mesh.geometry;
   const g = new BufferGeometry();
@@ -108,6 +109,8 @@ export class Props {
   deskOn = 0;
   private playTried = -1e9;
   signs: Mesh[] = [];
+  private signBoard?: ReturnType<typeof mossMaterial>;
+  private signWire?: MeshStandardMaterial;
   guide!: Mesh;
   private moss: ReturnType<typeof mossMaterial>[] = [];
 
@@ -588,7 +591,7 @@ export class Props {
       const z = -20 - r() * 165, x = (r() * 2 - 1) * 14;
       const pd = pathDistance(x, z);
       if (pd < 1.7 || pd > 9) continue;
-      if (inClearing(x, z, -2)) continue;
+      if (inClearing(x, z, -2) || keepClear(x, z, 1.2)) continue;
       lists[n % 4].push([x, z, 0.35 + r() * (r() < 0.15 ? 1.8 : 0.8), r() * 6.28, 0.1]);
       n += 1;
     }
@@ -698,6 +701,7 @@ export class Props {
       s.rotation.y = ry;
       this.group.add(s);
       this.signs.push(s);
+      this.mount(s, 'hang');
       return s;
     };
     make('世界', 'WORLDS', NEON.teal, 1.7, -3, 4.7, -60, 0);
@@ -706,17 +710,50 @@ export class Props {
     make('書庫', 'LIBRARY', NEON.teal, 1.8, 4, 5.6, -134.1, 0);
     make('絵馬', 'COMMISSIONS', NEON.amber, 1.6, -1, 4.1, -158.3, 0);
     const hello = neonSign({ lines: [{ text: 'SAY HELLO', font: latin, size: 96, tracking: 0.08 }], color: NEON.magenta, width: 3.4, intensity: 2.8 });
-    hello.position.set(DESK.x + 0.4, floorAt(DESK.x, DESK.z) + 2.55, DESK.z - 1.9);
+    hello.position.set(DESK.x + 0.4, floorAt(DESK.x, DESK.z) + 2.3, DESK.z - 1.9);
     hello.rotation.y = -0.45;
     hello.scale.setScalar(0.62);
     this.group.add(hello);
     this.signs.push(hello);
+    this.mount(hello, 'posts', floorAt(DESK.x, DESK.z));
     const tegami = neonSign({ lines: [{ text: '手紙', font: kanji, size: 80 }], color: NEON.teal, width: 0.5, vertical: true, intensity: 2.4 });
     tegami.position.set(DESK.x + 2.2, floorAt(DESK.x, DESK.z) + 1.9, DESK.z - 0.9);
     tegami.rotation.y = -0.45;
+    this.mount(tegami, 'posts', floorAt(DESK.x, DESK.z));
     make('洞', 'ABOUT', NEON.teal, 1.2, -5.6, 3.3, -186.5, 0.45);
     this.group.add(tegami);
     this.signs.push(tegami);
+  }
+
+  /** Nothing floats: every sign gets a weathered backing board, and either cables up into the canopy or posts to the ground. */
+  private mount(sign: Mesh, how: 'hang' | 'posts', groundY = 0) {
+    if (!this.signBoard) {
+      this.signBoard = this.mossMat('metal', undefined, { baseScale: 1.4, mossAmount: 0.7, metalness: 0.4, roughness: 0.55, tint: new Color(0.35, 0.35, 0.36) });
+      this.signWire = new MeshStandardMaterial({ color: 0x151515, roughness: 0.5, metalness: 0.6 });
+    }
+    sign.geometry.computeBoundingBox();
+    const bb = sign.geometry.boundingBox!;
+    const w = (bb.max.x - bb.min.x) * 0.86, h = (bb.max.y - bb.min.y) * 0.8;
+    const board = new BoxGeometry(w, h, 0.05);
+    board.translate(0, 0, -0.045);
+    const sc = sign.scale.y;
+    const rods: BufferGeometry[] = [];
+    for (const x of [-w * 0.38, w * 0.38]) {
+      let y0: number, y1: number;
+      if (how === 'hang') { y0 = h / 2; y1 = h / 2 + 7 / sc; }
+      else { y0 = -h / 2; y1 = (groundY - sign.position.y) / sc; }
+      const L = Math.abs(y1 - y0);
+      const r = how === 'hang' ? 0.008 / sc : 0.035 / sc;
+      const rod = new CylinderGeometry(r, r, L, 6);
+      rod.translate(x, (y0 + y1) / 2, -0.045);
+      rods.push(rod);
+    }
+    // board and fixings in one mesh: group 0 is the board, the rest are the rods
+    const merged = mergeGeometries([board, ...rods], true)!;
+    merged.groups.forEach((g, i) => { g.materialIndex = i === 0 ? 0 : 1; });
+    const mount = new Mesh(merged, [this.signBoard, this.signWire!]);
+    mount.renderOrder = 0;
+    sign.add(mount);
   }
 
   update(t: number, dt: number) {

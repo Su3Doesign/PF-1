@@ -1,17 +1,19 @@
 // The shore: the hall's door opens onto a stone terrace over a quiet cove.
 // Beaches curve away under black-pine cliffs, sea stacks stand in the water,
-// a vermilion gate waits offshore, and the moon sets into a rose-coloured dawn.
+// a vermilion gate waits offshore, and the moon sets in the blue hour before
+// dawn while the surf glows with plankton.
 import {
-  AdditiveBlending, BoxGeometry, BufferAttribute, BufferGeometry, Color, Float32BufferAttribute, Group, InstancedMesh,
-  LatheGeometry, Matrix4, Mesh, MeshStandardMaterial, PlaneGeometry, Quaternion, ShaderMaterial, Texture, Vector2, Vector3
+  BoxGeometry, BufferAttribute, BufferGeometry, Color, Float32BufferAttribute, Group, InstancedMesh,
+  LatheGeometry, Matrix4, Mesh, MeshStandardMaterial, Quaternion, Texture, Vector2, Vector3
 } from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { HALL, SHORE, fbm } from './layout';
-import { mossMaterial, shared } from './materials';
+import { mossMaterial } from './materials';
 import { blackPine, bushGeometry, leafMaterial, rng, tuftGeometry } from './treegen';
 import { barkMaterial } from './trees';
 import { rockGeometry } from './cave';
-import { Reflector, LAYER_NO_REFLECT } from './water';
+import { Reflector } from './water';
+import { buildSea } from './sea';
 import type { Emitter } from './props';
 
 export interface ShoreTex {
@@ -166,13 +168,13 @@ export function buildShore(tex: ShoreTex, reflector: Reflector, tier: 'high' | '
   const up = new Vector3(0, 1, 0);
 
   // ── the sea ──
-  const seaMat = reflector.material({ waterN: tex.waterN, noise: tex.noise }, {
-    deep: new Color(0x0c1426), scale: 0.5, distortion: 2.4, refl: 1, murk: 0.35, specPow: 140, specAmt: 1.8, flow: new Vector2(0, -0.4)
-  });
-  const sea = new Mesh(new PlaneGeometry(5000, 2600), seaMat);
-  sea.rotation.x = -Math.PI / 2;
-  sea.position.set(CX, 0, SHORE.z0 - 1300);
-  sea.name = 'sea';
+  const sea = buildSea(reflector, { waterN: tex.waterN, noise: tex.noise }, {
+    center: new Vector3(CX, 0, SHORE.z1 - 1),
+    radius: 1400,
+    clipZ: SHORE.z0 - 0.3,
+    depthAt: (x, z) => Math.max(0, -coastHeight(x, z)),
+    depthRect: [-240, -249, 240, -760]
+  }, tier);
   group.add(sea);
   reflector.add(sea);
 
@@ -181,46 +183,6 @@ export function buildShore(tex: ShoreTex, reflector: Reflector, tier: 'high' | '
   coast.name = 'coast';
   coast.receiveShadow = true;
   group.add(coast);
-
-  // surf: a band of foam that breathes along each beach
-  const foamMat = new ShaderMaterial({
-    uniforms: { time: shared.time, tNoise: { value: tex.noise } },
-    vertexShader: 'varying vec2 vUv; varying vec3 vW; void main(){ vUv = uv; vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }',
-    fragmentShader: /* glsl */ `
-      uniform float time; uniform sampler2D tNoise; varying vec2 vUv; varying vec3 vW;
-      void main(){
-        float n = texture2D(tNoise, vW.xz * 0.08 + vec2(time * 0.01, 0.0)).r;
-        float wave = fract(vUv.y * 1.6 - time * 0.16 + n * 0.4 + vUv.x * 3.0);
-        float band = smoothstep(0.0, 0.08, wave) * smoothstep(0.35, 0.1, wave);
-        float edge = smoothstep(1.0, 0.55, vUv.y) * smoothstep(0.0, 0.2, vUv.y);
-        float lace = smoothstep(0.45, 0.75, texture2D(tNoise, vW.xz * 0.35 + time * 0.02).g);
-        float a = band * edge * (0.35 + 0.65 * lace);
-        gl_FragColor = vec4(vec3(1.0, 0.92, 0.88) * a * 0.55, 1.0);
-      }`,
-    transparent: true, blending: AdditiveBlending, depthWrite: false
-  });
-  for (const side of [-1, 1]) {
-    const pos: number[] = [], uv: number[] = [], idx: number[] = [];
-    const steps = 90;
-    for (let i = 0; i <= steps; i += 1) {
-      const z = -258 - Math.pow(i / steps, 1.4) * 360;
-      const w = coveWidth(z);
-      const x = CX + side * w;
-      // across the band: from 2.5 m out at sea to the waterline
-      pos.push(x - side * 2.5, 0.02, z, x + side * 0.9, 0.02, z);
-      uv.push(i / steps, 0, i / steps, 1); // v runs across the band: 0 at sea, 1 on the sand
-      if (i < steps) { const a = i * 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); }
-    }
-    const g = new BufferGeometry();
-    g.setAttribute('position', new Float32BufferAttribute(pos, 3));
-    g.setAttribute('uv', new Float32BufferAttribute(uv, 2));
-    g.setIndex(idx);
-    g.computeBoundingSphere();
-    const foam = new Mesh(g, foamMat);
-    foam.layers.set(LAYER_NO_REFLECT);
-    foam.renderOrder = 3;
-    group.add(foam);
-  }
 
   // ── the terrace ──
   const stone = mossMaterial({

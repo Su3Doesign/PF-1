@@ -32,17 +32,17 @@ export function buildSky(noise: Texture): Mesh {
         vec3 night = mix(fog * 1.15, vec3(0.006, 0.012, 0.028), smoothstep(-0.02, 0.55, up));
         // dawn: rose at the horizon, violet above, deep blue overhead, a warm bloom where the sun will rise
         float hh = max(up, 0.0);
-        vec3 dc = mix(vec3(1.0, 0.58, 0.46), vec3(0.36, 0.22, 0.44), smoothstep(0.0, 0.16, hh));
-        dc = mix(dc, vec3(0.04, 0.05, 0.15), smoothstep(0.12, 0.6, hh));
+        vec3 dc = mix(vec3(0.6, 0.32, 0.34), vec3(0.075, 0.06, 0.17), smoothstep(0.0, 0.11, hh));
+        dc = mix(dc, vec3(0.006, 0.011, 0.04), smoothstep(0.07, 0.42, hh));
         float sunA = max(dot(normalize(vec3(d.x, 0.0, d.z)), normalize(vec3(0.9, 0.0, -0.45))), 0.0);
-        dc += vec3(1.0, 0.55, 0.28) * pow(sunA, 5.0) * exp(-hh * 7.0) * 0.55;
+        dc += vec3(1.0, 0.5, 0.26) * pow(sunA, 5.0) * exp(-hh * 9.0) * 0.32;
         dc = mix(dc, fog, smoothstep(0.02, -0.08, d.y));
         // thin stratus lit from below
         float az = atan(d.x, -d.z);
         float cl = texture2D(tNoise, vec2(az * 0.9, hh * 5.0 + 0.2)).r * 0.7 + texture2D(tNoise, vec2(az * 2.7, hh * 14.0)).g * 0.3;
         float band = smoothstep(0.02, 0.05, hh) * smoothstep(0.24, 0.07, hh);
         float cloud = smoothstep(0.52, 0.72, cl) * band;
-        dc = mix(dc, mix(vec3(0.42, 0.26, 0.36), vec3(1.0, 0.66, 0.55), smoothstep(0.1, 0.03, hh)), cloud * 0.75);
+        dc = mix(dc, mix(vec3(0.13, 0.1, 0.2), vec3(0.62, 0.36, 0.36), smoothstep(0.1, 0.03, hh)), cloud * 0.7);
         vec3 col = mix(night, dc, dawn);
         // the moon: larger and warmer as it sets
         float m = max(dot(d, moonDir), 0.0);
@@ -53,7 +53,7 @@ export function buildSky(noise: Texture): Mesh {
         col = mix(col, moonCol * (0.82 + 0.3 * mare), disk * (1.0 - cloud * 0.6));
         col += mix(vec3(0.55, 0.68, 0.9), vec3(1.0, 0.78, 0.62), dawn) * (pow(m, 24.0) * 0.2 + pow(m, 5.0) * 0.03 + pow(m, 300.0) * 0.55 * dawn + pow(m, 60.0) * 0.18 * dawn);
         vec3 sp = floor(d * 380.0);
-        float st = step(0.9975, h(sp)) * smoothstep(0.05, 0.4, up) * mix(1.0, smoothstep(0.35, 0.8, up) * 0.5, dawn);
+        float st = step(0.9975, h(sp)) * smoothstep(0.05, 0.4, up) * mix(1.0, smoothstep(0.18, 0.55, up) * 0.85, dawn);
         col += st * (0.5 + 0.5 * sin(time * 2.0 + h(sp + 3.0) * 30.0)) * 0.6;
         gl_FragColor = vec4(col, 1.0);
       }`,
@@ -75,24 +75,24 @@ export interface ZoneLook {
   fog: Color; density: number; far: number;
   hemiSky: Color; hemiGround: Color; hemi: number;
   sun: Color; sunI: number; sunDir: Vector3;
-  env: number; dawn: number; leafMoon: Color;
+  env: number; dawn: number; leafMoon: Color; bloom: number; bloomT: number;
 }
 export const ZONES: Record<'forest' | 'cave' | 'hall' | 'shore', ZoneLook> = {
   forest: {
     fog: FOG_COLOR.clone(), density: 0.032, far: 120, hemiSky: new Color(0x2f4868), hemiGround: new Color(0x14301a), hemi: 0.5,
-    sun: new Color(0xa9c0ff), sunI: 1.05, sunDir: MOON_DIR.clone(), env: 0.55, dawn: 0, leafMoon: new Color(0.62, 0.72, 1.0)
+    sun: new Color(0xa9c0ff), sunI: 1.05, sunDir: MOON_DIR.clone(), env: 0.55, dawn: 0, leafMoon: new Color(0.62, 0.72, 1.0), bloom: 1.05, bloomT: 0.78
   },
   cave: {
     fog: new Color(0x050d14), density: 0.036, far: 90, hemiSky: new Color(0x2a5a7a), hemiGround: new Color(0x0c1c22), hemi: 0.62,
-    sun: new Color(0x9ab8ff), sunI: 0.3, sunDir: new Vector3(0.1, 1, -0.25).normalize(), env: 0.35, dawn: 0.6, leafMoon: new Color(0.4, 0.8, 1.0)
+    sun: new Color(0x9ab8ff), sunI: 0.3, sunDir: new Vector3(0.1, 1, -0.25).normalize(), env: 0.35, dawn: 0.6, leafMoon: new Color(0.4, 0.8, 1.0), bloom: 1.15, bloomT: 0.74
   },
   hall: {
     fog: new Color(0x2a1a10), density: 0.024, far: 160, hemiSky: new Color(0x8a6a50), hemiGround: new Color(0x22160c), hemi: 0.62,
-    sun: new Color(0xffc48a), sunI: 1.1, sunDir: new Vector3(0.78, 0.55, 0.3).normalize(), env: 0.75, dawn: 1, leafMoon: new Color(1.0, 0.72, 0.45)
+    sun: new Color(0xffc48a), sunI: 1.1, sunDir: new Vector3(0.78, 0.55, 0.3).normalize(), env: 0.75, dawn: 1, leafMoon: new Color(1.0, 0.72, 0.45), bloom: 0.9, bloomT: 0.82
   },
   shore: {
-    fog: new Color(0x34263a), density: 0.0032, far: 1800, hemiSky: new Color(0x7a6aa0), hemiGround: new Color(0x2a2030), hemi: 0.62,
-    sun: new Color(0xffd8bc), sunI: 1.0, sunDir: MOON_SET.clone(), env: 0.65, dawn: 1, leafMoon: new Color(1.0, 0.8, 0.66)
+    fog: new Color(0x1c1628), density: 0.0034, far: 1800, hemiSky: new Color(0x3c4270), hemiGround: new Color(0x1a1622), hemi: 0.55,
+    sun: new Color(0xd6dcff), sunI: 0.75, sunDir: MOON_SET.clone(), env: 0.55, dawn: 1, leafMoon: new Color(0.85, 0.88, 1.0), bloom: 0.8, bloomT: 0.9
   }
 };
 

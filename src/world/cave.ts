@@ -168,8 +168,8 @@ export function rockGeometry(seed: number, detail = 2): BufferGeometry {
 
 /** The cliff the forest runs into: a leaning, layered rock face with the cave mouth cut out. */
 function cliffGeometry(): BufferGeometry {
-  const nx = 110, ny = 44;
-  const x0 = -80, x1 = 80, y0 = -4, y1 = 46;
+  const nx = 130, ny = 44;
+  const x0 = -140, x1 = 140, y0 = -4, y1 = 50;
   const pos: number[] = [];
   const keep: boolean[] = [];
   const mx = CAVE_MOUTH.x, mw = CAVE_MOUTH.w * 0.5, mh = CAVE_MOUTH.h;

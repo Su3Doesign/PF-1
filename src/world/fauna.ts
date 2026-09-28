@@ -2,11 +2,11 @@
 // drifting down the cave channel into the pool, paper cranes over the canopy
 // and out across the sea toward the moon, and butterflies.
 import {
-  AdditiveBlending, BoxGeometry, BufferAttribute, BufferGeometry, Color, DoubleSide, Float32BufferAttribute, Group,
-  InstancedBufferAttribute, InstancedMesh, Matrix4, MeshBasicMaterial, Object3D, Points, PointsMaterial, Quaternion,
-  ShaderMaterial, UniformsLib, UniformsUtils, Vector3
+  AdditiveBlending, BufferAttribute, BufferGeometry, CanvasTexture, Color, DoubleSide, Float32BufferAttribute, Group,
+  InstancedBufferAttribute, InstancedMesh, Matrix4, Mesh, MeshBasicMaterial, MeshStandardMaterial, Object3D, Points,
+  PointsMaterial, Quaternion, ShaderMaterial, SRGBColorSpace, UniformsLib, UniformsUtils, Vector3
 } from 'three';
-import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { bakedGeometry } from './props';
 import { HALL, LIBRARY_TREE, MOON_SET, POND, SHORE, CLEARINGS } from './layout';
 import { caveCenter } from './cave';
 import { HALL_POOL } from './hall';
@@ -193,7 +193,46 @@ function butterflyGeometry(): BufferGeometry {
 
 export interface Fauna { group: Group; update(t: number, dt: number, cam: Vector3): void }
 
-export function buildFauna(tier: 'high' | 'medium' | 'low'): Fauna {
+/** Washi paper for the floating lanterns: warm, fibrous, an ink ensō brushed on each wall. */
+function washiTexture(): CanvasTexture {
+  const c = document.createElement('canvas');
+  c.width = 128; c.height = 128;
+  const g = c.getContext('2d')!;
+  const grd = g.createLinearGradient(0, 128, 0, 0);
+  grd.addColorStop(0, '#fff2d6'); grd.addColorStop(0.55, '#ffd9a0'); grd.addColorStop(1, '#e8a860');
+  g.fillStyle = grd;
+  g.fillRect(0, 0, 128, 128);
+  const r = rng(99);
+  g.globalAlpha = 0.12;
+  g.strokeStyle = '#a0643a';
+  for (let i = 0; i < 90; i += 1) {
+    g.lineWidth = 0.5 + r();
+    g.beginPath();
+    const x = r() * 128, y = r() * 128;
+    g.moveTo(x, y);
+    g.bezierCurveTo(x + (r() - 0.5) * 30, y + (r() - 0.5) * 30, x + (r() - 0.5) * 30, y + (r() - 0.5) * 30, x + (r() - 0.5) * 40, y + (r() - 0.5) * 40);
+    g.stroke();
+  }
+  g.globalAlpha = 0.55;
+  g.strokeStyle = '#3a2416';
+  g.lineCap = 'round';
+  for (let k = 0; k < 3; k += 1) {
+    g.lineWidth = 5 - k * 1.4;
+    g.beginPath();
+    g.arc(64, 60, 26 + k * 0.8, -1.2 + k * 0.05, 4.4 - k * 0.1);
+    g.stroke();
+  }
+  g.globalAlpha = 1;
+  const vg = g.createRadialGradient(64, 64, 30, 64, 64, 90);
+  vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(90,40,10,0.45)');
+  g.fillStyle = vg;
+  g.fillRect(0, 0, 128, 128);
+  const t = new CanvasTexture(c);
+  t.colorSpace = SRGBColorSpace;
+  return t;
+}
+
+export function buildFauna(tier: 'high' | 'medium' | 'low', lanternModel: Object3D): Fauna {
   const group = new Group();
   group.name = 'fauna';
   const r = rng(6161);
@@ -203,28 +242,24 @@ export function buildFauna(tier: 'high' | 'medium' | 'low'): Fauna {
   group.add(koiSchool(lo ? 9 : 16, { x0: HALL_POOL.x0, x1: HALL_POOL.x1, z0: HALL_POOL.z0 - 1, z1: HALL_POOL.z1 + 1 }, -0.34, 12));
 
   // floating lanterns: circling the pond, and a procession down the channel
-  const lanternGeo = (() => {
-    const paper = new BoxGeometry(0.2, 0.24, 0.2); paper.translate(0, 0.16, 0);
-    const base = new BoxGeometry(0.3, 0.04, 0.3); base.translate(0, 0.02, 0);
-    const pc = new Float32Array(paper.getAttribute('position').count * 3).fill(1);
-    const bc = new Float32Array(base.getAttribute('position').count * 3).fill(0.06);
-    paper.setAttribute('color', new BufferAttribute(pc, 3));
-    base.setAttribute('color', new BufferAttribute(bc, 3));
-    return mergeGeometries([paper, base])!;
-  })();
-  const pondN = lo ? 8 : 14, chanN = lo ? 10 : 18;
-  const lanterns = new InstancedMesh(lanternGeo, new MeshBasicMaterial({ vertexColors: true, color: new Color(1.5, 0.95, 0.45) }), pondN + chanN);
-  lanterns.frustumCulled = false;
-  lanterns.name = 'floating-lanterns';
-  group.add(lanterns);
+  const part = (n: string) => bakedGeometry(lanternModel.getObjectByName(n) as Mesh);
+  const pondN = lo ? 7 : 12, chanN = lo ? 10 : 18;
+  const lanterns = [
+    new InstancedMesh(part('lantern_frame'), new MeshStandardMaterial({ color: new Color(0.16, 0.1, 0.06), roughness: 0.7 }), pondN + chanN),
+    new InstancedMesh(part('lantern_paper'), new MeshBasicMaterial({ map: washiTexture(), color: new Color(1.35, 0.95, 0.62), side: DoubleSide }), pondN + chanN),
+    new InstancedMesh(part('lantern_candle'), new MeshBasicMaterial({ color: new Color(2.4, 1.7, 0.9) }), pondN + chanN)
+  ];
+  for (const l of lanterns) { l.frustumCulled = false; group.add(l); }
+  lanterns[0].name = 'floating-lanterns';
   const glowPos = new Float32Array((pondN + chanN) * 3);
   const gg = new BufferGeometry();
   gg.setAttribute('position', new BufferAttribute(glowPos, 3));
-  const glow = new Points(gg, new PointsMaterial({ size: 0.75, map: glowTexture(), color: new Color(0.9, 0.5, 0.22), transparent: true, depthWrite: false, blending: AdditiveBlending }));
+  const glow = new Points(gg, new PointsMaterial({ size: 0.9, map: glowTexture(), color: new Color(0.75, 0.42, 0.18), transparent: true, depthWrite: false, blending: AdditiveBlending }));
   glow.frustumCulled = false;
   glow.renderOrder = 6;
   group.add(glow);
-  const pondL = Array.from({ length: pondN }, () => ({ a: r() * 6.28, rr: 0.35 + r() * 0.5, s: (0.012 + r() * 0.02) * (r() < 0.5 ? 1 : -1), ph: r() * 6 }));
+  // pond lanterns drift in the far half of the water, behind the name, never up to the visitor's feet
+  const pondL = Array.from({ length: pondN }, (_, i) => ({ a: Math.PI * (1.12 + 0.76 * (i + r() * 0.8) / pondN), rr: 0.35 + r() * 0.45, s: 0.05 + r() * 0.06, ph: r() * 6 }));
   const chanL = Array.from({ length: chanN }, (_, i) => ({ off: i / chanN, lane: (r() - 0.5) * 1.4, ph: r() * 6 }));
   const CHAN0 = -162, CHAN1 = HALL_POOL.z1 + 2, SPEED = 0.55;
 
@@ -239,9 +274,9 @@ export function buildFauna(tier: 'high' | 'medium' | 'low'): Fauna {
   const fc = Array.from({ length: forestN }, (_, i) => ({ w: wheels[i % wheels.length], rad: 5 + r() * 8, y: 8 + r() * 6, s: 0.12 + r() * 0.1, ph: r() * 6.28, sc: 2.2 + r() * 1.0 }));
   const moonFlat = new Vector3(MOON_SET.x, 0.12, MOON_SET.z).normalize();
   const sc = Array.from({ length: seaN }, () => ({
-    start: new Vector3(HALL.x + (r() - 0.5) * 16, 2.5 + r() * 4, SHORE.z0 - 6 - r() * 8),
+    start: new Vector3(HALL.x + (r() - 0.5) * 22, 3 + r() * 6, SHORE.z1 - 14 - r() * 22),
     dir: moonFlat.clone().add(new Vector3((r() - 0.5) * 0.3, (r() - 0.2) * 0.08, 0)).normalize(),
-    speed: 3.2 + r() * 2.2, ph: r() * 150, sc: 3.2 + r() * 1.8
+    speed: 2.6 + r() * 1.8, ph: r() * 150, sc: 2.4 + r() * 1.2
   }));
 
   // butterflies: blue and glowing in the cave, warm in the hall
@@ -291,13 +326,13 @@ export function buildFauna(tier: 'high' | 'medium' | 'low'): Fauna {
       let k = 0;
       if (cz > -60) {
         for (const l of pondL) {
-          const a = l.a + t * l.s;
+          const a = l.a + Math.sin(t * l.s + l.ph) * 0.18;
           const x = POND.cx + Math.cos(a) * POND.rx * l.rr, z = POND.cz + Math.sin(a) * POND.rz * l.rr * 0.8;
           o.position.set(x, 0.02 + Math.sin(t * 0.9 + l.ph) * 0.015, z);
           o.rotation.set(Math.sin(t * 0.8 + l.ph) * 0.05, a, Math.cos(t * 0.7 + l.ph) * 0.05);
           o.updateMatrix();
-          lanterns.setMatrixAt(k, o.matrix);
-          glowPos.set([x, 0.2, z], k * 3);
+          for (const l2 of lanterns) l2.setMatrixAt(k, o.matrix);
+          glowPos.set([x, 0.12, z], k * 3);
           k += 1;
         }
       } else k = pondN;
@@ -314,13 +349,13 @@ export function buildFauna(tier: 'high' | 'medium' | 'low'): Fauna {
           o.rotation.set(Math.sin(t * 0.8 + l.ph) * 0.05, l.ph + t * 0.05, Math.cos(t * 0.7 + l.ph) * 0.05);
           o.scale.setScalar(Math.max(0.001, s));
           o.updateMatrix();
-          lanterns.setMatrixAt(k, o.matrix);
-          glowPos.set([x, 0.2, z], k * 3);
+          for (const l2 of lanterns) l2.setMatrixAt(k, o.matrix);
+          glowPos.set([x, 0.12, z], k * 3);
           k += 1;
         }
         o.scale.setScalar(1);
       }
-      lanterns.instanceMatrix.needsUpdate = true;
+      for (const l2 of lanterns) l2.instanceMatrix.needsUpdate = true;
       (gg.getAttribute('position') as BufferAttribute).needsUpdate = true;
 
       // cranes over the forest

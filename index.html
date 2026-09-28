@@ -48,8 +48,9 @@
 
 <header class="hud">
   <a class="logo" href="#top" aria-label="Back to the pond"><i></i><b>SUMANTH</b><span>苔の経蔵</span></a>
-  <div class="hud__stop mono" aria-live="polite"><b id="hud-k">池</b><span data-name id="hud-name">THE POND</span><span id="hud-idx">01 / 07</span></div>
+  <div class="hud__stop mono" aria-live="polite"><b id="hud-k">池</b><span data-name id="hud-name">THE POND</span><span id="hud-idx">01 / 09</span></div>
   <div class="hud__end">
+    <div class="kodama-count mono" id="kodama-count" hidden title="Kodama found in the forest"><span aria-hidden="true">木霊</span><b>0/7</b></div>
     <button class="btn hud__btn snd" id="snd" type="button" aria-pressed="false" aria-label="Sound"><i aria-hidden="true"><s></s><s></s><s></s></i><span class="hud__label">Sound</span></button>
     <a class="btn hud__btn" href="work.html">Flat view</a>
     <button class="btn hud__btn" id="menu-btn" type="button" aria-haspopup="dialog">Index</button>
@@ -183,6 +184,8 @@
     </div>
   </section>
 </main>
+
+<div class="toast mono" id="toast" role="status" aria-live="polite"></div>
 
 <div class="cursor" id="cursor" aria-hidden="true"><div class="cursor__ring"></div><div class="cursor__label" id="cursor-label"></div></div>
 

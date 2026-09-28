@@ -1,6 +1,7 @@
 import {
   Mesh, ShaderMaterial, Texture, WebGLRenderTarget, HalfFloatType, PerspectiveCamera, Matrix4, Vector2, Vector3, Vector4,
-  Plane, Color, UniformsLib, UniformsUtils, BufferGeometry, BufferAttribute, WebGLRenderer, Scene, Frustum, Sphere, IUniform
+  Plane, Color, UniformsLib, UniformsUtils, BufferGeometry, BufferAttribute, WebGLRenderer, Scene, Frustum, Sphere, IUniform,
+  Object3D, Points
 } from 'three';
 import { POND } from './layout';
 import { shared } from './materials';
@@ -138,20 +139,47 @@ export class Reflector {
     return mesh;
   }
 
-  private anyVisible(camera: PerspectiveCamera): boolean {
+  private anyVisible(camera: PerspectiveCamera, maxDist: number): boolean {
     this.pv.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
     this.frustum.setFromProjectionMatrix(this.pv);
     for (const s of this.surfaces) {
       if (!s.visible || !s.geometry.boundingSphere) continue;
       this.sphere.copy(s.geometry.boundingSphere).applyMatrix4(s.matrixWorld);
+      // water lost in the fog is not worth a mirror
+      if (this.sphere.distanceToPoint(camera.position) > maxDist) continue;
       if (this.frustum.intersectsSphere(this.sphere)) return true;
     }
     return false;
   }
 
+  // The oblique near plane skews the mirror's far plane, which defeats the
+  // renderer's own culling; so the mirror culls against its true frustum here.
+  private cullList: Object3D[] | null = null;
+  private hidden: Object3D[] = [];
+  private cull(scene: Scene, pv: Matrix4) {
+    if (!this.cullList) {
+      this.cullList = [];
+      scene.traverse((o) => {
+        const m = o as Mesh;
+        if ((m.isMesh || (o as Points).isPoints) && o.frustumCulled && m.geometry) this.cullList!.push(o);
+      });
+    }
+    this.frustum.setFromProjectionMatrix(pv);
+    this.hidden.length = 0;
+    for (const o of this.cullList) {
+      if (!o.visible) continue;
+      const m = o as Mesh & { boundingSphere?: Sphere | null };
+      const bs = (m as unknown as { isInstancedMesh?: boolean }).isInstancedMesh ? m.boundingSphere : m.geometry.boundingSphere;
+      if (!bs) continue;
+      this.sphere.copy(bs).applyMatrix4(o.matrixWorld);
+      if (!this.frustum.intersectsSphere(this.sphere)) { o.visible = false; this.hidden.push(o); }
+    }
+  }
+
   /** Render the mirrored scene. Called by the world before the main render. */
-  render(renderer: WebGLRenderer, scene: Scene, camera: PerspectiveCamera) {
-    if (!this.enabled || camera.position.y < 0.05 || !this.anyVisible(camera)) return;
+  /** `far` limits how deep the mirror looks: in the forest fog nothing past ~60 m would show anyway. */
+  render(renderer: WebGLRenderer, scene: Scene, camera: PerspectiveCamera, far = camera.far) {
+    if (!this.enabled || camera.position.y < 0.05 || !this.anyVisible(camera, far)) return;
     const normal = new Vector3(0, 1, 0);
     const camPos = camera.position.clone();
     camPos.y = -camPos.y;
@@ -161,12 +189,14 @@ export class Reflector {
     c.position.copy(camPos);
     c.up.set(0, 1, 0).applyQuaternion(camera.quaternion).reflect(normal);
     c.lookAt(target);
-    c.fov = camera.fov; c.aspect = camera.aspect; c.near = camera.near; c.far = camera.far;
+    c.fov = camera.fov; c.aspect = camera.aspect; c.near = camera.near; c.far = Math.min(camera.far, far);
     c.updateProjectionMatrix();
     c.updateMatrixWorld();
 
     this.tm.set(0.5, 0, 0, 0.5, 0, 0.5, 0, 0.5, 0, 0, 0.5, 0.5, 0, 0, 0, 1);
     this.tm.multiply(c.projectionMatrix).multiply(c.matrixWorldInverse);
+    this.pv.multiplyMatrices(c.projectionMatrix, c.matrixWorldInverse);
+    this.cull(scene, this.pv);
 
     // oblique near plane so nothing below the water leaks into the reflection
     const plane = new Plane().setFromNormalAndCoplanarPoint(normal, new Vector3()).applyMatrix4(c.matrixWorldInverse);
@@ -194,6 +224,7 @@ export class Reflector {
     renderer.setRenderTarget(prevRT);
     renderer.shadowMap.autoUpdate = prevShadow;
     this.surfaces.forEach((s, i) => { s.visible = vis[i]; });
+    for (const o of this.hidden) o.visible = true;
   }
 
   dispose() { this.rt.dispose(); }

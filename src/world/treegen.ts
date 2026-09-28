@@ -147,9 +147,11 @@ export interface TreeGeo { trunk: BufferGeometry; crown: BufferGeometry; height:
 
 
 /** Sugi (Japanese cedar): straight column, short drooping branches, a narrow cone of dense tufts. */
+/** detail: 1 full, 0 lighter, -1 far (distant ridges and saplings: no branches, fewer, larger tufts). */
 export function sugi(seed: number, H: number, r0: number, detail: number): TreeGeo {
   const r = rng(seed);
-  const radial = detail ? 14 : 9, rows = detail ? 22 : 14;
+  const far = detail < 0;
+  const radial = far ? 6 : detail ? 14 : 9, rows = far ? 7 : detail ? 22 : 14;
   const lean = new Vector3((r() - 0.5) * 0.5, 0, (r() - 0.5) * 0.5);
   const pts: Vector3[] = [];
   for (let i = 0; i <= rows; i += 1) {
@@ -179,9 +181,9 @@ export function sugi(seed: number, H: number, r0: number, detail: number): TreeG
     if (r() < 0.5) continue;
     const a = r() * Math.PI * 2;
     const dir = new Vector3(Math.cos(a), -0.1, Math.sin(a));
-    if (detail) parts.push(limb(spine(trunkAt(y), dir, 0.6 + r() * 0.8, 3, 0.05, 0.1, r), (_i, t) => 0.05 * (1 - t) + 0.01, 4));
+    if (detail > 0) parts.push(limb(spine(trunkAt(y), dir, 0.6 + r() * 0.8, 3, 0.05, 0.1, r), (_i, t) => 0.05 * (1 - t) + 0.01, 4));
   }
-  for (let y = base; y < H - 0.4; y += 0.55 + r() * 0.35) {
+  for (let y = base; y < H - 0.4; y += far ? 1.05 + r() * 0.5 : 0.55 + r() * 0.35) {
     const u = (y - base) / (H - base);
     const L = Rmax * Math.pow(1 - u, 0.9) + 0.4;
     const nb = u < 0.7 ? 2 + Math.floor(r() * 2) : 1 + Math.floor(r() * 2);
@@ -190,17 +192,18 @@ export function sugi(seed: number, H: number, r0: number, detail: number): TreeG
       const dir = new Vector3(Math.cos(a), 0.15 - u * 0.1 + (r() - 0.5) * 0.25, Math.sin(a));
       const root = trunkAt(y);
       const sp = spine(root, dir, L, 3, 0.04 + 0.03 * (1 - u), 0.3, r);
-      if (detail && L > 1.2) parts.push(limb(sp, (_i, t) => (0.07 + 0.05 * (1 - u)) * (1 - t) + 0.01, 4));
+      if (detail > 0 && L > 1.2) parts.push(limb(sp, (_i, t) => (0.07 + 0.05 * (1 - u)) * (1 - t) + 0.01, 4));
       const clumps = L > 2 ? 3 : L > 1.1 ? 2 : 1;
       for (let k = 0; k < clumps; k += 1) {
         const t = clumps === 1 ? 0.9 : 0.4 + (k / (clumps - 1)) * 0.6;
         const p = sp[Math.min(sp.length - 1, Math.round(t * (sp.length - 1)))].clone();
         p.y += 0.15;
         const out = p.clone().sub(root).setY(0.45).normalize();
-        const size = 1.25 + 0.8 * (1 - u) * r() + 0.35;
+        const size = (1.25 + 0.8 * (1 - u) * r() + 0.35) * (far ? 1.45 : 1);
         const shade = 0.55 + 0.45 * t * (0.7 + 0.3 * u);
+        if (far && k === 1) continue;
         cards.add(p, out, size, shade, r, { tilt: 0.7 });
-        if (r() < 0.55) cards.add(p.clone().add(new Vector3(0, -0.2, 0)), out, size * 0.8, shade * 0.85, r, { tilt: 1.0 });
+        if (!far && r() < 0.55) cards.add(p.clone().add(new Vector3(0, -0.2, 0)), out, size * 0.8, shade * 0.85, r, { tilt: 1.0 });
       }
     }
   }
@@ -216,7 +219,9 @@ export function sugi(seed: number, H: number, r0: number, detail: number): TreeG
  *  `vase` > 0 makes a keyaki-like upswept crown; 0 makes an umbrella maple. */
 export function broadleaf(seed: number, o: { H: number; r0: number; fork: number; R: number; Rh: number; leaders: number; vase: number; card: number; count: number }, detail: number): TreeGeo {
   const r = rng(seed);
-  const radial = detail ? 12 : 8;
+  const far = detail < 0;
+  if (far) o = { ...o, count: Math.round(o.count * 0.45), card: o.card * 1.5 };
+  const radial = far ? 6 : detail ? 12 : 8;
   const parts: BufferGeometry[] = [];
   const lean = new Vector3((r() - 0.5) * 0.8, 0, (r() - 0.5) * 0.8);
   const tpts: Vector3[] = [];
@@ -249,7 +254,7 @@ export function broadleaf(seed: number, o: { H: number; r0: number; fork: number
       p.y += Math.sin(t * Math.PI) * L * 0.08;
       pts.push(p);
     }
-    parts.push(limb(pts, (_i, t) => o.r0 * 0.62 * (1 - t * 0.8) + 0.02, detail ? 8 : 6));
+    parts.push(limb(pts, (_i, t) => o.r0 * 0.62 * (1 - t * 0.8) + 0.02, far ? 5 : detail ? 8 : 6));
     tips.push(target);
     // secondary branches off each leader
     for (let s = 0; s < 3; s += 1) {
@@ -258,7 +263,7 @@ export function broadleaf(seed: number, o: { H: number; r0: number; fork: number
       const sdir = new Vector3(Math.cos(sa), 0.3 + r() * 0.4, Math.sin(sa));
       const sl = o.R * (0.35 + 0.25 * r());
       const sp = spine(p0, sdir, sl, 3, 0.03, 0.2, r);
-      if (detail || s === 0) parts.push(limb(sp, (_i, t) => o.r0 * 0.25 * (1 - t) + 0.015, 5));
+      if (detail > 0 || (s === 0 && !far)) parts.push(limb(sp, (_i, t) => o.r0 * 0.25 * (1 - t) + 0.015, 5));
       tips.push(sp[sp.length - 1]);
     }
   }
@@ -355,7 +360,7 @@ export function tuftGeometry(): BufferGeometry {
 
 // ── foliage material ────────────────────────────────────────────────────────
 export interface LeafOpts {
-  map: Texture;
+  map?: Texture;
   alphaTest?: number;
   sway?: number;     // metres of sway at the top of the object
   height?: number;   // local height the sway is normalised to
@@ -364,15 +369,16 @@ export interface LeafOpts {
   emissive?: Color;
   grow?: IUniform<number>; // camera z: things ahead unfurl as the visitor approaches
   hang?: boolean;          // geometry hangs below y = 0 (wisteria): sway grows downward
+  vertexColors?: boolean;
 }
 
 /** Lambert foliage with wind, soft crown normals and a hint of translucency. */
 export function leafMaterial(o: LeafOpts): MeshLambertMaterial {
   const m = new MeshLambertMaterial({
-    map: o.map,
-    alphaTest: o.alphaTest ?? 0.5,
+    map: o.map ?? null,
+    alphaTest: o.map ? o.alphaTest ?? 0.5 : 0,
     side: DoubleSide,
-    vertexColors: true,
+    vertexColors: o.vertexColors ?? true,
     color: o.color ?? new Color(1, 1, 1),
     emissive: o.emissive ?? new Color(0, 0, 0)
   });
@@ -417,6 +423,6 @@ export function leafMaterial(o: LeafOpts): MeshLambertMaterial {
         totalEmissiveRadiance += diffuseColor.rgb * uTrans * ((0.25 + 0.75 * vLeafH) * 0.3 + back * uMoonCol * 1.6);
       `);
   };
-  m.customProgramCacheKey = () => 'leaf' + (growing ? 'G' : '') + (o.hang ? 'H' : '');
+  m.customProgramCacheKey = () => 'leaf' + (growing ? 'G' : '') + (o.hang ? 'H' : '') + (o.map ? '' : 'N');
   return m;
 }
