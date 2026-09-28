@@ -14,7 +14,6 @@
 <meta property="og:image" content="https://www.thesumanth.com/assets/images/japa-render-1.webp">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="preload" href="assets/tex/moss_type.webp" as="image">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"Person","name":"Amidyala Sai Sumanth","url":"https://www.thesumanth.com/","jobTitle":"3D Environment Artist","address":{"@type":"PostalAddress","addressLocality":"Hyderabad","addressCountry":"IN"},"email":"sumanth.richie25@icloud.com","sameAs":["https://behance.net/sumanthrichie","https://instagram.com/sumofDanth"]}
 </script>
@@ -30,12 +29,6 @@
 <body class="is-loading">
 <a class="skip" href="work.html">Skip to the flat portfolio</a>
 
-<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
-  <filter id="moss-rough" x="-5%" y="-10%" width="110%" height="120%">
-    <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="4" result="n"/>
-    <feDisplacementMap in="SourceGraphic" in2="n" scale="2.6" xChannelSelector="R" yChannelSelector="G"/>
-  </filter>
-</svg>
 
 <canvas id="gl" aria-hidden="true"></canvas>
 
@@ -84,7 +77,7 @@
     <div class="st__sticky">
       <article class="panel" aria-labelledby="h-worlds">
         <div class="panel__eyebrow mono"><b>世界</b><span>01 · Selected worlds</span></div>
-        <h2 class="moss" id="h-worlds">Three places, built to be stood in.</h2>
+        <h2 class="display" id="h-worlds">Three places, built to be stood in.</h2>
         <p>Personal environments: modelled in Maya, sculpted in ZBrush, textured in Substance, lit in Arnold. Pick a screen in the clearing, or a title below.</p>
         <div class="cards" id="world-cards"></div>
       </article>
@@ -95,7 +88,7 @@
     <div class="st__sticky">
       <article class="panel panel--right" aria-labelledby="h-method">
         <div class="panel__eyebrow mono"><b>七手</b><span>02 · Method</span></div>
-        <h2 class="moss" id="h-method">Seven moves, every time.</h2>
+        <h2 class="display" id="h-method">Seven moves, every time.</h2>
         <p>In order. Skipping one shows up in the render three weeks later. A lantern lights for each.</p>
         <ol class="steps" id="steps"></ol>
       </article>
@@ -106,7 +99,7 @@
     <div class="st__sticky">
       <article class="panel" aria-labelledby="h-clients">
         <div class="panel__eyebrow mono"><b>顧客</b><span>03 · Commercial</span></div>
-        <h2 class="moss" id="h-clients">Sixteen clients who needed it Tuesday.</h2>
+        <h2 class="display" id="h-clients">Sixteen clients who needed it Tuesday.</h2>
         <p>Through The Classic Partnership (Toronto) and VS Design Studio, plus direct freelance. Each monitor in the rack is a client.</p>
         <div class="clients" id="client-list"></div>
       </article>
@@ -117,7 +110,7 @@
     <div class="st__sticky">
       <article class="panel panel--right" aria-labelledby="h-studies">
         <div class="panel__eyebrow mono"><b>書庫</b><span>04 · The library</span></div>
-        <h2 class="moss" id="h-studies">The other half of the desk.</h2>
+        <h2 class="display" id="h-studies">The other half of the desk.</h2>
         <p>Packaging, posters, automotive viz, hard-surface practice and the occasional Sunday illustration, shelved around the oldest tree in the forest. Drag the ring to spin it.</p>
         <div class="now" id="study-now" aria-live="polite">
           <img alt="" id="study-img" width="96" height="120">
@@ -137,7 +130,7 @@
     <div class="st__sticky">
       <article class="panel" aria-labelledby="h-comm">
         <div class="panel__eyebrow mono"><b>絵馬</b><span>05 · Commissions</span></div>
-        <h2 class="moss" id="h-comm">Buy the scope, not the hours.</h2>
+        <h2 class="display" id="h-comm">Buy the scope, not the hours.</h2>
         <p>Every commission runs concept → blockout → look-dev → final. What changes is how much world you get.</p>
         <div class="tiers" id="tiers"></div>
         <div class="row" style="margin-top:14px"><a class="btn btn--neon" href="mailto:sumanth.richie25@icloud.com?subject=Commission%20enquiry">Start a commission</a></div>
@@ -145,11 +138,35 @@
     </div>
   </section>
 
-  <section class="st" data-station="contact" id="contact" data-h="190">
+  <section class="st" data-station="about" id="about" data-h="270">
+    <div class="st__sticky">
+      <article class="panel" aria-labelledby="h-about">
+        <div class="panel__eyebrow mono"><b>洞</b><span>06 · About</span></div>
+        <h2 class="display" id="h-about">A place that looks kept.</h2>
+        <div id="about-text"></div>
+        <dl class="meta" id="about-tools"></dl>
+      </article>
+    </div>
+  </section>
+
+  <section class="st" data-station="archive" id="archive" data-h="260">
+    <div class="st__sticky">
+      <article class="panel panel--right" aria-labelledby="h-archive">
+        <div class="panel__eyebrow mono"><b>経蔵</b><span>07 · The archive</span></div>
+        <h2 class="display" id="h-archive">Everything ends up on a wall.</h2>
+        <p>The heart of the forest: frames from the worlds and the client work, hung where the light is good. Pick one on the wall, or here.</p>
+        <div class="archive-grid" id="archive-list"></div>
+        <div class="row" style="margin-top:14px"><button class="btn btn--neon" type="button" id="archive-open">Walk the archive</button><button class="btn btn--ghost" type="button" data-go="contact">Out to the sea →</button></div>
+      </article>
+    </div>
+  </section>
+
+  <section class="st" data-station="contact" id="contact" data-h="210">
     <div class="st__sticky">
       <article class="panel contact" aria-labelledby="h-contact">
-        <div class="panel__eyebrow mono"><b>手紙</b><span>06 · Contact</span></div>
-        <h2 class="moss" id="h-contact">Say hello</h2>
+        <div class="panel__eyebrow mono"><b>手紙</b><span>08 · Contact</span></div>
+        <h2 class="display" id="h-contact">Say hello</h2>
+        <p class="contact__line">The walk ends at the sea. The cranes are carrying letters out toward the moon; yours can go with them.</p>
         <a class="mail" href="mailto:sumanth.richie25@icloud.com">sumanth.richie25@icloud.com</a>
         <div class="links">
           <button class="btn" type="button" id="copy-mail">Copy email</button>
@@ -159,8 +176,6 @@
         </div>
         <dl class="meta">
           <dt>Status</dt><dd class="live">Open — commission, full-time, collaboration</dd>
-          <dt>Core</dt><dd>Maya · ZBrush · Substance · Arnold</dd>
-          <dt>Also</dt><dd>Unreal · After Effects · Photoshop · Illustrator</dd>
           <dt>Local time</dt><dd id="hyd-time">Hyderabad</dd>
         </dl>
         <div class="foot mono"><span>© 2026 Amidyala Sai Sumanth</span><span>Rendered in your browser</span><button class="hat" type="button" id="egg" aria-label="Straw hat">🎩</button></div>

@@ -3,41 +3,10 @@ import {
   Quaternion, Texture, Vector3, CatmullRomCurve3, TubeGeometry, Color, SphereGeometry, MeshBasicMaterial
 } from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { heightAt, inClearing, pathDistance, pondFactor, LIBRARY_TREE, fbm } from './layout';
+import { heightAt, inClearing, pathDistance, pondFactor, LIBRARY_TREE, fbm, CLIFF_Z, CAVE_MOUTH } from './layout';
+import { rng, sugi, broadleaf, leafMaterial, TreeGeo } from './treegen';
 
-function rng(seed: number) {
-  let s = seed >>> 0;
-  return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
-}
-
-function trunkGeometry(r0: number, H: number, seed: number, flareAmt = 1.2, radial = 22, rows = 30): BufferGeometry {
-  const g = new CylinderGeometry(1, 1, 1, radial, rows, true);
-  g.translate(0, 0.5, 0);
-  const pos = g.getAttribute('position') as BufferAttribute;
-  const uv = g.getAttribute('uv') as BufferAttribute;
-  const r = rng(seed);
-  const phase = r() * 6, lean = (r() - 0.5) * 0.6, leanZ = (r() - 0.5) * 0.6;
-  const around = Math.max(2, Math.round((Math.PI * 2 * r0) / 1.1));
-  for (let i = 0; i < pos.count; i += 1) {
-    const x = pos.getX(i), yN = pos.getY(i), z = pos.getZ(i);
-    // compress rows toward the base where the flare needs detail
-    const t = Math.pow(yN, 1.6);
-    const y = t * H;
-    const th = Math.atan2(z, x);
-    const taper = 1 - 0.45 * t;
-    const buttress = Math.pow(Math.abs(Math.sin(th * 2.5 + phase)), 3);
-    const flare = flareAmt * Math.exp(-y * 2.0) * (0.45 + 0.9 * buttress);
-    const furrow = 0.035 * Math.sin(th * 16 + fbm(th * 3, y * 0.4) * 4) + 0.02 * (fbm(th * 5, y * 0.8) - 0.5);
-    const rad = r0 * taper * (1 + flare) * (1 + furrow);
-    const bend = Math.sin(t * Math.PI * 0.9) * 0.6;
-    pos.setXYZ(i, Math.cos(th) * rad + lean * bend * t * 3, y - 0.25, Math.sin(th) * rad + leanZ * bend * t * 3);
-    uv.setXY(i, (th / (Math.PI * 2) + 0.5) * around, y / 1.7);
-  }
-  g.computeVertexNormals();
-  return g;
-}
-
-function barkMaterial(tex: { bark: Texture; barkN: Texture; moss: Texture; noise: Texture }, mossiness = 1): MeshStandardMaterial {
+export function barkMaterial(tex: { bark: Texture; barkN: Texture; moss: Texture; noise: Texture }, mossiness = 1): MeshStandardMaterial {
   const m = new MeshStandardMaterial({ map: tex.bark, normalMap: tex.barkN, roughness: 0.92, envMapIntensity: 0.2 });
   m.normalScale.set(1.2, 1.2);
   const u = { tMoss: { value: tex.moss }, tNoise: { value: tex.noise }, uMossy: { value: mossiness } };
@@ -71,91 +40,152 @@ function barkMaterial(tex: { bark: Texture; barkN: Texture; moss: Texture; noise
   return m;
 }
 
-export interface TreeResult { group: Group; positions: { x: number; z: number; h: number }[] }
+export interface TreeResult { group: Group; positions: { x: number; z: number; h: number; r: number }[] }
+export interface TreeTex { bark: Texture; barkN: Texture; moss: Texture; noise: Texture; conifer: Texture; broad: Texture }
 
-export function buildTrees(count: number, tex: { bark: Texture; barkN: Texture; moss: Texture; noise: Texture }, shadows: boolean, detail = 1): TreeResult {
+type Kind = 'sugi' | 'maple' | 'keyaki';
+
+// autumn maples: the colour in the walk
+const MAPLE = [new Color(0.95, 0.16, 0.08), new Color(0.78, 0.07, 0.07), new Color(1.0, 0.42, 0.1), new Color(1.0, 0.66, 0.18), new Color(0.5, 0.62, 0.18)];
+
+/** Lowest ground under a footprint, so no trunk ever hangs over a slope. */
+export function groundUnder(x: number, z: number, r: number): number {
+  let m = heightAt(x, z);
+  for (let k = 0; k < 8; k += 1) {
+    const a = (k / 8) * Math.PI * 2;
+    m = Math.min(m, heightAt(x + Math.cos(a) * r, z + Math.sin(a) * r));
+  }
+  return m;
+}
+
+export function buildTrees(count: number, tex: TreeTex, shadows: boolean, detail = 1): TreeResult {
   const group = new Group();
   group.name = 'trees';
   const rand = rng(77);
-  const variants = [
-    { r: 0.42, H: 19, flare: 1.1 },
-    { r: 0.58, H: 22, flare: 1.3 },
-    { r: 0.8, H: 24, flare: 1.5 }
+  const variants: { kind: Kind; geo: TreeGeo }[] = [
+    { kind: 'sugi', geo: sugi(11, 24, 0.46, detail) },
+    { kind: 'sugi', geo: sugi(23, 29, 0.6, detail) },
+    { kind: 'sugi', geo: sugi(37, 20, 0.38, detail) },
+    { kind: 'maple', geo: broadleaf(41, { H: 7.5, r0: 0.2, fork: 1.7, R: 4.2, Rh: 2.2, leaders: 4, vase: 0.2, card: 1.7, count: 120 }, detail) },
+    { kind: 'maple', geo: broadleaf(53, { H: 9.5, r0: 0.26, fork: 2.2, R: 5.0, Rh: 2.6, leaders: 5, vase: 0.35, card: 1.9, count: 150 }, detail) },
+    { kind: 'keyaki', geo: broadleaf(67, { H: 17, r0: 0.55, fork: 3.6, R: 6.6, Rh: 4.4, leaders: 5, vase: 1, card: 2.5, count: 210 }, detail) }
   ];
-  const radial = detail >= 1 ? 22 : 13, rows = detail >= 1 ? 30 : 18;
-  const geos = variants.map((v, i) => trunkGeometry(v.r, v.H, 11 + i * 7, v.flare, radial, rows));
-  const mat = barkMaterial(tex);
-  const pts: { x: number; z: number; v: number; s: number; h: number }[] = [];
+  const bark = barkMaterial(tex);
+  const needles = leafMaterial({ map: tex.conifer, sway: 0.5, height: 26, trans: 0.18 });
+  const leaves = leafMaterial({ map: tex.broad, sway: 0.35, height: 12, trans: 0.4 });
+
+  const pts: { x: number; z: number; v: number; s: number; h: number; r: number }[] = [];
   const grid = new Map<string, { x: number; z: number }[]>();
   const ok = (x: number, z: number, minD: number) => {
     const gx = Math.floor(x / 4), gz = Math.floor(z / 4);
-    for (let i = -1; i <= 1; i += 1) for (let j = -1; j <= 1; j += 1) {
+    for (let i = -2; i <= 2; i += 1) for (let j = -2; j <= 2; j += 1) {
       const arr = grid.get(`${gx + i},${gz + j}`);
       if (!arr) continue;
       for (const p of arr) if ((p.x - x) ** 2 + (p.z - z) ** 2 < minD * minD) return false;
     }
     return true;
   };
+  const pick = (near: boolean, pond: boolean): number => {
+    const k = rand();
+    if (pond) return k < 0.5 ? 3 + Math.floor(rand() * 2) : Math.floor(rand() * 3);
+    if (near) return k < 0.3 ? 3 + Math.floor(rand() * 2) : k < 0.42 ? 5 : Math.floor(rand() * 3);
+    return k < 0.14 ? 5 : Math.floor(rand() * 3);
+  };
   let tries = 0;
-  while (pts.length < count && tries < count * 40) {
+  while (pts.length < count && tries < count * 60) {
     tries += 1;
-    const z = 30 - rand() * 232;
-    let x: number;
+    const z = 30 - rand() * 199;
+    let x: number, near = false, pond = false;
     if (z > -22) {
-      x = (rand() < 0.5 ? -1 : 1) * (9 + rand() * 32);
-      if (pondFactor(x, z) < 1.25) continue;
-      if (z > 5 && Math.abs(x) < 10) continue;
+      x = (rand() < 0.5 ? -1 : 1) * (8 + rand() * 34);
+      if (pondFactor(x, z) < 1.2) continue;
+      if (z > 5 && Math.abs(x) < 11) continue;
+      pond = pondFactor(x, z) < 1.8;
     } else {
-      x = (rand() * 2 - 1) * 38;
+      x = (rand() * 2 - 1) * 40;
       const pd = pathDistance(x, z);
-      if (pd < 3.6 + rand() * 1.5) continue;
-      if (pd > 30) continue;
+      if (pd < 3.8 + rand() * 1.5) continue;
+      if (pd > 34) continue;
       if (inClearing(x, z, 1)) continue;
-      if ((x - LIBRARY_TREE.x) ** 2 + (z - LIBRARY_TREE.z) ** 2 < 14 * 14) continue;
+      if ((x - LIBRARY_TREE.x) ** 2 + (z - LIBRARY_TREE.z) ** 2 < 15 * 15) continue;
+      if (z < CLIFF_Z + 5 && Math.abs(x - CAVE_MOUTH.x) < 9) continue;
+      near = pd < 9 || inClearing(x, z, 6);
     }
-    if (!ok(x, z, 2.6)) continue;
-    const v = rand() < 0.45 ? 0 : rand() < 0.65 ? 1 : 2;
+    const v = pick(near, pond);
+    const kind = variants[v].kind;
+    const minD = kind === 'keyaki' ? 7 : kind === 'maple' ? 4.2 : 2.8;
+    if (!ok(x, z, minD)) continue;
     const s = 0.85 + rand() * 0.35;
-    const p = { x, z, v, s, h: variants[v].H * s };
+    const p = { x, z, v, s, h: variants[v].geo.height * s, r: variants[v].geo.foot * s };
     pts.push(p);
     const key = `${Math.floor(x / 4)},${Math.floor(z / 4)}`;
     if (!grid.has(key)) grid.set(key, []);
     grid.get(key)!.push(p);
   }
+  // a tree line along the top of the cliff, black against the sky
+  for (let x = -70; x < 70; x += 3.2 + rand() * 3) {
+    const z = CLIFF_Z - 3 - rand() * 12;
+    pts.push({ x, z, v: Math.floor(rand() * 3), s: 0.9 + rand() * 0.4, h: 0, r: 0, top: true } as typeof pts[0] & { top: boolean });
+  }
+
   const m4 = new Matrix4(), q = new Quaternion(), sv = new Vector3(), pv = new Vector3();
   const yAxis = new Vector3(0, 1, 0);
-  geos.forEach((geo, vi) => {
+  const col = new Color();
+  variants.forEach((vt, vi) => {
     const list = pts.filter((p) => p.v === vi);
-    // split into rows along z for culling
     const bands = new Map<number, typeof list>();
     for (const p of list) {
-      const b = Math.floor(p.z / 60);
+      const b = Math.floor(p.z / 70);
       if (!bands.has(b)) bands.set(b, []);
       bands.get(b)!.push(p);
     }
     for (const band of bands.values()) {
-      const mesh = new InstancedMesh(geo, mat, band.length);
+      const trunks = new InstancedMesh(vt.geo.trunk, bark, band.length);
+      const crowns = new InstancedMesh(vt.geo.crown, vt.kind === 'sugi' ? needles : leaves, band.length);
       band.forEach((p, i) => {
+        const top = (p as { top?: boolean }).top;
         q.setFromAxisAngle(yAxis, rand() * Math.PI * 2);
-        sv.set(p.s, p.s, p.s);
-        m4.compose(pv.set(p.x, heightAt(p.x, p.z), p.z), q, sv);
-        mesh.setMatrixAt(i, m4);
+        sv.set(p.s, p.s * (0.92 + rand() * 0.16), p.s);
+        const y = top ? cliffTop(p.x, p.z) : groundUnder(p.x, p.z, vt.geo.foot * p.s) - 0.3;
+        m4.compose(pv.set(p.x, y, p.z), q, sv);
+        trunks.setMatrixAt(i, m4);
+        crowns.setMatrixAt(i, m4);
+        if (vt.kind === 'maple') {
+          // red and orange near the walk, a few still green
+          col.copy(MAPLE[Math.floor(rand() * MAPLE.length)]).multiplyScalar(0.85 + rand() * 0.3);
+        } else if (vt.kind === 'keyaki') {
+          col.setRGB(0.42 + rand() * 0.12, 0.58 + rand() * 0.1, 0.22 + rand() * 0.06);
+        } else {
+          const k = 0.8 + rand() * 0.35;
+          col.setRGB(k, k * (0.95 + rand() * 0.1), k);
+        }
+        crowns.setColorAt(i, col);
       });
-      mesh.computeBoundingSphere();
-      mesh.castShadow = shadows;
-      mesh.receiveShadow = true;
-      mesh.name = 'trunks';
-      group.add(mesh);
+      for (const m of [trunks, crowns]) {
+        m.computeBoundingSphere();
+        m.castShadow = shadows;
+        m.receiveShadow = true;
+        group.add(m);
+      }
+      trunks.name = 'trunks';
+      crowns.name = 'crowns';
     }
   });
 
-  // the library tree: ancient, buttressed, holding the studies ring
-  const big = new Mesh(trunkGeometry(2.1, 30, 404, 2.2, 48, 60), barkMaterial(tex, 1.4));
-  big.position.set(LIBRARY_TREE.x, heightAt(LIBRARY_TREE.x, LIBRARY_TREE.z) - 0.2, LIBRARY_TREE.z);
+  // the library tree: ancient, buttressed, a golden crown over the ring of studies
+  const lib = broadleaf(404, { H: 30, r0: 1.7, fork: 8.5, R: 12.5, Rh: 6.5, leaders: 6, vase: 0.55, card: 3.4, count: 460 }, 1);
+  const big = new Mesh(lib.trunk, barkMaterial(tex, 1.4));
+  big.position.set(LIBRARY_TREE.x, groundUnder(LIBRARY_TREE.x, LIBRARY_TREE.z, 3.5) - 0.2, LIBRARY_TREE.z);
   big.castShadow = shadows;
   big.receiveShadow = true;
   big.name = 'library-tree';
   group.add(big);
+  const gold = leafMaterial({ map: tex.broad, sway: 0.5, height: 30, trans: 0.7, color: new Color(1.0, 0.72, 0.22), emissive: new Color(0.09, 0.05, 0.0) });
+  const crown = new Mesh(lib.crown, gold);
+  crown.position.copy(big.position);
+  crown.castShadow = shadows;
+  crown.name = 'library-crown';
+  group.add(crown);
   const roots: BufferGeometry[] = [];
   const rr = rng(505);
   for (let i = 0; i < 9; i += 1) {
@@ -172,7 +202,6 @@ export function buildTrees(count: number, tex: { bark: Texture; barkN: Texture; 
     const tuv = tube.getAttribute('uv') as BufferAttribute;
     for (let k = 0; k < tuv.count; k += 1) tuv.setXY(k, tuv.getX(k) * len / 1.7, tuv.getY(k) * 2);
     for (let k = 0; k < tp.count; k += 1) {
-      // taper along the root
       const t = Math.floor(k / 9) / 20;
       const c = curve.getPointAt(Math.min(1, t));
       const dx = tp.getX(k) - c.x, dy = tp.getY(k) - c.y, dz = tp.getZ(k) - c.z;
@@ -188,7 +217,12 @@ export function buildTrees(count: number, tex: { bark: Texture; barkN: Texture; 
   rootMesh.receiveShadow = true;
   group.add(rootMesh);
 
-  return { group, positions: pts.map((p) => ({ x: p.x, z: p.z, h: p.h })) };
+  return { group, positions: pts.filter((p) => p.h > 0).map((p) => ({ x: p.x, z: p.z, h: p.h, r: p.r })) };
+}
+
+/** Height of the ground on top of the cliff (only the tree line uses it). */
+export function cliffTop(x: number, z: number): number {
+  return 34 + (fbm(x * 0.05, z * 0.05) - 0.5) * 10 + Math.max(0, CLIFF_Z - z) * 0.4;
 }
 
 /** Bioluminescent mushrooms around roots, rocks and the path edge. */

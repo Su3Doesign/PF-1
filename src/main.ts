@@ -6,7 +6,7 @@ import Lenis from 'lenis';
 import { World } from './world/World';
 import type { TargetKind } from './world/props';
 import type { StationId } from './world/layout';
-import { content, asset } from './data/content';
+import { content, asset, archive } from './data/content';
 import { Overlays } from './ui/overlays';
 import { Panels, STOPS } from './ui/panels';
 import { Sound } from './ui/sound';
@@ -49,6 +49,7 @@ function select(kind: TargetKind, i: number) {
   else if (kind === 'study') overlays.lightbox(content.studies, i, 'Studies');
   else if (kind === 'tier') { go('commissions'); panels.hot('tier', i); }
   else if (kind === 'contact') location.href = `mailto:${content.profile.email}`;
+  else if (kind === 'art') overlays.lightbox(archive, i, 'The archive');
   else if (kind === 'home') go('worlds');
 }
 
@@ -58,6 +59,7 @@ function label(kind: TargetKind, i: number): string {
   if (kind === 'study') { const s = content.studies[i]; return s ? `${s.name} · ${s.kind}` : 'Study'; }
   if (kind === 'tier') return content.tiers[i].name;
   if (kind === 'contact') return 'Write to me';
+  if (kind === 'art') { const a = archive[i]; return a ? `${a.name}` : 'Open'; }
   return 'Enter the forest';
 }
 
@@ -79,7 +81,7 @@ async function fontsReady() {
   const jobs = [
     document.fonts.load('800 40px "Archivo Variable"'),
     document.fonts.load('400 12px "Martian Mono Variable"'),
-    document.fonts.load('800 70px "Shippori Mincho B1"', '世界七手顧客書庫絵馬手紙苔経蔵')
+    document.fonts.load('800 70px "Shippori Mincho B1"', '世界七手顧客書庫絵馬手紙苔経蔵洞')
   ];
   await Promise.race([Promise.all(jobs), new Promise((r) => setTimeout(r, 3000))]);
 }
@@ -188,6 +190,7 @@ document.getElementById('study-prev')!.addEventListener('click', () => world.spi
 document.getElementById('study-next')!.addEventListener('click', () => world.spinStudies(1));
 document.getElementById('study-open')!.addEventListener('click', () => overlays.lightbox(content.studies, panels.studyNow, 'Studies'));
 document.getElementById('study-all')!.addEventListener('click', () => overlays.openStudies());
+document.getElementById('archive-open')!.addEventListener('click', () => overlays.lightbox(archive, 0, 'The archive'));
 
 const copyBtn = document.getElementById('copy-mail') as HTMLButtonElement;
 copyBtn.addEventListener('click', async () => {

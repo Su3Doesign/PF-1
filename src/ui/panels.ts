@@ -1,4 +1,4 @@
-import { content, asset } from '../data/content';
+import { content, asset, archive } from '../data/content';
 import type { StationId } from '../world/layout';
 import type { TargetKind } from '../world/props';
 import { decode } from './text';
@@ -10,6 +10,8 @@ export const STOPS: { id: StationId; label: string; jp: string }[] = [
   { id: 'clients', label: 'Clients', jp: '顧客' },
   { id: 'studies', label: 'Library', jp: '書庫' },
   { id: 'commissions', label: 'Commissions', jp: '絵馬' },
+  { id: 'about', label: 'About', jp: '洞' },
+  { id: 'archive', label: 'Archive', jp: '経蔵' },
   { id: 'contact', label: 'Contact', jp: '手紙' }
 ];
 
@@ -68,7 +70,8 @@ export class Panels {
       const b = document.createElement('button');
       b.type = 'button';
       if (!cc.files.length) b.className = 'nda';
-      b.innerHTML = `<b>${cc.name}</b><small>${cc.group} · ${cc.files.length ? cc.files.length + ' pieces' : 'NDA'}</small>`;
+      b.innerHTML = `<b>${cc.name}</b><small>${cc.files.length ? String(cc.files.length).padStart(2, '0') : 'NDA'}</small>`;
+      b.title = `${cc.name} · ${cc.group} · ${cc.files.length ? cc.files.length + ' pieces' : 'under NDA'}`;
       this.bind(b, 'client', i);
       cl.appendChild(b);
     });
@@ -80,6 +83,20 @@ export class Panels {
       d.dataset.tier = String(i);
       d.innerHTML = `<header><em>${t.n}</em><b>${t.name}</b>${t.flag ? `<small>${t.flag}</small>` : ''}</header><p>${t.for}</p><ul>${t.items.map((x) => `<li>${x}</li>`).join('')}</ul>`;
       tiers.appendChild(d);
+    });
+    // about
+    document.getElementById('about-text')!.innerHTML = c.profile.about.map((t) => `<p>${t}</p>`).join('');
+    document.getElementById('about-tools')!.innerHTML = Object.entries(c.profile.tools).map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
+    // archive
+    const al = document.getElementById('archive-list')!;
+    archive.forEach((m, i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('aria-label', `${m.name ?? 'Piece'} — open`);
+      b.title = m.name ?? '';
+      b.innerHTML = `<img src="${asset(m.thumb)}" alt="" loading="lazy" width="64" height="64">`;
+      this.bind(b, 'art', i);
+      al.appendChild(b);
     });
     // rail
     const rail = document.getElementById('rail')!;
@@ -174,7 +191,8 @@ export class Panels {
 
   /** Mirror a 3D hover onto the matching list item. */
   hot(kind: TargetKind | null, index: number) {
-    document.querySelectorAll('.card.is-hot, .clients .is-hot, .tier.is-hot').forEach((n) => n.classList.remove('is-hot'));
+    document.querySelectorAll('.card.is-hot, .clients .is-hot, .tier.is-hot, .archive-grid .is-hot').forEach((n) => n.classList.remove('is-hot'));
+    if (kind === 'art') document.querySelectorAll('#archive-list button')[index]?.classList.add('is-hot');
     if (kind === 'world') document.querySelectorAll('#world-cards .card')[index]?.classList.add('is-hot');
     if (kind === 'client') document.querySelectorAll('#client-list button')[index]?.classList.add('is-hot');
     if (kind === 'tier') document.querySelector(`.tier[data-tier="${index}"]`)?.classList.add('is-hot');

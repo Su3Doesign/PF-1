@@ -21,7 +21,7 @@ c.worlds.forEach((w, i) => {
   b.type = 'button';
   b.className = 'fworld';
   b.innerHTML = `<img src="${asset(w.plate.src)}" alt="${w.alt}" loading="${i ? 'lazy' : 'eager'}" width="${w.plate.w}" height="${w.plate.h}">
-    <div><span class="mono" style="color:var(--ink-3)">${w.year} · Personal · ${w.shots.length + 1} pieces</span><b class="moss">${w.title}</b><small>${w.jp}</small><p>${w.sub}</p><span class="btn" style="justify-self:start">Open case study →</span></div>`;
+    <div><span class="mono" style="color:var(--ink-3)">${w.year} · Personal · ${w.shots.length + 1} pieces</span><b class="display">${w.title}</b><small>${w.jp}</small><p>${w.sub}</p><span class="btn" style="justify-self:start">Open case study →</span></div>`;
   b.addEventListener('click', () => overlays.openWorld(i));
   $('f-worlds').appendChild(b);
 });

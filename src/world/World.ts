@@ -1,7 +1,7 @@
 import {
   WebGLRenderer, Scene, PerspectiveCamera, FogExp2, SRGBColorSpace, NoToneMapping, PCFSoftShadowMap, HemisphereLight,
   DirectionalLight, PointLight, Color, Vector2, Vector3, Raycaster, PMREMGenerator, Mesh, SphereGeometry, MeshBasicMaterial,
-  BackSide, PlaneGeometry, Object3D, Points, ShaderMaterial, MathUtils, HalfFloatType, SpotLight
+  BackSide, PlaneGeometry, Object3D, Points, ShaderMaterial, MathUtils, HalfFloatType, SpotLight, Texture
 } from 'three';
 import {
   EffectComposer, RenderPass, EffectPass, BloomEffect, ToneMappingEffect, ToneMappingMode, VignetteEffect, NoiseEffect,
@@ -10,14 +10,19 @@ import {
 import { loadAssets, Assets } from './assets';
 import { detectTier, qualityFor, FrameGovernor, Quality } from './quality';
 import { buildTerrain } from './terrain';
-import { Pond, LAYER_NO_REFLECT } from './water';
+import { Reflector, Drops, LAYER_NO_REFLECT, pondGeometry, ribbonGeometry } from './water';
 import { buildTrees, buildMushrooms } from './trees';
 import { buildFoliage } from './foliage';
 import { Props, Target, Emitter, TargetKind } from './props';
-import { buildSky, buildFireflies, buildVolumes, MOON_DIR, FOG_COLOR } from './atmosphere';
+import { buildSky, buildFireflies, buildVolumes, MOON_DIR, FOG_COLOR, ZONES, ZoneLook } from './atmosphere';
 import { Rail, SectionBox } from './rail';
-import { StationId, STATION_ORDER, LETTERS_Z, TORII } from './layout';
+import { StationId, STATION_ORDER, LETTERS_Z, TORII, POND, CAVE_MOUTH, HALL, zoneWeights } from './layout';
 import { shared } from './materials';
+import { buildCave, caveCenter, caveScale } from './cave';
+import { buildHall } from './hall';
+import { buildShore } from './shore';
+import { buildFauna, Fauna } from './fauna';
+import { archive } from '../data/content';
 
 export interface WorldEvents {
   hover(t: { kind: TargetKind; index: number } | null): void;
@@ -34,13 +39,23 @@ export class World {
   camera = new PerspectiveCamera(45, 1, 0.1, 120); // fog swallows everything past ~100 m
   q!: Quality;
   composer!: EffectComposer;
-  pond!: Pond;
+  reflector!: Reflector;
   props!: Props;
   rail!: Rail;
   assets!: Assets;
   private gov!: FrameGovernor;
   private moon!: DirectionalLight;
   private fireflies!: Points;
+  private hemi!: HemisphereLight;
+  private sky!: Mesh;
+  private envs: { forest?: Texture; hall?: Texture; shore?: Texture } = {};
+  private drops: Drops[] = [];
+  private fauna!: Fauna;
+  private emitters: Emitter[] = [];
+  private art: Mesh[] = [];
+  private pointMats: ShaderMaterial[] = [];
+  private updaters: ((t: number, camZ: number) => void)[] = [];
+  private zoneNow: ZoneLook = cloneZone(ZONES.forest);
   private pool: { l: PointLight; e: Emitter | null; fade: number }[] = [];
   private fog = new FogExp2(FOG_COLOR, FOG_DENSITY);
   private time = 0;
@@ -66,6 +81,8 @@ export class World {
   private bloom!: BloomEffect;
   overlay = false;
   ready = false;
+  /** ?debug only: pin the camera somewhere for inspection. */
+  debugCam: { pos: Vector3; look: Vector3 } | null = null;
   deskVideo = '';
 
   constructor(private canvas: HTMLCanvasElement, private events: WorldEvents, private reduced: boolean) {
@@ -92,14 +109,41 @@ export class World {
     await nextFrame();
     const s = this.scene;
     s.fog = this.fog;
-    s.add(buildSky());
+    this.sky = buildSky(a.tex.noise);
+    s.add(this.sky);
     s.add(buildTerrain({ ground: a.tex.ground, groundN: a.tex.groundN, moss: a.tex.moss, noise: a.tex.noise }));
-    this.pond = new Pond({ waterN: a.tex.waterN, noise: a.tex.noise }, this.q.reflection);
-    s.add(this.pond);
-    const trees = buildTrees(this.q.trees, { bark: a.tex.bark, barkN: a.tex.barkN, moss: a.tex.moss, noise: a.tex.noise }, this.q.shadows, this.q.tier === 'high' ? 1 : 0);
+    // every water surface shares one mirror: they all lie on y = 0
+    this.reflector = new Reflector(this.q.reflection);
+    const waterTex = { waterN: a.tex.waterN, noise: a.tex.noise };
+    const pondMat = this.reflector.material(waterTex);
+    const pond = new Mesh(pondGeometry(), pondMat);
+    pond.name = 'pond';
+    s.add(this.reflector.add(pond));
+    this.drops.push(new Drops(pondMat, () => {
+      const a2 = Math.random() * Math.PI * 2, r2 = Math.sqrt(Math.random()) * 0.8;
+      return [POND.cx + Math.cos(a2) * POND.rx * r2, POND.cz + Math.sin(a2) * POND.rz * r2];
+    }));
+    // the cave's channel, from the spring pool at the mouth to the hall's pool
+    const chanMat = this.reflector.material(waterTex, { deep: new Color(0x02080c), murk: 0.6, flow: new Vector2(0, -0.35), specPow: 600, specAmt: 0.7 });
+    const z0 = CAVE_MOUTH.z + 9.5, z1 = HALL.z0 - 0.3;
+    const chan = new Mesh(ribbonGeometry(
+      (t) => caveCenter(z0 + (z1 - z0) * t),
+      (t) => { const z = z0 + (z1 - z0) * t; return z > CAVE_MOUTH.z + 1 ? 4.6 : 2.55 + 0.35 * (caveScale(z).w - 1); },
+      220), chanMat);
+    chan.name = 'channel';
+    s.add(this.reflector.add(chan));
+    this.drops.push(new Drops(chanMat, () => {
+      const z = -176 - Math.random() * 34;
+      return [caveCenter(z).x + (Math.random() - 0.5) * 3, z];
+    }, [0.35, 0.9]));
+    onProgress(0.8, 'growing the forest');
+    const trees = buildTrees(this.q.trees, { bark: a.tex.bark, barkN: a.tex.barkN, moss: a.tex.moss, noise: a.tex.noise, conifer: a.tex.conifer, broad: a.tex.broad }, this.q.shadows, this.q.tier === 'high' ? 1 : 0);
     s.add(trees.group);
     await nextFrame();
-    s.add(buildFoliage({ grass: this.q.grass, ferns: this.q.ferns, fern: a.tex.fern, fern2: a.tex.fern2 }));
+    s.add(buildFoliage({
+      grass: this.q.grass, tufts: this.q.tufts, ferns: this.q.ferns, bushes: this.q.bushes,
+      fern: a.tex.fern, fern2: a.tex.fern2, tuft: a.tex.tuft, bush: a.tex.bushLeaves, blossom: a.tex.blossom, trees: trees.positions
+    }));
     const mush = buildMushrooms(this.q.tier === 'low' ? 120 : 260);
     mush.layers.set(LAYER_NO_REFLECT);
     s.add(mush);
@@ -113,8 +157,41 @@ export class World {
     s.add(this.fireflies);
     s.add(buildVolumes(a.tex.noise, this.q.godRays));
 
+    // the finale: cave, archive hall, shore
+    onProgress(0.88, 'hollowing the cave');
+    await nextFrame();
+    const t = a.tex;
+    const cave = buildCave({ stone: t.stone, stoneN: t.stoneN, moss: t.moss, mossN: t.mossN, noise: t.noise, fern: t.fern, hangingMoss: t.hangingMoss }, this.q.tier, this.q.shadows);
+    s.add(cave.group);
+    onProgress(0.9, 'restoring the archive');
+    await nextFrame();
+    const hall = buildHall({
+      plaster: t.plaster, plasterN: t.plasterN, stone: t.stone, stoneN: t.stoneN, moss: t.moss, mossN: t.mossN, noise: t.noise,
+      fresco: t.fresco, wisteria: t.wisteria, rose: t.rose, bushLeaves: t.bushLeaves, ivy: t.ivy, lilypad: t.lilypad, fern: t.fern,
+      tuft: t.tuft, broad: t.broad, bark: t.bark, barkN: t.barkN, waterN: t.waterN
+    }, this.reflector, this.q.tier, this.q.shadows, archive);
+    s.add(hall.group);
+    hall.art.forEach((m, i) => this.props.targets.push({ object: m, kind: 'art', index: i }));
+    this.art = hall.art;
+    this.updaters.push(hall.update);
+    const shore = buildShore({
+      stone: t.stone, stoneN: t.stoneN, moss: t.moss, mossN: t.mossN, noise: t.noise, sand: t.sand, sandN: t.sandN,
+      conifer: t.conifer, bushLeaves: t.bushLeaves, blossom: t.blossom, tuft: t.tuft, bark: t.bark, barkN: t.barkN, waterN: t.waterN
+    }, this.reflector, this.q.tier, this.q.shadows);
+    s.add(shore.group);
+    this.fauna = buildFauna(this.q.tier);
+    s.add(this.fauna.group);
+    this.emitters = [...this.props.emitters, ...cave.emitters, ...hall.emitters, ...shore.emitters];
+    for (const g of [cave.group, hall.group]) {
+      g.traverse((o) => {
+        const m = (o as Points).material as ShaderMaterial;
+        if ((o as Points).isPoints && m?.uniforms?.pr) this.pointMats.push(m);
+      });
+    }
+
     // lights
     const hemi = new HemisphereLight(0x2c4262, 0x0b1609, 0.42);
+    this.hemi = hemi;
     s.add(hemi);
     this.moon = new DirectionalLight(0xa9c0ff, 1.05);
     this.moon.position.copy(MOON_DIR).multiplyScalar(60);
@@ -158,24 +235,72 @@ export class World {
     this.ready = true;
   }
 
+  /** Three small light-probe scenes: the neon forest, the candlelit hall, the dawn sea. */
   private environment() {
-    const env = new Scene();
-    const sky = new Mesh(new SphereGeometry(20, 24, 12), new MeshBasicMaterial({ color: new Color(0.02, 0.04, 0.05), side: BackSide }));
-    env.add(sky);
-    const panel = (c: Color, x: number, y: number, z: number, w: number, h: number) => {
-      const m = new Mesh(new PlaneGeometry(w, h), new MeshBasicMaterial({ color: c, side: 2 }));
-      m.position.set(x, y, z);
-      m.lookAt(0, 0, 0);
-      env.add(m);
-    };
-    panel(new Color(0.2, 1.4, 1.1), 8, 2, -8, 6, 2);
-    panel(new Color(1.6, 0.8, 0.25), -9, 1, 5, 4, 3);
-    panel(new Color(1.8, 0.35, 0.3), 0, 3, -12, 8, 1);
-    panel(new Color(0.7, 0.8, 1.0), -4, 12, -8, 5, 5);
     const pm = new PMREMGenerator(this.renderer);
-    this.scene.environment = pm.fromScene(env, 0.04).texture;
+    const make = (bg: Color, panels: [Color, number, number, number, number, number][]) => {
+      const env = new Scene();
+      env.add(new Mesh(new SphereGeometry(20, 24, 12), new MeshBasicMaterial({ color: bg, side: BackSide })));
+      for (const [c, x, y, z, w, h] of panels) {
+        const m = new Mesh(new PlaneGeometry(w, h), new MeshBasicMaterial({ color: c, side: 2 }));
+        m.position.set(x, y, z);
+        m.lookAt(0, 0, 0);
+        env.add(m);
+      }
+      return pm.fromScene(env, 0.04).texture;
+    };
+    this.envs.forest = make(new Color(0.02, 0.04, 0.05), [
+      [new Color(0.2, 1.4, 1.1), 8, 2, -8, 6, 2], [new Color(1.6, 0.8, 0.25), -9, 1, 5, 4, 3],
+      [new Color(1.8, 0.35, 0.3), 0, 3, -12, 8, 1], [new Color(0.7, 0.8, 1.0), -4, 12, -8, 5, 5]
+    ]);
+    this.envs.hall = make(new Color(0.16, 0.1, 0.06), [
+      [new Color(2.2, 1.5, 0.9), 12, 6, 0, 4, 8], [new Color(2.4, 1.6, 1.0), 0, 4, -14, 6, 8],
+      [new Color(1.4, 0.9, 0.5), -10, 8, 4, 6, 3], [new Color(0.9, 0.75, 0.6), 0, 16, 0, 10, 10]
+    ]);
+    this.envs.shore = make(new Color(0.22, 0.16, 0.24), [
+      [new Color(1.6, 0.9, 0.7), 0, 1, -16, 30, 4], [new Color(0.35, 0.3, 0.6), 0, 14, -4, 20, 12],
+      [new Color(1.2, 1.1, 1.0), 3, 2, -16, 2, 2]
+    ]);
+    this.scene.environment = this.envs.forest;
     this.scene.environmentIntensity = 0.55;
     pm.dispose();
+  }
+
+  /** Blend fog, sky, light and reflections toward the zone the camera is in. */
+  private updateZone() {
+    const w = zoneWeights(this.camera.position.z);
+    const z = this.zoneNow;
+    const list: [ZoneLook, number][] = [[ZONES.forest, w.forest], [ZONES.cave, w.cave], [ZONES.hall, w.hall], [ZONES.shore, w.shore]];
+    z.fog.setRGB(0, 0, 0); z.hemiSky.setRGB(0, 0, 0); z.hemiGround.setRGB(0, 0, 0); z.sun.setRGB(0, 0, 0); z.leafMoon.setRGB(0, 0, 0);
+    z.sunDir.set(0, 0, 0);
+    let dens = 0, logFar = 0, hemi = 0, sunI = 0, env = 0, dawn = 0;
+    for (const [L, k] of list) {
+      if (k <= 0) continue;
+      z.fog.r += L.fog.r * k; z.fog.g += L.fog.g * k; z.fog.b += L.fog.b * k;
+      z.hemiSky.r += L.hemiSky.r * k; z.hemiSky.g += L.hemiSky.g * k; z.hemiSky.b += L.hemiSky.b * k;
+      z.hemiGround.r += L.hemiGround.r * k; z.hemiGround.g += L.hemiGround.g * k; z.hemiGround.b += L.hemiGround.b * k;
+      z.sun.r += L.sun.r * k; z.sun.g += L.sun.g * k; z.sun.b += L.sun.b * k;
+      z.leafMoon.r += L.leafMoon.r * k; z.leafMoon.g += L.leafMoon.g * k; z.leafMoon.b += L.leafMoon.b * k;
+      z.sunDir.addScaledVector(L.sunDir, k);
+      dens += L.density * k; logFar += Math.log(L.far) * k; hemi += L.hemi * k; sunI += L.sunI * k; env += L.env * k; dawn += L.dawn * k;
+    }
+    z.sunDir.normalize();
+    if (this.introStart < 0 || this.time - this.introStart > 4.2) this.fog.density = dens;
+    this.fog.color.copy(z.fog);
+    this.renderer.setClearColor(z.fog);
+    const far = Math.exp(logFar);
+    if (Math.abs(far - this.camera.far) > 0.5) { this.camera.far = far; this.camera.updateProjectionMatrix(); }
+    this.hemi.color.copy(z.hemiSky); this.hemi.groundColor.copy(z.hemiGround); this.hemi.intensity = hemi;
+    this.moon.color.copy(z.sun); this.moon.intensity = sunI;
+    shared.moonDir.value.copy(w.shore > 0.5 ? ZONES.shore.sunDir : w.forest > 0.5 ? MOON_DIR : z.sunDir);
+    shared.moonColor.value.copy(z.leafMoon);
+    const sky = this.sky.material as ShaderMaterial;
+    sky.uniforms.dawn.value = dawn;
+    sky.uniforms.fog.value.copy(z.fog);
+    sky.uniforms.moonDir.value.copy(dawn > 0.5 ? ZONES.shore.sunDir : MOON_DIR);
+    this.scene.environmentIntensity = env;
+    const envT = w.hall >= Math.max(w.forest, w.cave, w.shore) ? this.envs.hall : w.shore > 0.5 ? this.envs.shore : this.envs.forest;
+    if (envT && this.scene.environment !== envT) this.scene.environment = envT;
   }
 
   private setupPost() {
@@ -205,7 +330,8 @@ export class World {
     const tall = w / h < 0.95;
     this.camera.fov = tall ? 58 : w / h < 1.3 ? 50 : 45;
     this.camera.updateProjectionMatrix();
-    this.pond?.setSize(w * ratio, h * ratio);
+    this.reflector?.setSize(w * ratio, h * ratio);
+    for (const m of this.pointMats) m.uniforms.pr.value = ratio * (h / 800) * 1.6;
     if (this.props) this.props.layoutLetters(w / h);
     if (this.rail && this.rail.tall !== tall) this.rail.build(tall);
     if (this.fireflies) (this.fireflies.material as ShaderMaterial).uniforms.pr.value = ratio * (h / 800) * 1.6;
@@ -229,6 +355,10 @@ export class World {
       this.props.ringMat.uniforms.hoverIndex.value = index;
       this.props.focusStudy(index, this.camera);
     }
+    this.art.forEach((m, i) => {
+      const mat = m.material as MeshBasicMaterial;
+      if (mat.map) mat.color.setScalar(kind === 'art' && i === index ? 1.18 : 0.9);
+    });
   }
 
   spinStudies(dir: number) {
@@ -321,6 +451,10 @@ export class World {
       this.tmpLook.lerpVectors(fromLook, this.tmpLook, e);
       this.fog.density = MathUtils.lerp(0.075, FOG_DENSITY, e);
     }
+    if (this.debugCam) {
+      this.tmpPos.copy(this.debugCam.pos);
+      this.tmpLook.copy(this.debugCam.look);
+    }
     const speed = Math.abs(target - this.tCur);
     const bob = this.reduced ? 0 : Math.sin(this.time * 1.7) * 0.025 + Math.sin(this.time * 0.6) * 0.04 + Math.sin(this.time * 5.5) * speed * 0.8;
     cam.position.copy(this.tmpPos);
@@ -341,7 +475,7 @@ export class World {
 
   private updateLights(dt: number) {
     const cam = this.camera.position;
-    const scored = this.props.emitters
+    const scored = this.emitters
       .map((e) => ({ e, s: (e.intensity * e.level()) / (1 + e.pos.distanceToSquared(cam) / (e.range * e.range * 4)) }))
       .filter((x) => x.s > 0.05 && x.e.pos.distanceTo(cam) < 38)
       .sort((a, b) => b.s - a.s)
@@ -386,7 +520,12 @@ export class World {
       p.letterPower[i] = this.reduced || this.introStart < 0 ? 1 : on;
     }
     p.update(this.time, dt);
-    this.pond.updateDrops(this.time);
+    const cz = this.camera.position.z;
+    shared.camZ.value = cz;
+    for (const d of this.drops) d.update(this.time);
+    for (const u of this.updaters) u(this.time, cz);
+    this.fauna.update(this.time, dt, this.camera.position);
+    this.updateZone();
     this.updateLights(dt);
 
     // shadow camera follows what we are looking at
@@ -394,7 +533,7 @@ export class World {
       const f = new Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion).multiplyScalar(12).add(this.camera.position);
       f.x = Math.round(f.x); f.z = Math.round(f.z); f.y = 0;
       this.moon.target.position.copy(f);
-      this.moon.position.copy(f).addScaledVector(MOON_DIR, 70);
+      this.moon.position.copy(f).addScaledVector(this.zoneNow.sunDir, 70);
     }
 
     // which stop are we at?
@@ -404,7 +543,7 @@ export class World {
       this.stationNow = st;
       this.events.station(st);
     }
-    const nearContact = this.camera.position.z < -150;
+    const nearContact = this.camera.position.z < -240;
     p.setDeskActive(nearContact, this.deskVideo);
     if (this.stationNow === 'studies' && this.frameNo % 8 === 0) {
       const f = p.frontStudy(this.camera);
@@ -429,13 +568,17 @@ export class World {
     this.bloom.intensity = 1.05 + 0.08 * Math.sin(this.time * 0.7);
 
     this.renderer.info.reset();
-    if (!this.overlay) this.pond.renderReflection(this.renderer, this.scene, this.camera);
+    if (!this.overlay) this.reflector.render(this.renderer, this.scene, this.camera);
     this.composer.render(dt);
     this.gov.tick(dt);
   };
 
   pause() { this.running = false; }
   resume() { if (!this.running) { this.running = true; this.last = performance.now(); requestAnimationFrame(this.frame); } }
+}
+
+function cloneZone(z: ZoneLook): ZoneLook {
+  return { ...z, fog: z.fog.clone(), hemiSky: z.hemiSky.clone(), hemiGround: z.hemiGround.clone(), sun: z.sun.clone(), sunDir: z.sunDir.clone(), leafMoon: z.leafMoon.clone() };
 }
 
 function nextFrame() { return new Promise<void>((r) => requestAnimationFrame(() => r())); }

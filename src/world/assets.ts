@@ -26,6 +26,20 @@ export const TEXTURES = {
   fern2: 'tex/fern2.webp',
   hangingMoss: 'tex/hanging_moss.webp',
   waterN: 'tex/water_normal.webp',
+  conifer: 'tex/leaves_conifer.webp',
+  broad: 'tex/leaves_broad.webp',
+  bushLeaves: 'tex/leaves_bush.webp',
+  tuft: 'tex/grass_tuft.webp',
+  blossom: 'tex/blossom.webp',
+  rose: 'tex/rose.webp',
+  wisteria: 'tex/wisteria.webp',
+  ivy: 'tex/ivy.webp',
+  lilypad: 'tex/lilypad.webp',
+  fresco: 'tex/fresco.webp',
+  plaster: 'tex/plaster_albedo.webp',
+  plasterN: 'tex/plaster_normal.webp',
+  sand: 'tex/sand_albedo.webp',
+  sandN: 'tex/sand_normal.webp',
   noise: 'tex/noise.png',
   aoLetters: '3d/ao_letters.webp',
   aoTorii: '3d/ao_torii_body.webp',
@@ -55,7 +69,8 @@ export const MODELS = {
 export type TexKey = keyof typeof TEXTURES;
 export type ModelKey = keyof typeof MODELS;
 
-const COLOR_TEX = new Set<TexKey>(['moss', 'concrete', 'stone', 'lacquer', 'bark', 'metal', 'ground', 'fern', 'fern2', 'hangingMoss', 'clientsAtlas', 'studiesAtlas', 'worldA', 'worldB', 'worldC']);
+const COLOR_TEX = new Set<TexKey>(['moss', 'concrete', 'stone', 'lacquer', 'bark', 'metal', 'ground', 'fern', 'fern2', 'hangingMoss', 'clientsAtlas', 'studiesAtlas', 'worldA', 'worldB', 'worldC',
+  'conifer', 'broad', 'bushLeaves', 'tuft', 'blossom', 'rose', 'wisteria', 'ivy', 'lilypad', 'fresco', 'plaster', 'sand']);
 
 export interface Assets {
   tex: Record<TexKey, Texture>;

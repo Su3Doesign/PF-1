@@ -124,9 +124,6 @@ def moss(n=1024):
     col = col + tips * np.array([0.08, 0.10, 0.03])
     save_rgb(col, "moss_albedo.webp", 82)
     save_rgb(normal_map(h, 6.0), "moss_normal.webp", 80)
-    small_css = Image.fromarray((np.clip(col * 1.2, 0, 1) * 255).astype(np.uint8)).resize((512, 512), Image.LANCZOS)
-    small_css.save(OUT / "moss_type.webp", "WEBP", quality=80, method=6)
-    print("wrote moss_type.webp")
     return col, h
 
 

@@ -14,3 +14,17 @@ export const content = raw as unknown as Content;
 
 /** Public asset path → URL that works under any base path. */
 export const asset = (p: string) => (p.startsWith('http') ? p : `./${p}`);
+
+/** The pieces hung in the archive hall: world plates and stills, then one piece per client. */
+export const archive: Media[] = (() => {
+  const out: Media[] = [];
+  for (const w of content.worlds) out.push({ ...w.plate, name: w.title, kind: `${w.jp} · personal world` });
+  for (const w of content.worlds) {
+    for (const s of w.shots) if (s.type === 'image' && out.length < 9) out.push({ ...s, name: w.title, kind: s.label ?? 'personal world' });
+  }
+  for (const c of content.clients) {
+    const f = c.files.find((x) => x.type === 'image');
+    if (f && out.length < 16) out.push({ ...f, name: c.name, kind: c.role });
+  }
+  return out;
+})();
