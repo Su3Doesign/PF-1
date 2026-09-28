@@ -3,7 +3,7 @@ import {
   Quaternion, Texture, Vector3, CatmullRomCurve3, TubeGeometry, Color, SphereGeometry, MeshBasicMaterial
 } from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { heightAt, inClearing, pathDistance, pondFactor, LIBRARY_TREE, fbm, CLIFF_Z, CAVE_MOUTH } from './layout';
+import { heightAt, inClearing, pathDistance, pondFactor, LIBRARY_TREE, fbm, CLIFF_Z, CAVE_MOUTH, keepClear } from './layout';
 import { rng, sugi, broadleaf, leafMaterial, TreeGeo } from './treegen';
 
 export function barkMaterial(tex: { bark: Texture; barkN: Texture; moss: Texture; noise: Texture }, mossiness = 1): MeshStandardMaterial {
@@ -58,18 +58,25 @@ export function groundUnder(x: number, z: number, r: number): number {
   return m;
 }
 
-export function buildTrees(count: number, tex: TreeTex, shadows: boolean, detail = 1): TreeResult {
+export function buildTrees(count: number, tex: TreeTex, shadows: boolean, detail = 1, farCount = 0, saplingCount = 0): TreeResult {
   const group = new Group();
   group.name = 'trees';
   const rand = rng(77);
-  const variants: { kind: Kind; geo: TreeGeo }[] = [
+  const variants: { kind: Kind; geo: TreeGeo; far?: boolean }[] = [
     { kind: 'sugi', geo: sugi(11, 24, 0.46, detail) },
     { kind: 'sugi', geo: sugi(23, 29, 0.6, detail) },
     { kind: 'sugi', geo: sugi(37, 20, 0.38, detail) },
     { kind: 'maple', geo: broadleaf(41, { H: 7.5, r0: 0.2, fork: 1.7, R: 4.2, Rh: 2.2, leaders: 4, vase: 0.2, card: 1.7, count: 120 }, detail) },
     { kind: 'maple', geo: broadleaf(53, { H: 9.5, r0: 0.26, fork: 2.2, R: 5.0, Rh: 2.6, leaders: 5, vase: 0.35, card: 1.9, count: 150 }, detail) },
-    { kind: 'keyaki', geo: broadleaf(67, { H: 17, r0: 0.55, fork: 3.6, R: 6.6, Rh: 4.4, leaders: 5, vase: 1, card: 2.5, count: 210 }, detail) }
+    { kind: 'keyaki', geo: broadleaf(67, { H: 17, r0: 0.55, fork: 3.6, R: 6.6, Rh: 4.4, leaders: 5, vase: 1, card: 2.5, count: 210 }, detail) },
+    // light versions for the far ridges and for saplings
+    { kind: 'sugi', geo: sugi(13, 24, 0.46, -1), far: true },
+    { kind: 'sugi', geo: sugi(29, 28, 0.58, -1), far: true },
+    { kind: 'sugi', geo: sugi(43, 20, 0.4, -1), far: true },
+    { kind: 'maple', geo: broadleaf(47, { H: 8, r0: 0.22, fork: 1.8, R: 4.4, Rh: 2.3, leaders: 4, vase: 0.3, card: 1.8, count: 120 }, -1), far: true },
+    { kind: 'keyaki', geo: broadleaf(71, { H: 16, r0: 0.5, fork: 3.4, R: 6.2, Rh: 4.2, leaders: 5, vase: 1, card: 2.4, count: 200 }, -1), far: true }
   ];
+  const FAR0 = 6;
   const bark = barkMaterial(tex);
   const needles = leafMaterial({ map: tex.conifer, sway: 0.5, height: 26, trans: 0.18 });
   const leaves = leafMaterial({ map: tex.broad, sway: 0.35, height: 12, trans: 0.4 });
@@ -109,6 +116,7 @@ export function buildTrees(count: number, tex: TreeTex, shadows: boolean, detail
       if (inClearing(x, z, 1)) continue;
       if ((x - LIBRARY_TREE.x) ** 2 + (z - LIBRARY_TREE.z) ** 2 < 15 * 15) continue;
       if (z < CLIFF_Z + 5 && Math.abs(x - CAVE_MOUTH.x) < 9) continue;
+      if (keepClear(x, z, 2.5)) continue;
       near = pd < 9 || inClearing(x, z, 6);
     }
     const v = pick(near, pond);
@@ -125,7 +133,53 @@ export function buildTrees(count: number, tex: TreeTex, shadows: boolean, detail
   // a tree line along the top of the cliff, black against the sky
   for (let x = -70; x < 70; x += 3.2 + rand() * 3) {
     const z = CLIFF_Z - 3 - rand() * 12;
-    pts.push({ x, z, v: Math.floor(rand() * 3), s: 0.9 + rand() * 0.4, h: 0, r: 0, top: true } as typeof pts[0] & { top: boolean });
+    pts.push({ x, z, v: FAR0 + Math.floor(rand() * 3), s: 0.9 + rand() * 0.4, h: 0, r: 0, top: true } as typeof pts[0] & { top: boolean });
+  }
+  // the far forest: ridges of trees up the valley walls on both sides, so there
+  // is always another layer of trunks behind the last one
+  let ft = 0, placedFar = 0;
+  while (placedFar < farCount && ft < farCount * 50) {
+    ft += 1;
+    const z = 40 - rand() * 208;
+    if (z < CLIFF_Z + 3) continue;
+    const x = (rand() * 2 - 1) * 118;
+    const pd = pathDistance(x, z);
+    const lateral = z > -22 ? Math.abs(x) : pd;
+    if (lateral < (z > -22 ? 40 : 30) || lateral > 92) continue;
+    if (z > -22 && pondFactor(x, z) < 1.6) continue;
+    const kr = rand();
+    const v = FAR0 + (kr < 0.72 ? Math.floor(rand() * 3) : kr < 0.85 ? 3 : 4);
+    if (!ok(x, z, 3.4)) continue;
+    const s = 0.85 + rand() * 0.45;
+    const p = { x, z, v, s, h: 0, r: 0 };
+    pts.push(p);
+    const key = `${Math.floor(x / 4)},${Math.floor(z / 4)}`;
+    if (!grid.has(key)) grid.set(key, []);
+    grid.get(key)!.push(p);
+    placedFar += 1;
+  }
+  // saplings and young trees: they fill the band at eye height between trunks
+  let st = 0, placedS = 0;
+  while (placedS < saplingCount && st < saplingCount * 40) {
+    st += 1;
+    const z = 30 - rand() * 197;
+    if (z < CLIFF_Z + 4) continue;
+    const x = (rand() * 2 - 1) * 60;
+    const pd = pathDistance(x, z);
+    if (z > -22) { if (pondFactor(x, z) < 1.3 || (z > 2 && Math.abs(x) < 9) || Math.abs(x) < 10) continue; }
+    else if (pd < 5.5 || pd > 42 || inClearing(x, z, 0)) continue;
+    if ((x - LIBRARY_TREE.x) ** 2 + (z - LIBRARY_TREE.z) ** 2 < 13 * 13) continue;
+    if (keepClear(x, z, 1.5)) continue;
+    if (!ok(x, z, 1.8)) continue;
+    const kr = rand();
+    const v = kr < 0.55 ? FAR0 + 2 : kr < 0.8 ? FAR0 + 3 : FAR0;
+    const s = v === FAR0 + 3 ? 0.45 + rand() * 0.3 : 0.24 + rand() * 0.2;
+    const p = { x, z, v, s, h: 0, r: 0 };
+    pts.push(p);
+    const key = `${Math.floor(x / 4)},${Math.floor(z / 4)}`;
+    if (!grid.has(key)) grid.set(key, []);
+    grid.get(key)!.push(p);
+    placedS += 1;
   }
 
   const m4 = new Matrix4(), q = new Quaternion(), sv = new Vector3(), pv = new Vector3();
@@ -135,7 +189,7 @@ export function buildTrees(count: number, tex: TreeTex, shadows: boolean, detail
     const list = pts.filter((p) => p.v === vi);
     const bands = new Map<number, typeof list>();
     for (const p of list) {
-      const b = Math.floor(p.z / 70);
+      const b = Math.floor(p.z / (vt.far ? 120 : 80));
       if (!bands.has(b)) bands.set(b, []);
       bands.get(b)!.push(p);
     }
@@ -163,7 +217,7 @@ export function buildTrees(count: number, tex: TreeTex, shadows: boolean, detail
       });
       for (const m of [trunks, crowns]) {
         m.computeBoundingSphere();
-        m.castShadow = shadows;
+        m.castShadow = shadows && !vt.far;
         m.receiveShadow = true;
         group.add(m);
       }

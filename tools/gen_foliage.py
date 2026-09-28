@@ -462,6 +462,56 @@ def sand(n=512, seed=311):
     save_rgb(normal_map(norm01(h), 4.0), "sand_normal.webp", 80)
 
 
+# ── bamboo leaves: slender lanceolate leaves fanning from thin twigs ─────────
+def bamboo(w=512, h=512, seed=321):
+    S = 2
+    W, H = w * S, h * S
+    img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    r = np.random.default_rng(seed)
+    for t in range(14):
+        x0, y0 = W * (0.2 + 0.6 * r.random()), H * (0.25 + 0.6 * r.random())
+        a0 = math.atan2(0.5 - y0 / H, 0.5 - x0 / W) + math.pi + r.normal(0, 0.6)
+        L = W * (0.18 + 0.2 * r.random())
+        x1, y1 = x0 + math.cos(a0) * L, y0 + math.sin(a0) * L
+        d.line([(x0, y0), (x1, y1)], fill=(96, 110, 58, 255), width=max(1, S))
+        for k in range(7):
+            t0 = r.random()
+            px, py = x0 + (x1 - x0) * t0, y0 + (y1 - y0) * t0
+            la = a0 + (1 if k % 2 else -1) * (0.5 + 0.5 * r.random()) + math.pi * 0.15
+            LL = (60 + 50 * r.random()) * S
+            poly = rot(leaf_poly(LL, LL * 0.16, 12, tip=1.4), la + math.pi * 0.5 * (r.random() - 0.5), px, py)
+            g = 0.7 + 0.5 * r.random()
+            col = np.array([0.24, 0.4, 0.14]) * g
+            d.polygon(poly, fill=rgba(col))
+            d.line([poly[0], poly[len(poly) // 2]], fill=rgba(col * 1.3), width=max(1, S // 2))
+    finish(img, w, h, "leaves_bamboo.webp", grow=2)
+
+
+# ── willow strands: long hanging whips with small narrow leaves (tinted, often glowing) ──
+def willow(w=256, h=1024, seed=331):
+    S = 2
+    W, H = w * S, h * S
+    img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    r = np.random.default_rng(seed)
+    for strand in range(13):
+        x0 = W * (0.1 + 0.8 * r.random())
+        L = H * (0.55 + 0.44 * r.random())
+        ph = r.random() * 6
+        axis = [(x0 + math.sin(ph + t * 2.0) * W * 0.04 * t, t * L) for t in np.linspace(0, 1, 60)]
+        d.line(axis, fill=(150, 160, 120, 255), width=S)
+        for k in range(int(95 * L / H)):
+            t = r.random()
+            ax, ay = axis[min(59, int(t * 59))]
+            side = 1 if r.random() < 0.5 else -1
+            la = math.pi / 2 + side * (0.35 + 0.3 * r.random())
+            LL = (14 + 10 * r.random()) * S * (1 - 0.4 * t)
+            v = 0.7 + 0.3 * r.random()
+            d.polygon(rot(leaf_poly(LL, LL * 0.22), la, ax, ay), fill=rgba(np.array([0.92, 0.96, 0.85]) * v))
+    finish(img, w, h, "willow.webp", grow=2)
+
+
 if __name__ == "__main__":
     conifer()
     broadleaf()
@@ -475,3 +525,5 @@ if __name__ == "__main__":
     fresco()
     plaster()
     sand()
+    bamboo()
+    willow()

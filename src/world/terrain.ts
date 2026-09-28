@@ -7,14 +7,14 @@ export interface TerrainTex { ground: Texture; groundN: Texture; moss: Texture; 
 
 /** One ground mesh, denser near the walk, with path and bank tinting in vertex colours. */
 export function buildTerrain(t: TerrainTex): Mesh {
-  const x0 = -70, x1 = 70, z0 = 34, z1 = -180;
-  const nx = 141, nz = 215;
+  const x0 = -135, x1 = 135, z0 = 44, z1 = -180;
+  const nx = 171, nz = 225;
   const pos = new Float32Array(nx * nz * 3);
   const uv = new Float32Array(nx * nz * 2);
   const col = new Float32Array(nx * nz * 3);
   const c = new Color();
   const soil = new Color(0.62, 0.55, 0.5);
-  const path = new Color(0.5, 0.44, 0.38);
+  const path = new Color(0.36, 0.31, 0.27);
   const wet = new Color(0.42, 0.44, 0.40);
   const lush = new Color(0.62, 0.7, 0.58);
   for (let j = 0; j < nz; j += 1) {
@@ -24,13 +24,13 @@ export function buildTerrain(t: TerrainTex): Mesh {
       // squeeze columns toward the centre where the camera is
       const u = i / (nx - 1) * 2 - 1;
       const x = Math.sign(u) * Math.pow(Math.abs(u), 1.6) * (x1 - x0) / 2;
-      const d = z < -12 ? pathDistance(x, z) : 99;
+      const d = pathDistance(x, z);
       const y = heightAt(x, z, d);
       const k = j * nx + i;
       pos[k * 3] = x; pos[k * 3 + 1] = y; pos[k * 3 + 2] = z;
       uv[k * 2] = x / 3.2; uv[k * 2 + 1] = z / 3.2;
       c.copy(lush);
-      const p = Math.max(0, 1 - d / 1.8);
+      const p = Math.max(0, 1 - d / 1.5);
       if (p > 0) c.lerp(path, p);
       const pf = pondFactor(x, z);
       const bank = Math.max(0, 1 - Math.abs(pf - 1.02) / 0.12);

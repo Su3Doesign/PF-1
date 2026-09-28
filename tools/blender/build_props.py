@@ -250,6 +250,99 @@ def weld(obj, dist=0.0008):
     bpy.ops.object.mode_set(mode="OBJECT")
 
 
+def fix_caps(obj):
+    """Text caps come out as separate flat shells, and normals_make_consistent can
+    turn some of them inward. Point every cap away from the letter's mid-plane."""
+    me = obj.data
+    cy = sum(v.co.y for v in me.vertices) / len(me.vertices)
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    bm.normal_update()
+    flip = []
+    for f in bm.faces:
+        n = f.normal
+        if abs(n.y) > 0.6:
+            c = f.calc_center_median()
+            if (c.y - cy) * n.y < 0:
+                flip.append(f)
+    if flip:
+        bmesh.ops.reverse_faces(bm, faces=flip)
+    bm.to_mesh(me)
+    bm.free()
+    print(f"  {obj.name}: flipped {len(flip)} cap faces")
+
+
+def tag(obj, k):
+    me = obj.data
+    a = me.attributes.get("part") or me.attributes.new("part", "INT", "FACE")
+    for i in range(len(me.polygons)):
+        a.data[i].value = k
+    return obj
+
+
+def split_parts(atlas, names):
+    """Split a baked atlas back into its tagged parts, keeping the shared UVs."""
+    out = {}
+    for k, name in enumerate(names):
+        dup = atlas.copy()
+        dup.data = atlas.data.copy()
+        link(dup)
+        bm = bmesh.new()
+        bm.from_mesh(dup.data)
+        layer = bm.faces.layers.int.get("part")
+        bmesh.ops.delete(bm, geom=[f for f in bm.faces if f[layer] != k], context="FACES")
+        bm.to_mesh(dup.data)
+        bm.free()
+        if "part" in dup.data.attributes:
+            dup.data.attributes.remove(dup.data.attributes["part"])
+        dup.name = name
+        dup.data.name = name
+        dup.data.materials.clear()
+        out[name] = dup
+    delete([atlas])
+    return out
+
+
+def rod(name, p0, p1, r0, r1, verts=12):
+    """Tapered cylinder between two points."""
+    p0, p1 = Vector(p0), Vector(p1)
+    d = p1 - p0
+    o = cyl(name, r0, r1, d.length, (0, 0, 0), verts)
+    o.rotation_mode = "QUATERNION"
+    o.rotation_quaternion = Vector((0, 0, 1)).rotation_difference(d.normalized())
+    o.location = (p0 + p1) / 2
+    select_only([o])
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    return o
+
+
+def ribbon(name, pts, width, axis=(1, 0, 0)):
+    """Flat strip through points, `width` wide along `axis` (film, straps)."""
+    ax = Vector(axis).normalized() * (width / 2)
+    verts, faces = [], []
+    for i, p in enumerate(pts):
+        p = Vector(p)
+        verts += [p - ax, p + ax]
+        if i:
+            a = (i - 1) * 2
+            faces.append((a, a + 1, a + 3, a + 2))
+    me = bpy.data.meshes.new(name)
+    me.from_pydata([tuple(v) for v in verts], [], faces)
+    me.update()
+    o = link(bpy.data.objects.new(name, me))
+    sol = o.modifiers.new("sol", "SOLIDIFY")
+    sol.thickness = 0.0015
+    apply_mods(o)
+    return o
+
+
+def subsurf(obj, levels=2):
+    m = obj.modifiers.new("sub", "SUBSURF")
+    m.levels = levels
+    m.render_levels = levels
+    apply_mods(obj)
+
+
 def rnd(seed):
     return random.Random(seed)
 
@@ -289,6 +382,7 @@ def build_letters():
     for gi, g in enumerate(cluster_x(parts, 7)):
         L = join(g, f"L{gi}") if len(g) > 1 else g[0]
         weld(L)
+        fix_caps(L)
         letters.append(L)
     zmin = min(v.co.z for o in letters for v in o.data.vertices)
     zmax = max(v.co.z for o in letters for v in o.data.vertices)
@@ -706,6 +800,361 @@ def build_rocks():
     export(out, "rocks")
 
 
+# ── 7. broken television (facts) ─────────────────────────────────────────────
+def build_tv():
+    reset()
+    W, D, H, LEG = 0.74, 0.5, 0.56, 0.07
+    zc = LEG + H / 2
+    wood = box("tv_cab", (W, D, H), (0, 0, zc), 0.02, 3)
+    rec = box("rec", (W - 0.06, 0.08, H - 0.06), (0, -D / 2, zc))
+    boolean(wood, rec)
+    delete([rec])
+    # the CRT's rear hump
+    hump = box("hump", (0.5, 0.26, 0.4), (-0.06, D / 2 + 0.1, zc + 0.02), 0.03, 3)
+    bm = bmesh.new()
+    bm.from_mesh(hump.data)
+    for v in bm.verts:
+        if v.co.y > 0:
+            v.co.x *= 0.62
+            v.co.z *= 0.62
+    bm.to_mesh(hump.data)
+    bm.free()
+    legs = []
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            legs.append(rod(f"leg{sx}{sy}", (sx * (W / 2 - 0.07), sy * (D / 2 - 0.07), LEG + 0.01), (sx * (W / 2 - 0.04), sy * (D / 2 - 0.04), 0.0), 0.022, 0.013, 10))
+    wood = join([wood, hump] + legs, "tv_wood")
+    smooth_shade(wood, 30)
+    tag(wood, 0)
+
+    # dark bezel with a rounded CRT opening, and the control column
+    fy = -D / 2 + 0.03
+    bez = box("tv_bezel", (0.52, 0.03, H - 0.08), (-0.09, fy, zc), 0.006, 2)
+    hole = box("hole", (0.44, 0.2, 0.34), (-0.09, fy, zc + 0.01), 0.04, 6)
+    boolean(bez, hole)
+    delete([hole])
+    panel = box("tv_panel", (0.15, 0.03, H - 0.08), (0.26, fy, zc), 0.006, 2)
+    for k in range(9):
+        slot = box("slot", (0.11, 0.1, 0.006), (0.26, fy - 0.02, zc - 0.2 + k * 0.016))
+        boolean(panel, slot)
+        delete([slot])
+    trim = [bez, panel]
+    for z, r in ((zc + 0.17, 0.03), (zc + 0.06, 0.026)):
+        knob = cyl("knob", r, r * 0.9, 0.035, (0.26, fy - 0.03, z), 28, 0.004)
+        bm = bmesh.new()
+        bm.from_mesh(knob.data)
+        for i, v in enumerate(bm.verts):
+            if math.hypot(v.co.x, v.co.y) > r * 0.8 and i % 2:
+                v.co.x *= 0.93
+                v.co.y *= 0.93
+        bm.to_mesh(knob.data)
+        bm.free()
+        knob.rotation_euler = (math.radians(90), 0, 0)
+        trim.append(knob)
+    for k in range(3):
+        trim.append(box("btn", (0.028, 0.02, 0.014), (0.225 + k * 0.035, fy - 0.02, zc - 0.03), 0.003))
+    # rabbit-ear antenna, one ear bent
+    base_z = LEG + H
+    trim.append(cyl("ant_base", 0.055, 0.045, 0.028, (-0.14, 0.05, base_z + 0.014), 24, 0.004))
+    trim.append(rod("ear_l", (-0.15, 0.05, base_z + 0.02), (-0.36, 0.1, base_z + 0.5), 0.0045, 0.0025, 8))
+    trim.append(rod("ear_r1", (-0.13, 0.05, base_z + 0.02), (0.02, 0.06, base_z + 0.3), 0.0045, 0.0035, 8))
+    trim.append(rod("ear_r2", (0.02, 0.06, base_z + 0.3), (0.2, 0.14, base_z + 0.33), 0.0035, 0.0025, 8))
+    # mains cable trailing off the back
+    pts = [(0.2, D / 2 + 0.05, LEG + 0.12), (0.26, D / 2 + 0.25, LEG + 0.04), (0.2, D / 2 + 0.6, 0.02), (0.35, D / 2 + 1.0, 0.015)]
+    from mathutils import geometry as _g  # noqa: F401
+    cable = bpy.data.curves.new("cable", "CURVE")
+    cable.dimensions = "3D"
+    cable.bevel_depth = 0.006
+    cable.bevel_resolution = 2
+    spl = cable.splines.new("POLY")
+    spl.points.add(len(pts) - 1)
+    for i, p in enumerate(pts):
+        spl.points[i].co = (*p, 1)
+    co = link(bpy.data.objects.new("cable", cable))
+    trim.append(to_mesh(co))
+    trim = join(trim, "tv_trim")
+    smooth_shade(trim, 35)
+    tag(trim, 1)
+
+    atlas = join([wood, trim], "tv_atlas")
+    gp = ground_plane(0.0)
+    uv_unwrap(atlas, 0.006)
+    bake_ao(atlas, 1024, "tv")
+    delete([gp])
+    parts = split_parts(atlas, ["tv_wood", "tv_trim"])
+
+    # the tube's bulged glass, planar UVs for the picture
+    nx, nz = 24, 18
+    gw, gh = 0.44, 0.34
+    verts, faces, uvs = [], [], []
+    for j in range(nz + 1):
+        for i in range(nx + 1):
+            u, v = i / nx, j / nz
+            x, z = (u - 0.5) * gw, (v - 0.5) * gh
+            bulge = 0.028 * (1 - (2 * u - 1) ** 2) * (1 - (2 * v - 1) ** 2)
+            verts.append((x - 0.09, fy + 0.012 - bulge, zc + 0.01 + z))
+            uvs.append((u, v))
+    for j in range(nz):
+        for i in range(nx):
+            a = j * (nx + 1) + i
+            faces.append((a, a + nx + 1, a + nx + 2, a + 1))
+    me = bpy.data.meshes.new("tv_screen")
+    me.from_pydata(verts, [], faces)
+    uvl = me.uv_layers.new(name="UVMap")
+    for poly in me.polygons:
+        for li in poly.loop_indices:
+            uvl.data[li].uv = uvs[me.loops[li].vertex_index]
+    me.update()
+    screen = link(bpy.data.objects.new("tv_screen", me))
+    smooth_shade(screen, 80)
+    export([parts["tv_wood"], parts["tv_trim"], screen], "tv")
+
+
+# ── 8. 16mm film projector on a tripod ───────────────────────────────────────
+def build_projector():
+    reset()
+    Z = 1.18
+    body = box("body", (0.17, 0.36, 0.25), (0, 0, Z), 0.014, 3)
+    for sx in (-1, 1):
+        plate = box("plate", (0.012, 0.3, 0.2), (sx * 0.09, 0, Z), 0.004)
+        body = join([body, plate], "body")
+    lamp = box("lamp", (0.11, 0.13, 0.15), (0, 0.13, Z + 0.17), 0.012, 3)
+    for k in range(6):
+        v = box("vent", (0.2, 0.012, 0.012), (0, 0.08 + k * 0.018, Z + 0.21))
+        boolean(lamp, v)
+        delete([v])
+    barrel = cyl("barrel", 0.032, 0.03, 0.13, (0, -0.24, Z - 0.02), 32, 0.004)
+    barrel.rotation_euler = (math.radians(90), 0, 0)
+    ring = cyl("ring", 0.038, 0.038, 0.022, (0, -0.3, Z - 0.02), 32, 0.004)
+    ring.rotation_euler = (math.radians(90), 0, 0)
+    focus = cyl("focus", 0.036, 0.036, 0.03, (0, -0.2, Z - 0.02), 32, 0.003)
+    focus.rotation_euler = (math.radians(90), 0, 0)
+    arm_f = rod("arm_f", (0.1, -0.1, Z + 0.1), (0.1, -0.22, Z + 0.34), 0.012, 0.01, 8)
+    arm_r = rod("arm_r", (0.1, 0.08, Z + 0.1), (0.1, 0.24, Z + 0.32), 0.012, 0.01, 8)
+    knobs = [cyl("k", 0.018, 0.018, 0.02, (-0.1, y, Z + z), 20, 0.003) for y, z in ((-0.08, -0.05), (0.02, -0.07), (0.1, -0.02))]
+    for k in knobs:
+        k.rotation_euler = (0, math.radians(90), 0)
+    # the film: out of the feed reel, through the gate, round the sprockets, up to the take-up
+    rf, rr = Vector((0.1, -0.22, Z + 0.34)), Vector((0.1, 0.24, Z + 0.32))
+    film_pts = [rf + Vector((0, 0.06, -0.12)), (0.1, -0.12, Z + 0.1), (0.1, -0.1, Z + 0.02), (0.1, -0.06, Z - 0.07),
+                (0.1, 0.04, Z - 0.1), (0.1, 0.12, Z - 0.02), (0.1, 0.14, Z + 0.1), rr + Vector((0, -0.07, -0.12))]
+    film = ribbon("film", [tuple(p) for p in film_pts], 0.016, (1, 0, 0))
+    # tripod
+    tri = [cyl("head", 0.05, 0.06, 0.05, (0, 0, Z - 0.15), 24, 0.005), rod("col", (0, 0, Z - 0.17), (0, 0, 0.72), 0.014, 0.014, 12),
+           cyl("hub", 0.04, 0.04, 0.05, (0, 0, 0.72), 24, 0.004)]
+    for k in range(3):
+        a = k * math.pi * 2 / 3 + 0.4
+        foot = (math.cos(a) * 0.48, math.sin(a) * 0.48, 0.0)
+        tri.append(rod(f"leg{k}", (math.cos(a) * 0.03, math.sin(a) * 0.03, 0.74), foot, 0.013, 0.009, 10))
+        tri.append(rod(f"brace{k}", (0, 0, 0.5), (math.cos(a) * 0.3, math.sin(a) * 0.3, 0.28), 0.005, 0.005, 6))
+        tri.append(cyl(f"foot{k}", 0.016, 0.02, 0.02, foot, 12))
+    proj = join([body, lamp, barrel, ring, focus, arm_f, arm_r, film] + knobs + tri, "projector")
+    smooth_shade(proj, 35)
+    tag(proj, 0)
+
+    def reel(name, c):
+        disc = cyl(name, 0.15, 0.15, 0.012, (0, 0, 0), 64, 0.002)
+        for k in range(3):
+            a = k * math.pi * 2 / 3
+            h = cyl("h", 0.052, 0.052, 0.1, (math.cos(a) * 0.085, math.sin(a) * 0.085, 0), 32)
+            boolean(disc, h)
+            delete([h])
+        spool = cyl("spool", 0.07 + 0.03 * (name == "reel_front"), 0.07 + 0.03 * (name == "reel_front"), 0.018, (0, 0, 0), 48)
+        hub = cyl("hub", 0.02, 0.02, 0.03, (0, 0, 0), 16)
+        r = join([disc, spool, hub], name)
+        r.rotation_euler = (0, math.radians(90), 0)
+        r.location = c
+        select_only([r])
+        bpy.ops.object.transform_apply(location=True, rotation=True, scale=False)
+        smooth_shade(r, 35)
+        return r
+    front = tag(reel("reel_front", rf + Vector((0.035, 0, 0))), 1)
+    rear = tag(reel("reel_rear", rr + Vector((0.035, 0, 0))), 2)
+    atlas = join([proj, front, rear], "proj_atlas")
+    gp = ground_plane(0.0)
+    uv_unwrap(atlas, 0.006)
+    bake_ao(atlas, 1024, "projector")
+    delete([gp])
+    parts = split_parts(atlas, ["projector", "reel_front", "reel_rear"])
+    for n in ("reel_front", "reel_rear"):
+        set_origin(parts[n], "center")
+    lens = cyl("proj_lens", 0.027, 0.027, 0.004, (0, -0.313, Z - 0.02), 32)
+    lens.rotation_euler = (math.radians(90), 0, 0)
+    export([parts["projector"], parts["reel_front"], parts["reel_rear"], lens], "projector")
+
+
+# ── 9. floating paper lantern (tōrō nagashi) ─────────────────────────────────
+def build_lantern():
+    reset()
+    S, Hh = 0.3, 0.32
+    parts = [box("tray", (S, S, 0.03), (0, 0, 0.015), 0.004)]
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            parts.append(box("post", (0.016, 0.016, Hh), (sx * (S / 2 - 0.012), sy * (S / 2 - 0.012), 0.03 + Hh / 2), 0.002))
+    for k in range(4):
+        a = k * math.pi / 2
+        bar = box("bar", (S, 0.016, 0.016), (math.sin(a) * (S / 2 - 0.012), math.cos(a) * (S / 2 - 0.012), 0.03 + Hh), 0.002)
+        bar.rotation_euler = (0, 0, a)
+        parts.append(bar)
+        mid = box("mid", (S, 0.01, 0.01), (math.sin(a) * (S / 2 - 0.012), math.cos(a) * (S / 2 - 0.012), 0.03 + Hh * 0.52), 0.001)
+        mid.rotation_euler = (0, 0, a)
+        parts.append(mid)
+    frame = join(parts, "lantern_frame")
+    smooth_shade(frame, 30)
+    gp = ground_plane(0.0)
+    uv_unwrap(frame, 0.01)
+    bake_ao(frame, 512, "lantern")
+    delete([gp])
+    frame.data.materials.clear()
+    # four paper walls, each with its own 0..1 UVs
+    verts, faces, uvs = [], [], []
+    h0, h1 = 0.03, 0.03 + Hh
+    r = S / 2 - 0.014
+    corners = [(-r, -r), (r, -r), (r, r), (-r, r)]
+    for k in range(4):
+        (x0, y0), (x1, y1) = corners[k], corners[(k + 1) % 4]
+        b = len(verts)
+        verts += [(x0, y0, h0), (x1, y1, h0), (x1, y1, h1), (x0, y0, h1)]
+        uvs += [(0, 0), (1, 0), (1, 1), (0, 1)]
+        faces.append((b, b + 1, b + 2, b + 3))
+    me = bpy.data.meshes.new("lantern_paper")
+    me.from_pydata(verts, [], faces)
+    uvl = me.uv_layers.new(name="UVMap")
+    for poly in me.polygons:
+        for li in poly.loop_indices:
+            uvl.data[li].uv = uvs[me.loops[li].vertex_index]
+    me.update()
+    paper = link(bpy.data.objects.new("lantern_paper", me))
+    candle = cyl("lantern_candle", 0.02, 0.02, 0.06, (0, 0, 0.06), 16)
+    export([frame, paper, candle], "lantern")
+
+
+# ── 10. kodama: the small tree spirits hiding in the forest ──────────────────
+def build_kodama():
+    reset()
+    R = rnd(41)
+    bm = bmesh.new()
+    bmesh.ops.create_uvsphere(bm, u_segments=32, v_segments=20, radius=0.1)
+    for v in bm.verts:
+        n = 1 + 0.035 * math.sin(v.co.x * 40 + 1) * math.sin(v.co.z * 30)
+        v.co = Vector((v.co.x * 1.02 * n, v.co.y * 0.92 * n, v.co.z * 1.14 * n))
+    me = bpy.data.meshes.new("kodama_head")
+    bm.to_mesh(me)
+    bm.free()
+    head = link(bpy.data.objects.new("kodama_head", me))
+    for (x, z, r, d) in ((-0.036, 0.018, 0.016, 0.06), (0.034, 0.014, 0.014, 0.06), (0.004, -0.042, 0.011, 0.05)):
+        c = ico("eye", r, (x, -0.1, z), 3)
+        c.scale = (1, d / r, 1.15)
+        boolean(head, c)
+        delete([c])
+    smooth_shade(head, 60)
+    head.location = (0, 0, 0.26)
+    select_only([head])
+    bpy.ops.object.transform_apply(location=True)
+    parts = []
+    torso = cyl("torso", 0.028, 0.042, 0.13, (0, 0, 0.1), 24)
+    parts.append(torso)
+    for sx in (-1, 1):
+        parts.append(rod("arm", (sx * 0.03, 0, 0.14), (sx * 0.06, -0.01, 0.07), 0.012, 0.009, 10))
+        parts.append(rod("leg", (sx * 0.018, 0, 0.04), (sx * 0.024, 0.0, 0.0), 0.012, 0.011, 10))
+    body = join(parts, "kodama_body")
+    subsurf(body, 2)
+    smooth_shade(body, 80)
+    set_origin(head, "base")
+    export([head, body], "kodama")
+
+
+# ── 11. the forest spirit: a deer of light, grown from a skin skeleton ───────
+def skin_creature(name, verts, edges, radii, root=0, levels=2):
+    me = bpy.data.meshes.new(name)
+    me.from_pydata(verts, edges, [])
+    me.update()
+    o = link(bpy.data.objects.new(name, me))
+    sk = o.modifiers.new("skin", "SKIN")
+    sk.use_smooth_shade = True
+    for i, r in enumerate(radii):
+        o.data.skin_vertices[0].data[i].radius = r if isinstance(r, tuple) else (r, r)
+        o.data.skin_vertices[0].data[i].use_root = (i == root)
+    apply_mods(o)
+    subsurf(o, levels)
+    smooth_shade(o, 80)
+    return o
+
+
+def build_deer():
+    reset()
+    # a red deer stag, front toward -Y: slim legs, deep chest, neck raised
+    V = [
+        (0, 0.0, 1.0),                                     # 0 mid back (root)
+        (0, -0.42, 1.04), (0, 0.45, 1.02), (0, 0.6, 1.02), # 1 withers 2 rump 3 tail root
+        (0, 0.66, 1.06),                                   # 4 tail tip
+        (0, -0.4, 0.78),                                   # 5 brisket
+        (0, -0.56, 1.2), (0, -0.66, 1.38),                 # 6 7 neck
+        (0, -0.72, 1.46),                                  # 8 poll (head)
+        (0, -0.94, 1.36),                                  # 9 muzzle
+        (-0.07, -0.72, 1.55), (0.07, -0.72, 1.55),         # 10 11 ear roots
+        (-0.16, -0.69, 1.61), (0.16, -0.69, 1.61),         # 12 13 ear tips
+        (-0.11, -0.38, 0.72), (0.11, -0.38, 0.72),         # 14 15 elbows
+        (-0.11, -0.4, 0.4), (0.11, -0.36, 0.42),           # 16 17 front knees
+        (-0.11, -0.42, 0.02), (0.11, -0.34, 0.03),         # 18 19 front hooves
+        (-0.12, 0.42, 0.78), (0.12, 0.42, 0.78),           # 20 21 stifles
+        (-0.11, 0.56, 0.46), (0.11, 0.56, 0.46),           # 22 23 hocks
+        (-0.11, 0.48, 0.02), (0.11, 0.5, 0.02),            # 24 25 hind hooves
+    ]
+    E = [(0, 1), (0, 2), (2, 3), (3, 4), (1, 5), (1, 6), (6, 7), (7, 8), (8, 9), (8, 10), (8, 11), (10, 12), (11, 13),
+         (5, 14), (5, 15), (14, 16), (15, 17), (16, 18), (17, 19),
+         (2, 20), (2, 21), (20, 22), (21, 23), (22, 24), (23, 25)]
+    Rr = [(0.17, 0.2), (0.14, 0.17), (0.16, 0.18), 0.06, 0.03, (0.13, 0.12),
+          (0.09, 0.1), (0.07, 0.075), (0.06, 0.07), (0.028, 0.034), 0.02, 0.02, (0.03, 0.006), (0.03, 0.006),
+          0.045, 0.045, 0.024, 0.024, 0.018, 0.018,
+          0.07, 0.07, 0.028, 0.028, 0.018, 0.018]
+    body = skin_creature("deer_body", V, E, Rr, 0, 2)
+    # antlers: a main beam sweeping up and back, with tines rising off it
+    tines = []
+    for sx in (-1, 1):
+        beam = [(sx * 0.04, -0.7, 1.55), (sx * 0.14, -0.64, 1.72), (sx * 0.24, -0.56, 1.9), (sx * 0.26, -0.6, 2.08), (sx * 0.2, -0.7, 2.22)]
+        for i in range(len(beam) - 1):
+            r0 = 0.022 - i * 0.004
+            tines.append(rod("beam", beam[i], beam[i + 1], r0, r0 - 0.004, 10))
+        for i, (dx, dy, dz, L) in enumerate(((0.02, -0.16, 0.08, 0.2), (0.05, -0.12, 0.2, 0.22), (0.08, -0.06, 0.2, 0.2), (0.0, -0.1, 0.16, 0.16))):
+            p0 = Vector(beam[i + 1])
+            d = Vector((sx * dx, dy, dz)).normalized()
+            tines.append(rod("tine", tuple(p0), tuple(p0 + d * L), 0.012, 0.004, 8))
+    antlers = join(tines, "deer_antlers")
+    smooth_shade(antlers, 60)
+    export([body, antlers], "deer")
+
+
+# ── 12. a whale made of light, for the dawn sky over the sea ─────────────────
+def build_whale():
+    reset()
+    # a humpback: broad head, deep chest, long tapering tail stock; front toward -Y
+    V = [(0, -6.2, 0.35), (0, -4.8, 0.2), (0, -3.0, 0.0), (0, -1.0, -0.05), (0, 1.0, 0.05), (0, 2.8, 0.2), (0, 4.2, 0.3), (0, 5.3, 0.35), (0, 6.0, 0.35)]
+    E = [(i, i + 1) for i in range(len(V) - 1)]
+    Rr = [(0.75, 0.45), (1.2, 0.85), (1.55, 1.2), (1.5, 1.25), (1.2, 1.05), (0.8, 0.75), (0.45, 0.48), (0.24, 0.3), (0.14, 0.12)]
+    body = skin_creature("whale_body", V, E, Rr, 3, 2)
+    fins = []
+    for sx in (-1, 1):
+        f = ico("fin", 1.0, (sx * 2.7, -2.1, -0.75), 3)
+        f.scale = (2.4, 0.42, 0.07)
+        f.rotation_euler = (0, sx * 0.3, sx * 0.55)
+        fins.append(f)
+        fl = ico("fluke", 1.0, (sx * 1.05, 6.35, 0.35), 3)
+        fl.scale = (1.25, 0.5, 0.05)
+        fl.rotation_euler = (0, 0, sx * 0.4)
+        fins.append(fl)
+    dorsal = ico("dorsal", 1.0, (0, 2.6, 1.05), 3)
+    dorsal.scale = (0.06, 0.45, 0.28)
+    dorsal.rotation_euler = (math.radians(-25), 0, 0)
+    fins.append(dorsal)
+    for f in fins:
+        select_only([f])
+        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    whale = join([body] + fins, "whale")
+    smooth_shade(whale, 80)
+    export([whale], "whale")
+
+
 BUILDERS = {
     "letters": build_letters,
     "torii": build_torii,
@@ -713,6 +1162,12 @@ BUILDERS = {
     "monolith": build_monolith,
     "rack": build_rack,
     "rocks": build_rocks,
+    "tv": build_tv,
+    "projector": build_projector,
+    "lantern": build_lantern,
+    "kodama": build_kodama,
+    "deer": build_deer,
+    "whale": build_whale,
 }
 
 if __name__ == "__main__":

@@ -53,6 +53,12 @@ body.is-loading { overflow: hidden; }
 .hud__stop [data-name] { color: var(--ink); }
 .hud__end { justify-self: end; display: flex; align-items: center; gap: 8px; }
 .hud__btn { padding: 9px 11px 8px; }
+.hud__end > * { flex-shrink: 0; white-space: nowrap; }
+/* once the kodama counter joins the bar, narrower screens drop the text labels to keep one row */
+@media (max-width: 1180px) {
+  .hud__end:has(.kodama-count:not([hidden])) .hud__label { display: none; }
+  .kodama-count span { display: none; }
+}
 .snd i { width: 14px; height: 10px; display: inline-flex; align-items: flex-end; gap: 2px; }
 .snd i s { display: block; width: 2px; height: 30%; background: currentColor; text-decoration: none; }
 .snd[aria-pressed='true'] i s { animation: eq 0.9s infinite var(--e-nami) alternate; }
@@ -195,6 +201,22 @@ body.is-entering .hero, body.is-entering .scrollcue { animation: heroIn 1.4s var
 .tier p { font-size: 13px !important; margin-top: 4px; }
 .tier ul { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px; }
 .tier li { font: 400 10.5px/1 var(--f-mono); color: var(--ink-2); border: 1px solid var(--line); padding: 5px 7px; }
+
+/* kodama counter + toast */
+.kodama-count { display: inline-flex; align-items: center; gap: 8px; padding: 0 12px; height: 32px; border: 1px solid var(--line-2); color: var(--ink-2); background: rgba(3, 8, 6, 0.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.kodama-count[hidden] { display: none; }
+.kodama-count span { font: 800 13px var(--f-jp); color: #e8f3ea; letter-spacing: 0; }
+.kodama-count b { font-weight: 500; color: var(--ink); }
+.kodama-count.is-done { border-color: var(--teal); box-shadow: 0 0 18px rgba(61, 255, 208, 0.25); }
+.kodama-count.is-done b { color: var(--teal); }
+.toast {
+  position: fixed; left: 50%; bottom: calc(28px + env(safe-area-inset-bottom, 0px)); z-index: 90;
+  transform: translate(-50%, 12px); opacity: 0; pointer-events: none;
+  padding: 12px 18px; background: rgba(3, 10, 8, 0.82); border: 1px solid rgba(61, 255, 208, 0.35); color: var(--ink);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  transition: opacity 0.35s var(--e-tok), transform 0.35s var(--e-kiri); max-width: calc(100vw - 32px); text-align: center;
+}
+.toast.is-on { opacity: 1; transform: translate(-50%, 0); }
 
 /* about */
 #about-text p + p { margin-top: 10px; }

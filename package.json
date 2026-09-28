@@ -4,6 +4,9 @@
   "version": "2.0.0",
   "type": "module",
   "description": "Portfolio of Amidyala Sai Sumanth — an overgrown neon forest archive in WebGL.",
+  "engines": {
+    "node": ">=20.19"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",

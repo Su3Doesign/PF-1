@@ -2,7 +2,7 @@ import {
   BufferGeometry, BufferAttribute, Color, Group, InstancedMesh, Matrix4, Object3D, Quaternion, Texture, Vector3
 } from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { heightAt, inClearing, pathDistance, pondFactor, fbm, CLIFF_Z } from './layout';
+import { heightAt, inClearing, pathDistance, pondFactor, fbm, CLIFF_Z, keepClear } from './layout';
 import { bushGeometry, tuftGeometry, leafMaterial } from './treegen';
 import { windLambert } from './materials';
 import { LAYER_NO_REFLECT } from './water';
@@ -87,6 +87,7 @@ function groundOk(x: number, z: number, pdMin: number): number {
   if (pondFactor(x, z) < 1.06) return -1;
   if (z > 4 && Math.abs(x) < 2.4 + (z - 4) * 0.28) return -1; // keep the landing view open
   if (z < CLIFF_Z + 1.5) return -1;
+  if (keepClear(x, z)) return -1;
   const pd = z < -12 ? pathDistance(x, z) : 99;
   if (z < -12 && pd < pdMin) return -1;
   // the spring pool at the cave mouth
@@ -132,7 +133,7 @@ export function buildFoliage(o: FoliageOpts): Group {
     if (rand() > lush(x, z, pd)) continue;
     blades.push(x, z, pd);
   }
-  for (const arr of chunked(blades, 3).values()) {
+  for (const arr of chunked(blades, 3, 36).values()) {
     const n = arr.length / 3;
     const mesh = new InstancedMesh(blade, grassMat, n);
     for (let i = 0; i < n; i += 1) {
@@ -176,7 +177,7 @@ export function buildFoliage(o: FoliageOpts): Group {
       tufts.push(x, z, pd);
     }
   }
-  for (const arr of chunked(tufts, 3).values()) {
+  for (const arr of chunked(tufts, 3, 40).values()) {
     const n = arr.length / 3;
     const mesh = new InstancedMesh(tuft, tuftMat, n);
     for (let i = 0; i < n; i += 1) {

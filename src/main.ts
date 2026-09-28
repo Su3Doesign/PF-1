@@ -50,6 +50,16 @@ function select(kind: TargetKind, i: number) {
   else if (kind === 'tier') { go('commissions'); panels.hot('tier', i); }
   else if (kind === 'contact') location.href = `mailto:${content.profile.email}`;
   else if (kind === 'art') overlays.lightbox(archive, i, 'The archive');
+  else if (kind === 'fact') world.nextFact();
+  else if (kind === 'film' && film) overlays.lightbox([film.media], 0, film.title);
+  else if (kind === 'kodama') {
+    const n = world.findKodama(i);
+    if (n > 0) {
+      sound.chime();
+      kodamaCount(n);
+      toast(n === 7 ? 'All seven kodama found. The forest will remember you.' : `A kodama. ${n} of 7 found.`);
+    }
+  }
   else if (kind === 'home') go('worlds');
 }
 
@@ -60,7 +70,34 @@ function label(kind: TargetKind, i: number): string {
   if (kind === 'tier') return content.tiers[i].name;
   if (kind === 'contact') return 'Write to me';
   if (kind === 'art') { const a = archive[i]; return a ? `${a.name}` : 'Open'; }
+  if (kind === 'fact') return 'Next fact';
+  if (kind === 'film') return film ? `Watch ${film.title}` : 'Watch';
+  if (kind === 'kodama') return 'A kodama';
   return 'Enter the forest';
+}
+
+// the reel on the projector's sheet: the first world video in the portfolio
+const film = (() => {
+  for (const w of content.worlds) {
+    const m = w.shots.find((s) => s.type === 'video');
+    if (m) return { media: m, title: w.title };
+  }
+  return null;
+})();
+
+const toastEl = document.getElementById('toast')!;
+let toastT = 0;
+function toast(msg: string) {
+  toastEl.textContent = msg;
+  toastEl.classList.add('is-on');
+  clearTimeout(toastT);
+  toastT = window.setTimeout(() => toastEl.classList.remove('is-on'), 3600);
+}
+function kodamaCount(n: number) {
+  const el = document.getElementById('kodama-count')!;
+  el.hidden = false;
+  el.querySelector('b')!.textContent = `${n}/7`;
+  el.classList.toggle('is-done', n === 7);
 }
 
 const panels = new Panels({
@@ -98,6 +135,7 @@ async function boot() {
     study: (i) => panels.setStudy(i)
   }, reduced);
   world.deskVideo = asset(content.profile.desk);
+  if (film) { world.filmVideo = asset(film.media.src); world.filmPoster = film.media.poster ? asset(film.media.poster) : ''; }
   if (/[?&]debug/.test(location.search)) (window as unknown as { __world: World }).__world = world;
 
   await fontsReady();

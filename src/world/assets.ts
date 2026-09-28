@@ -40,6 +40,8 @@ export const TEXTURES = {
   plasterN: 'tex/plaster_normal.webp',
   sand: 'tex/sand_albedo.webp',
   sandN: 'tex/sand_normal.webp',
+  bamboo: 'tex/leaves_bamboo.webp',
+  willow: 'tex/willow.webp',
   noise: 'tex/noise.png',
   aoLetters: '3d/ao_letters.webp',
   aoTorii: '3d/ao_torii_body.webp',
@@ -49,6 +51,8 @@ export const TEXTURES = {
   aoRack: '3d/ao_rack.webp',
   aoRocks: '3d/ao_rocks.webp',
   aoDesk: '3d/ao_desk_crt.webp',
+  aoTv: '3d/ao_tv.webp',
+  aoProjector: '3d/ao_projector.webp',
   clientsAtlas: 'thumbs/clients-atlas.webp',
   studiesAtlas: 'thumbs/studies-atlas.webp',
   worldA: 'thumbs/screens/roman-no-yoake.webp',
@@ -63,14 +67,20 @@ export const MODELS = {
   monolith: '3d/monolith.min.glb',
   rack: '3d/rack.min.glb',
   rocks: '3d/rocks.min.glb',
-  desk: '3d/desk_crt.min.glb'
+  desk: '3d/desk_crt.min.glb',
+  tv: '3d/tv.min.glb',
+  projector: '3d/projector.min.glb',
+  lantern: '3d/lantern.min.glb',
+  kodama: '3d/kodama.min.glb',
+  deer: '3d/deer.min.glb',
+  whale: '3d/whale.min.glb'
 } as const;
 
 export type TexKey = keyof typeof TEXTURES;
 export type ModelKey = keyof typeof MODELS;
 
 const COLOR_TEX = new Set<TexKey>(['moss', 'concrete', 'stone', 'lacquer', 'bark', 'metal', 'ground', 'fern', 'fern2', 'hangingMoss', 'clientsAtlas', 'studiesAtlas', 'worldA', 'worldB', 'worldC',
-  'conifer', 'broad', 'bushLeaves', 'tuft', 'blossom', 'rose', 'wisteria', 'ivy', 'lilypad', 'fresco', 'plaster', 'sand']);
+  'conifer', 'broad', 'bushLeaves', 'tuft', 'blossom', 'rose', 'wisteria', 'ivy', 'lilypad', 'fresco', 'plaster', 'sand', 'bamboo', 'willow']);
 
 export interface Assets {
   tex: Record<TexKey, Texture>;
