@@ -12,11 +12,15 @@
   // ---------- World: a walk in depth ----------
   function world(root, items) {
     const N = items.length, GAP = 950;
-    root.innerHTML = `<div class="walk" style="height:${N * 90 + 100}vh"><div class="walk__stage"><div class="walk__space">${items.map(([src, name], i) => `<figure class="walk__item${i % 4 === 0 ? ' is-wide' : ''}"><img src="img/${src}.jpg" alt="${name}"></figure>`).join('')}</div>
-      <div class="walk__info"><p class="walk__count"><b>01</b> / ${pad(N)}</p><h3 class="walk__name"><span class="rise"><span></span></span></h3><p class="walk__kind"></p></div><p class="walk__hint">Keep walking</p></div></div>`;
-    const walk = $('.walk', root), figs = $$('.walk__item', root), nameEl = $('.walk__name .rise > span', root), kindEl = $('.walk__kind', root), countEl = $('.walk__count b', root), hint = $('.walk__hint', root);
+    root.innerHTML = `<div class="walk" style="height:${N * 90 + 100}vh"><div class="walk__stage"><div class="walk__space">${items.map(([src, name, , , , more], i) => `<figure class="walk__item${i % 4 === 0 ? ' is-wide' : ''}"><img src="img/${src}.jpg" alt="${name}" decoding="async">${(more || []).map(m => `<img class="walk__alt" src="img/${m}.jpg" alt="" loading="lazy" decoding="async">`).join('')}</figure>`).join('')}</div>
+      <div class="walk__info"><p class="walk__count"><b>01</b> / ${pad(N)}</p><h3 class="walk__name"><span class="rise"><span></span></span></h3><p class="walk__kind"></p></div><div class="walk__side"><div class="walk__shots" role="group" aria-label="More views"></div><p class="walk__say" aria-live="polite"></p></div><p class="walk__hint">Keep walking</p></div></div>`;
+    const walk = $('.walk', root), say = $('.walk__say', root), sideEl = $('.walk__side', root), shotsEl = $('.walk__shots', root), figs = $$('.walk__item', root), nameEl = $('.walk__name .rise > span', root), kindEl = $('.walk__kind', root), countEl = $('.walk__count b', root), hint = $('.walk__hint', root);
     const side = figs.map((f, i) => f.classList.contains('is-wide') ? 0 : (i % 2 ? 1 : -1)), lift = figs.map((f, i) => [0, -1, 0.6, -0.4, 0.8][i % 5]);
-    let cam = 0, active = -1, raf;
+    let cam = 0, active = -1, raf, sayI = -1, shotK = 0, shotT = 0;
+    const views = (i) => [items[i][0], ...(items[i][5] || [])];
+    const showShot = (i, k) => { shotK = k; shotT = performance.now(); $$('.walk__alt', figs[i]).forEach((im, j) => im.classList.toggle('is-on', j + 1 === k)); $$('button', shotsEl).forEach((b, j) => b.classList.toggle('is-on', j === k)); };
+    const fillShots = (i) => { const v = views(i); shotsEl.innerHTML = v.length > 1 ? v.map((src, k) => `<button type="button" aria-label="View ${k + 1} of ${v.length}"><img src="img/${src}.jpg" alt="" loading="lazy" decoding="async"></button>`).join('') : '';
+      $$('button', shotsEl).forEach((b, k) => b.addEventListener('click', () => showShot(i, k))); showShot(i, 0); };
     const setActive = (i) => { if (i === active) return; active = i; countEl.textContent = pad(i + 1); const swap = () => { nameEl.textContent = items[i][1]; kindEl.textContent = items[i][2]; };
       if (!G || reduce) return swap(); G.timeline().to(nameEl, { yPercent: -110, duration: 0.28, ease: 'power2.in' }).add(swap).set(nameEl, { yPercent: 110 }).to(nameEl, { yPercent: 0, duration: 0.7, ease: 'expo.out' }); G.fromTo(kindEl, { opacity: 0 }, { opacity: 1, duration: 0.6, delay: 0.3 }); };
     // the walk dwells on each place and moves quickly between them; the whole space leans a little toward the pointer
@@ -24,11 +28,17 @@
     const dwell = (f) => { const i = Math.floor(f), t = f - i, e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; return i + lerp(t, e, 0.8); };
     // the walk starts in daylight on paper and ends at night: the deeper you go into the worlds, the darker the room
     const stage = $('.walk__stage', root), mixc = (a, b, k) => a.map((v, i) => Math.round(v + (b[i] - v) * k));
-    (function tick() { const p = progress(walk), target = dwell(p * (N - 1)) * GAP; const d1 = sm(0.06, 0.42, p), d2 = sm(0.42, 0.85, p); stage.style.backgroundColor = `rgb(${mixc(mixc([230, 227, 221], [150, 122, 103], d1), [16, 16, 15], d2)})`; stage.style.color = `rgb(${mixc([13, 13, 13], [244, 240, 232], sm(0.22, 0.38, p))})`; cam = reduce ? target : lerp(cam, target, 0.09); px = lerp(px, tx, 0.06); py = lerp(py, ty, 0.06); if (fine && !reduce) space.style.transform = `rotateX(${(-py * 3).toFixed(3)}deg) rotateY(${(px * 5).toFixed(3)}deg)`; const vw = innerWidth, vh = innerHeight, narrow = vw < 760; let best = 0, bd = 1e9;
+    (function tick() { const p = progress(walk), target = dwell(p * (N - 1)) * GAP; const d1 = sm(0.06, 0.42, p), d2 = sm(0.42, 0.85, p), bg = mixc(mixc([230, 227, 221], [150, 122, 103], d1), [16, 16, 15], d2); stage.style.backgroundColor = `rgb(${bg})`;
+      // the type turns light only once the room is dark enough for it, and quickly, so it never sits grey on a mid-tone
+      const L = (0.2126 * bg[0] + 0.7152 * bg[1] + 0.0722 * bg[2]) / 255; stage.style.color = `rgb(${mixc([13, 13, 13], [244, 240, 232], 1 - sm(0.4, 0.46, L))})`; cam = reduce ? target : lerp(cam, target, 0.09); px = lerp(px, tx, 0.06); py = lerp(py, ty, 0.06); if (fine && !reduce) space.style.transform = `rotateX(${(-py * 3).toFixed(3)}deg) rotateY(${(px * 5).toFixed(3)}deg)`; const vw = innerWidth, vh = innerHeight, narrow = vw < 760; let best = 0, bd = 1e9;
       figs.forEach((f, i) => { const z = cam - i * GAP; if (Math.abs(z) < bd) { bd = Math.abs(z); best = i; }
         const far = sm(-3.1 * GAP, -1.7 * GAP, z), near = 1 - sm(300, 620, z), o = far * near; f.style.opacity = o.toFixed(3); f.style.visibility = o < 0.004 ? 'hidden' : 'visible'; if (o < 0.004) return;
         const drift = 1 + Math.max(0, z) / 500; // as it passes, it slides off to its side
         f.style.transform = `translate(-50%, -50%) translate3d(${(side[i] * (narrow ? 5 : 19) * drift * vw / 100).toFixed(1)}px, ${(lift[i] * 7 * vh / 100 - 4 * vh / 100).toFixed(1)}px, ${z.toFixed(1)}px)`; f.style.zIndex = String(1000 + Math.round(z / 10)); });
+      const dw = Math.abs(cam - best * GAP), so = reduce ? 1 : 1 - sm(110, 360, dw); if ((so < 0.02 || reduce) && sayI !== best) { if (sayI >= 0) $$('.walk__alt', figs[sayI]).forEach(im => im.classList.remove('is-on')); sayI = best; say.textContent = (items[best][4] || '').replace(/ (\S+)$/, ' $1'); fillShots(best); }
+      const sv = sayI === best ? so : 0; sideEl.style.opacity = sv.toFixed(3); sideEl.style.transform = `translate3d(0, ${((1 - sv) * 14).toFixed(1)}px, 0)`; shotsEl.style.pointerEvents = sv > 0.6 ? 'auto' : 'none';
+      // while you stand at a place, its other views take turns every few seconds
+      if (!reduce && sv > 0.95 && views(best).length > 1 && performance.now() - shotT > 3800) showShot(best, (shotK + 1) % views(best).length);
       setActive(best); hint.style.opacity = String(1 - sm(0.02, 0.1, p)); raf = requestAnimationFrame(tick); })();
     return () => { cancelAnimationFrame(raf); removeEventListener('pointermove', onMove); };
   }
@@ -38,10 +48,12 @@
     const N = items.length;
     root.innerHTML = `<div class="sites" style="height:${N * 115}vh"><div class="sites__stage">
       <ol class="sites__list">${items.map(([src, name, kind], i) => `<li><span>S/${pad(i + 1)}</span><b>${name}</b><i>${kind}</i></li>`).join('')}</ol>
-      <div class="sites__window"><div class="sites__bar"><i></i><i></i><i></i><span class="sites__url"></span><em><b>01</b> / ${pad(N)}</em></div><div class="sites__port">${items.map(([src, name]) => `<img src="img/${src}.jpg" alt="${name} website">`).join('')}<div class="sites__meter"><i></i></div></div></div></div></div>`;
-    const wrap = $('.sites', root), list = $('.sites__list', root), rows = $$('.sites__list li', root), imgs = $$('.sites__port img', root), port = $('.sites__port', root), url = $('.sites__url', root), num = $('.sites__bar b', root), meter = $('.sites__meter i', root);
+      <div class="sites__window"><div class="sites__bar"><i></i><i></i><i></i><a class="sites__url" target="_blank" rel="noopener"></a><em><b>01</b> / ${pad(N)}</em></div><div class="sites__port">${items.map(([src, name], i) => `<img src="img/${src}.jpg" alt="${name} website" ${i > 2 ? 'loading="lazy"' : ''} decoding="async">`).join('')}<div class="sites__meter"><i></i></div>
+        <a class="sites__go" target="_blank" rel="noopener"><span>Visit the live site</span><i>↗</i></a></div></div></div></div>`;
+    const wrap = $('.sites', root), list = $('.sites__list', root), rows = $$('.sites__list li', root), imgs = $$('.sites__port img', root), port = $('.sites__port', root), url = $('.sites__url', root), num = $('.sites__bar b', root), meter = $('.sites__meter i', root), go = $('.sites__go', root);
     let active = -1, raf, y = 0, ly = 0;
-    const setActive = (i) => { if (i === active) return; const prev = active; active = i; rows.forEach((r, k) => r.classList.toggle('is-on', k === i)); num.textContent = pad(i + 1); url.textContent = items[i][1].toLowerCase().replace(/[^a-z0-9]+/g, '-') + '  /  ' + items[i][2];
+    const setActive = (i) => { if (i === active) return; const prev = active; active = i; rows.forEach((r, k) => r.classList.toggle('is-on', k === i)); num.textContent = pad(i + 1); const live = items[i][4];
+      if (live) { url.href = go.href = live; url.textContent = live.replace(/^https?:\/\//, '').replace(/\/$/, ''); go.hidden = false; } else { url.removeAttribute('href'); url.textContent = 'Archived  ·  no longer online'; go.hidden = true; }
       imgs.forEach((im, k) => { im.style.zIndex = k === i ? 2 : k === prev ? 1 : 0; });
       if (!G || reduce) { imgs.forEach((im, k) => { im.style.clipPath = k === i ? 'inset(0)' : 'inset(100% 0 0 0)'; }); return; }
       // the next site drops in through nine vertical slits, in a shuffled order, like a contact sheet being dealt
@@ -66,7 +78,7 @@
     const B = window.BOARDS || [], NB = B.length, NF = 96, JF = 48, kills = [];
     // identities first; a divider; then client and company work, credited as on the résumé
     const firstWork = B.findIndex(b => b.group === 'work');
-    const cols = B.map((b, i) => (i === firstWork ? `<div class="shelf__sep" aria-hidden="true"><span>Client and company work</span></div>` : '') + `<button class="col${b.group === 'work' ? ' is-work' : ''}" type="button" data-key="${b.key}" aria-label="Read the ${b.name} board"><span class="col__strip"><img src="boards/${b.key}/shelf.jpg" alt="" draggable="false"><img src="boards/${b.key}/shelf.jpg" alt="" draggable="false"></span><span class="col__tag"><b>${pad(i + 1)}</b><span>${b.name}</span><i>${b.line}</i><em>${b.role}</em></span></button>`).join('');
+    const cols = B.map((b, i) => (i === firstWork ? `<div class="shelf__sep" aria-hidden="true"><span>Client and company work</span></div>` : '') + `<button class="col${b.group === 'work' ? ' is-work' : ''}" type="button" data-key="${b.key}" aria-label="Read the ${b.name} board"><span class="col__strip"><img src="boards/${b.key}/shelf.jpg" alt="" draggable="false"><img src="boards/${b.key}/shelf.jpg" alt="" draggable="false"></span><span class="col__tag"><b>${pad(i + 1)}</b><span>${b.name}</span><i>${b.line}</i><em>${b.role}</em></span>${fine ? '' : '<span class="col__tap mono">Tap to know more <i>↗</i></span>'}</button>`).join('');
     const nId = B.filter(b => b.group !== 'work').length;
     root.innerHTML = `<div class="spin" hidden><canvas class="spin__cv" aria-label="The Magma can, turning"></canvas>
         <div class="spin__txt"><p class="spin__eye">Magma · strawberry · 400 ml</p><h3>Ignite your<br>heart’s energy.</h3><p class="spin__hint">Drag to turn it</p><button class="spin__read" type="button" data-key="magma">Read the Magma board</button></div><p class="spin__deg"><b>000</b>°</p></div>
@@ -79,7 +91,7 @@
             <ul class="jg__fl">${FLAVOURS.map(([n, c]) => `<li><i style="background:${c}"></i>${n}</li>`).join('')}</ul>
             <button class="jg__read" type="button" data-key="jigri">Read the Jigri board</button></div>
           <p class="jg__note mono">Jigri · Irani Classic · 200 ml</p></div>
-        <div class="shelf"><div class="shelf__head"><p><b>${pad(NB)}</b> brands, read at once</p><p class="shelf__hint">${nId} identities, then ${NB - nId} for clients and companies.<br>${fine ? 'Move across them. Click one to read it whole.' : 'Scroll down to move through them. Tap one to read it whole.'}</p>
+        <div class="shelf"><div class="shelf__head"><p><b>${pad(NB)}</b> brands, read at once</p><p class="shelf__hint">${nId} of my own, then ${NB - nId} for clients and companies.<br>${fine ? 'Move across them. Click one to read it whole.' : 'Scroll down to move through them. Tap one to read it whole.'}</p>
           <p class="shelf__count mono" aria-hidden="true"><b>01</b> / ${pad(NB)} <span></span><i><i></i></i></p></div>
           <div class="shelf__cols">${cols}</div><p class="shelf__more mono" aria-hidden="true">Scroll for <b>${NB - 1}</b> more <i>→</i></p></div>
       </div></div>`;
@@ -109,7 +121,11 @@
     // On touch screens there is no pointer to sweep across the columns, so the shelf travels sideways as you scroll down:
     // the section grows by one stretch of scroll per brand (S, in vh), and every later moment keeps the timing it has on a desktop.
     const touch = !fine, S = touch ? Math.max(162, NB * 24) : 162, AFTER = 378; duo.style.height = `${100 + S + AFTER}vh`;
-    const count = $('.shelf__count b', root), countName = $('.shelf__count span', root), countBar = $('.shelf__count i i', root), more = $('.shelf__more', root), moreN = $('.shelf__more b', root); let centers = [], travel = 0, lastC = -1;
+    const count = $('.shelf__count b', root), countName = $('.shelf__count span', root), countBar = $('.shelf__count i i', root), more = $('.shelf__more', root), moreN = $('.shelf__more b', root); let centers = [], travel = 0, lastC = -1, xsCur = null, lastScrollT = 0, touching = false, snapTw = null, resting = false;
+    // touch: the row follows the scroll smoothly; only when the scrolling stops does it settle on the nearest brand
+    if (touch) { const onS = () => { lastScrollT = performance.now(); }, ts = () => { touching = true; if (snapTw) { snapTw.kill(); snapTw = null; } }, te = () => { touching = false; lastScrollT = performance.now(); };
+      view.addEventListener('scroll', onS, { passive: true }); view.addEventListener('touchstart', ts, { passive: true }); view.addEventListener('touchend', te, { passive: true }); view.addEventListener('touchcancel', te, { passive: true });
+      kills.push(() => { view.removeEventListener('scroll', onS); view.removeEventListener('touchstart', ts); view.removeEventListener('touchend', te); view.removeEventListener('touchcancel', te); if (snapTw) snapTw.kill(); }); }
     const SW = NB > 14 ? 5.6 : 3.4, SS = NB > 14 ? 2.2 : 1.3;   // the more boards, the stronger the swell, so the one you look at still opens wide
     const st = B.map((b, i) => ({ off: (i * 977) % 3000, dir: i % 2 ? -1 : 1, base: 16 + (i % 3) * 7, grow: 1, h: 0 }));
     let hx = null, lastTop = view.scrollTop, vel = 0, t0 = performance.now(), draw = -1, hoverI = -1, raf;
@@ -122,10 +138,11 @@
       if (cursor) { cursor.classList.toggle('is-big', i >= 0); if (cursorTxt) cursorTxt.textContent = i >= 0 ? 'Read' : 'Enter'; } }
     colEls.forEach((c) => c.addEventListener('click', () => window.Reader.open(c.dataset.key, c.getBoundingClientRect())));
     $$('.spin__read, .jg__read', root).forEach((b) => b.addEventListener('click', () => window.Reader.open(b.dataset.key, null)));
-    const drawJ = (f) => { const i = Math.floor(f), k = f - i, A = jframes[i], Bm = jframes[Math.min(JF - 1, i + 1)]; if (!A || !A.complete || !A.naturalWidth) return;
-      const d = Math.min(devicePixelRatio || 1, 2), W = Math.round(jcv.clientWidth * d), H = Math.round(jcv.clientHeight * d); if (!W) return; if (jcv.width !== W || jcv.height !== H) { jcv.width = W; jcv.height = H; }
+    // returns false when the frame has not arrived yet, so it is drawn again on the next tick instead of being skipped
+    const drawJ = (f) => { const i = Math.floor(f), k = f - i, A = jframes[i], Bm = jframes[Math.min(JF - 1, i + 1)]; if (!A || !A.complete || !A.naturalWidth) return false;
+      const d = Math.min(devicePixelRatio || 1, 2), W = Math.round(jcv.clientWidth * d), H = Math.round(jcv.clientHeight * d); if (!W) return false; if (jcv.width !== W || jcv.height !== H) { jcv.width = W; jcv.height = H; }
       const s = Math.max(W / A.width, H / A.height), w = A.width * s, h = A.height * s, x = (W - w) / 2, y = (H - h) / 2;
-      jcx.globalAlpha = 1; jcx.drawImage(A, x, y, w, h); if (k > 0.02 && Bm && Bm.complete && Bm.naturalWidth) { jcx.globalAlpha = k; jcx.drawImage(Bm, x, y, w, h); jcx.globalAlpha = 1; } };
+      jcx.globalAlpha = 1; jcx.drawImage(A, x, y, w, h); if (k > 0.02 && Bm && Bm.complete && Bm.naturalWidth) { jcx.globalAlpha = k; jcx.drawImage(Bm, x, y, w, h); jcx.globalAlpha = 1; } return true; };
     let jlast = -1, wordsOn = false, endOn = false;
     const reveal = (el, on) => { el.classList.toggle('is-on', on); if (G && !reduce) G.to(el.querySelectorAll('.rise > *'), { yPercent: on ? 0 : 110, duration: on ? 1.1 : 0.5, ease: on ? 'expo.out' : 'power3.in', stagger: 0.08, overwrite: true }); };
     if (G) { G.set(words.querySelectorAll('.rise > *'), { yPercent: 110 }); G.set(endc.querySelectorAll('.rise > *'), { yPercent: 110 }); }
@@ -136,28 +153,34 @@
       const top = view.scrollTop; vel = lerp(vel, top - lastTop, 0.25); lastTop = top;
       let ctr = (NB - 1) / 2;
       if (touch) { if (!centers.length) measure();
-        // the row steps from brand to brand: it rests with one brand in the middle, then glides to the next
-        const u = clamp((sv / S - 0.03) / 0.94) * (NB - 1), k = Math.min(NB - 2, Math.floor(u)), t = u - k, e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2, f = lerp(t, e, 0.85);
-        const cx = lerp(centers[k], centers[k + 1], f), xs = clamp(cx - shelf.clientWidth / 2, 0, travel), mid = cx;
-        colsEl.style.transform = `translate3d(${(-xs).toFixed(1)}px, 0, 0)`; let bi = 0, bd = 1e9; centers.forEach((c, k) => { const d = Math.abs(c - mid); if (d < bd) { bd = d; bi = k; } }); ctr = bi;
+        // the row glides with the scroll, eased so it never jumps; u is the brand under the middle of the screen (fractional)
+        const u = clamp((sv / S - 0.03) / 0.94) * (NB - 1), k = Math.min(NB - 2, Math.floor(u)), t = u - k;
+        const xsT = clamp(lerp(centers[k], centers[k + 1], t) - shelf.clientWidth / 2, 0, travel); xsCur = xsCur === null || reduce ? xsT : lerp(xsCur, xsT, 1 - Math.exp(-dt * 8));
+        const mid = xsCur + shelf.clientWidth / 2; colsEl.style.transform = `translate3d(${(-xsCur).toFixed(1)}px, 0, 0)`; let bi = 0, bd = 1e9; centers.forEach((c, k) => { const d = Math.abs(c - mid); if (d < bd) { bd = d; bi = k; } }); ctr = bi;
+        // when the scrolling stops inside the shelf, ease the page to the nearest brand, then offer it
+        const inShelf = r.top <= 1 && sv > 0.5 && sv < S * 0.985, idle = !touching && now - lastScrollT > 160;
+        if (inShelf && idle && !snapTw && G && !reduce) { const kk = Math.round(u), dy = ((0.03 + kk / (NB - 1) * 0.94) * S - sv) * innerHeight / 100;
+          if (Math.abs(dy) > 3) { const o = { y: view.scrollTop }; snapTw = G.to(o, { y: view.scrollTop + dy, duration: clamp(0.45 + Math.abs(dy) / 900, 0.45, 0.9), ease: 'power2.inOut', onUpdate: () => { view.scrollTop = o.y; }, onComplete: () => { snapTw = null; lastScrollT = 0; } }); } }
+        const rest = inShelf && idle && !snapTw && Math.abs(xsCur - xsT) < 2; if (rest !== resting) { resting = rest; shelf.classList.toggle('is-rest', rest); }
         if (bi !== lastC) { lastC = bi; count.textContent = pad(bi + 1); countName.textContent = '· ' + B[bi].name; moreN.textContent = NB - 1 - bi; }
         more.style.opacity = String(bi >= NB - 1 || p > 0.28 ? 0 : 1);
         countBar.style.transform = `scaleX(${Math.min(1, sv / S).toFixed(4)})`; }
       // doors: centre columns part first, odd ones lift, even ones drop
       const door = sm(0.3, 0.46, p), live = door < 0.98;
-      if (live) { const c = ctr, cs = Math.max(c, NB - 1 - c, 1);
+      if (live) { const c = ctr, cs = Math.max(c, NB - 1 - c, 1), sr = shelf.getBoundingClientRect(), cr = colsEl.getBoundingClientRect(), upD = cr.bottom - sr.top + 60, dnD = sr.bottom - cr.top + 60;
         let best = -1, bd = 9;
         colEls.forEach((el, i) => { const s = st[i];
           s.off += s.dir * (s.base * dt * (reduce ? 0 : 1) + vel * 0.55);
           const g = hx === null || door > 0.05 ? 1 : 1 + SW * Math.exp(-((i - hx) ** 2) / SS); s.grow = lerp(s.grow, g, 0.14); if (fine) el.style.flexGrow = s.grow.toFixed(3);
           if (hx !== null && Math.abs(i - hx) < bd) { bd = Math.abs(i - hx); best = i; }
           if (!hs[i]) measure(); const h = hs[i] || 1, y = ((s.off % h) + h) % h; strips[i].style.transform = `translate3d(-50%, ${(-y).toFixed(1)}px, 0)`;
-          const k = clamp((door - Math.abs(i - c) / cs * 0.35) / 0.65), e = k * k * (3 - 2 * k); el.style.transform = e > 0 ? `translate3d(0, ${(i % 2 ? -1 : 1) * e * 105}%, 0)` : ''; });
+          // each door leaves the screen completely: lifted ones clear the top edge, dropped ones the bottom, wherever the row sits
+          const k = clamp((door - Math.abs(i - c) / cs * 0.35) / 0.65), e = k * k * (3 - 2 * k); el.style.transform = e > 0 ? `translate3d(0, ${((i % 2 ? -upD : dnD) * e).toFixed(1)}px, 0)` : ''; });
         setHover(door > 0.05 ? -1 : touch ? ctr : best); shelf.style.visibility = 'visible'; } else shelf.style.visibility = 'hidden';
       head.style.opacity = String(1 - sm(0.27, 0.34, p)); if (sep) sep.style.opacity = String(1 - sm(0.29, 0.33, p)); shelf.style.pointerEvents = door > 0.3 ? 'none' : '';
       // behind the doors: the café, and the camera moving in on the bottle
       const jp = sm(0.44, 0.93, p), f = lerp(jp * (JF - 1), jframeAt(jp), 0.65); jcv.style.transform = `scale(${(1.1 - 0.1 * door).toFixed(4)})`;
-      if (Math.abs(f - jlast) > 0.004 || jcv.width === 0) { drawJ(f); jlast = f; }
+      if ((Math.abs(f - jlast) > 0.004 || jcv.width === 0) && r.top < innerHeight && drawJ(f)) jlast = f;
       const wOn = p > 0.5 && p < 0.82, eOn = p > 0.86; if (wOn !== wordsOn) { wordsOn = wOn; reveal(words, wOn); } if (eOn !== endOn) { endOn = eOn; reveal(endc, eOn); }
       note.style.opacity = String(sm(0.46, 0.52, p) * (1 - sm(0.84, 0.88, p))); jg.classList.toggle('is-live', door > 0.5); })(t0);
     kills.push(() => { cancelAnimationFrame(raf); setHover(-1); });

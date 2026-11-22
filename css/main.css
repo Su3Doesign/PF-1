@@ -363,3 +363,39 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 @keyframes nudge { 0%, 100% { transform: translateX(0); } 45% { transform: translateX(5px); } }
 @media (hover: none), (pointer: coarse) { .shelf__more { display: flex; } }
 @media (prefers-reduced-motion: reduce) { .shelf__more i { animation: none; } }
+
+/* iOS: no rubber-band bounce anywhere, so the page never pulls away from its edges and shows the paper behind it */
+html, body { overscroll-behavior: none; }
+.view, .about__scroll, .reader__scroll, .menu { overscroll-behavior: none; }
+/* lines break where they read well: headings balance their lines, paragraphs avoid a last line of one word */
+h1, h2, h3, .view__line, .walk__name, .sites__list b, .about__say, .about__go, .jg__l, .jg__end h3, .spin__txt h3, .reader__name, .shelf__head p:first-child { text-wrap: balance; }
+p, li, .view__note, .about__who, .job li, .walk__kind, .walk__say { text-wrap: pretty; }
+/* touch: once the row comes to rest, the brand in the middle offers itself */
+.col__tap { position: absolute; z-index: 3; left: 50%; top: 18px; transform: translate(-50%, -8px); display: inline-flex; gap: 6px; align-items: center; white-space: nowrap; padding: 7px 12px; border-radius: 999px;
+  background: rgba(246, 244, 239, 0.94); color: var(--ink); opacity: 0; pointer-events: none; transition: opacity 0.35s, transform 0.5s var(--out); }
+.col__tap i { font-style: normal; color: var(--accent); }
+.shelf.is-rest .col.is-on .col__tap { opacity: 1; transform: translate(-50%, 0); transition: opacity 0.6s 0.15s, transform 0.8s 0.15s var(--out); }
+
+/* World: a short intro for each place, on the plain ground beside it; it fades in while you stand there and out as you walk on */
+.walk__side { position: absolute; z-index: 3000; right: var(--pad); bottom: calc(var(--pad) + 4px); width: min(34ch, 30vw); opacity: 0; pointer-events: none; will-change: opacity, transform; }
+.walk__say { font-family: var(--text); font-weight: 500; font-size: clamp(14px, 1.1vw, 17px); line-height: 1.5; letter-spacing: -0.005em; color: inherit; }
+.walk__shots { display: flex; gap: 6px; margin-bottom: 16px; } .walk__shots:empty { display: none; }
+.walk__shots button { position: relative; flex: 0 0 auto; width: clamp(46px, 4.4vw, 68px); aspect-ratio: 3 / 2; padding: 0; overflow: hidden; opacity: 0.45; transition: opacity 0.4s, transform 0.6s var(--out); }
+.walk__shots button img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.walk__shots button::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform 0.6s var(--out); }
+.walk__shots button:hover { opacity: 0.8; } .walk__shots button.is-on { opacity: 1; transform: translateY(-3px); } .walk__shots button.is-on::after { transform: scaleX(1); }
+.walk__alt { position: absolute; inset: 0; width: 100%; height: 100% !important; object-fit: cover; opacity: 0; transition: opacity 1.1s ease; box-shadow: none !important; } .walk__alt.is-on { opacity: 1; }
+.walk__say::before { content: ""; display: block; width: 28px; height: 1px; margin-bottom: 12px; background: var(--accent); }
+@media (max-width: 1024px) and (orientation: portrait), (max-width: 760px) {
+  .walk__side { left: var(--pad); right: var(--pad); bottom: auto; top: calc(70px + env(safe-area-inset-top)); width: auto; max-width: 46ch; } .walk__say { font-size: 15px; }
+  .walk__shots { order: 2; margin: 12px 0 0; } .walk__side { display: flex; flex-direction: column; } }
+
+/* Web: every live site opens from the viewer */
+a.sites__url[href] { color: var(--white); text-decoration: underline; text-decoration-color: rgba(246, 244, 239, 0.3); text-underline-offset: 3px; transition: text-decoration-color 0.3s; } a.sites__url[href]:hover { text-decoration-color: var(--accent); }
+.sites__go { position: absolute; z-index: 6; right: 18px; bottom: 16px; display: inline-flex; align-items: center; gap: 10px; padding: 11px 16px 11px 18px; border-radius: 999px; background: var(--white); color: var(--ink); font-size: 13px;
+  box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.6); transition: background 0.4s, color 0.4s, transform 0.6s var(--out); }
+.sites__go i { font-style: normal; color: var(--accent); transition: transform 0.5s var(--out), color 0.4s; }
+.sites__go:hover { background: var(--accent); color: var(--white); transform: translateY(-2px); } .sites__go:hover i { color: var(--white); transform: translate(2px, -2px); }
+/* contact links: four in a row where they fit, two by two on tablets, one per line on phones, so none is left alone on a line */
+@media (max-width: 1100px) { .about__links { display: grid; grid-template-columns: repeat(2, max-content); gap: 16px 48px; } }
+@media (max-width: 560px) { .about__links { grid-template-columns: minmax(0, 1fr); gap: 14px; } }

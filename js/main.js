@@ -6,12 +6,25 @@
 
   // ---------- the work ----------
   const WORK = [
-    { key: 'world', n: '01', title: 'World', line: 'Places that don’t exist yet.', note: 'Environments and products, modelled, lit and rendered from scratch.', cover: 'img/world.jpg', coverName: 'Koi Pond',
-      items: [['w_hyperion', 'Hyperion', 'A hypercar designed and modelled from scratch', 'wide'], ['w_castle', 'Castle on the Rock', 'Environment', 'half'], ['w_roman', 'Dawn Pagoda', 'Environment', 'half'], ['w_ringgate', 'Ring Gate', 'World concept', 'wide'], ['w_fudo', 'Fudo', 'Environment', 'third'], ['w_rotunda', 'Rotunda', 'World concept', 'two'], ['w_caves', 'Caves', 'Environment', 'two'], ['w_mustang', 'Mustang', 'Automotive render', 'third'], ['w_altair', 'Altair', 'Masterplan flyover', 'wide']] },
-    { key: 'web', n: '02', title: 'Web', line: 'Sites you can walk through.', note: 'Designed and coded by me. WebGL, scroll and type doing the talking.', cover: 'img/web.jpg', coverName: 'The Overgrown Archive',
-      items: [['web_thesumanth', 'thesumanth.com', 'My own site: the work drawn in light particles', 'half'], ['web_overgrown', 'The Overgrown Archive', 'A 3D portfolio you walk through at night', 'half'], ['web_vanta', 'Vanta Flightworks', 'Brand site for a flight-helmet maker', 'half'], ['web_parian', 'Parian Atelier', 'A marble head that turns as you scroll', 'half'], ['web_hyperion', 'Hyperion', 'Interactive launch page for the hypercar', 'third'], ['web_threehouses', 'Three Houses', 'Aevum, Volta, Vespera: three brands, three moods', 'two'], ['web_coachwork', 'Coachwork', 'A car magazine you read by scrolling', 'two'], ['web_halden', 'Halden', 'Portrait studio', 'third']] },
-    { key: 'brand', n: '03', title: 'Brand', line: 'Marks that carry weight.', note: 'Identity systems, packaging and campaigns. Concept work is marked as concept.', cover: 'img/brand.jpg', coverName: 'Mitti',
-      items: [['b_maruneta', 'Maruneta', 'Colour that comes back', 'half'], ['b_kerb_full', 'Kerb', 'Coffee roasted at race pace', 'half'], ['mg_can', 'Magma', 'Energy drink', 'third'], ['b_bsnl', 'BSNL', 'Concept: a network for 1.4 billion', 'two'], ['b_rem', 'REM', 'After-hours food and dreamwear', 'two'], ['b_jigri', 'Jigri', 'A friend in every cutting', 'third'], ['b_deccan', 'Deccan Night Run', 'Event identity', 'half'], ['b_kosh', 'Kosh', 'Investing that feels like a game', 'half'], ['b_lagrange', 'Lagrange', 'Where systems hold still', 'wide']] },
+    { key: 'world', n: '01', title: 'World', line: 'Places that don’t exist yet.', note: 'Environments and products, modelled, lit and rendered from scratch.', cover: 'img/f0_koi.jpg', coverName: 'Koi Pond',
+      items: [['w_hyperion', 'Hyperion GEN.2', 'Hypercar design study · Blender', 'wide', 'A hypercar I designed and modelled from scratch: twenty rigged assemblies, doors that swing up 100°, and a V8 in 22 parts.', ['wp_hyperion_1', 'wp_hyperion_2', 'wp_hyperion_3']],
+        ['w_castle', 'The Castle on the Crag', 'Environment · Unreal Engine 5.6', 'half', 'Forty-five towers on two granite crags above a Highland loch, a viaduct and 644,000 trees. Lit five ways, from night to mist.', []],
+        ['w_roman', 'Rōman no Yoake', 'Environment · Unreal Engine', 'half', 'A pagoda lit through a whole day: sunrise, pink hour, a crescent moon, a full moon and an eclipse. The fog does the modelling.', ['wp_roman_1', 'wp_roman_2', 'wp_roman_3']],
+        ['w_koi', 'Koi Pond', 'Environment · Unreal Engine', 'wide', 'No light from above. The water is the light source, so the rocks, palms and ferns take their colour from below. Summer, then autumn.', ['wp_koi_1', 'wp_koi_2', 'wp_koi_3']],
+        ['w_f1', 'Alpine F1 Study', 'Car, rig and scroll site · Blender, three.js', 'half', 'My own Formula 1 study in Alpine livery: 23 rigged assemblies with steering and DRS, and a 1.6 L V6 hybrid in 21 labelled parts.', ['wp_f1_1', 'wp_f1_2', 'wp_f1_3']],
+        ['w_ringgate', 'The Ring Gate', 'World, story and web · Blender, UE5', 'half', 'A 156-metre stone ring standing in the sea, and the drowned city below it. I wrote its story and built it into a scrolling art book.', ['wp_ringgate_1', 'wp_ringgate_2', 'wp_ringgate_3']],
+        ['w_fudo', 'Fudō Myō-ō', 'Interior environment · Unreal Engine', 'half', 'A ruined temple around the legend of the immovable one. A ficus has broken through the roof, and rain has pooled around the moss-covered statue.', ['wp_fudo_1']],
+        ['w_interior', 'Sunlit Living Room', 'Interior · Maya, Substance Painter', 'half', 'Modelled in Maya, UV-mapped and textured in Substance Painter, then lit for the final render.', []],
+        ['w_rotunda', 'The Flooded Rotunda', 'World and web · Unreal Engine 5', 'wide', 'A flooded round hall with twelve arches, and a marble statue that turns to face you. Every material made by hand.', ['wp_rotunda_1', 'wp_rotunda_2']],
+        ['w_ferrari', 'Ferrari 550', 'Compositing study · Nuke, 3DEqualizer', 'half', 'A CG car rendered with its own shadow matte, then set into a real street: one of my compositing studies.', ['wp_ferrari_1']],
+        ['w_caves', 'Caves', 'Environment · Unreal Engine', 'half', 'One walk: from daylight at the cave mouth, through dust and warm light, down to a red chamber where flowers grow under a crack of sky.', []],
+        ['w_supra', 'Supra', 'Studio car render', 'half', 'A Supra in a dark studio, seen from the three-quarter, the front, the side and the rear.', ['wp_supra_1', 'wp_supra_2', 'wp_supra_3']],
+        ['w_mustang', 'Mustang', 'Automotive render', 'half', 'An automotive study: modelled, lit and rendered.', []],
+        ['w_altair', 'Altair Estates', 'Estate, plans and drive-through site · Blender', 'wide', 'A private estate on a sea cliff. I drew the plans first, then placed 808 trees, 2,141 lamps and 52 cameras, and lit it in Cycles.', ['wp_altair_1', 'wp_altair_2', 'wp_altair_3']]] },
+    { key: 'web', n: '02', title: 'Web', line: 'Sites you can walk through.', note: 'Designed and coded by me. WebGL, scroll and type doing the talking.', cover: 'img/f1_vanta.jpg', coverName: 'Vanta Flightworks',
+      items: [['web_altair', 'Altair Estates', 'A sea-cliff estate you drive through, from the gate to the sea', 'half', 'https://su3doesign.github.io/Altair-Estates-The-Aether-Monolith/'], ['web_ringgate', 'The Ring Gate', 'An art book for a drowned city, read by scrolling', 'half', 'https://su3doesign.github.io/Tirthavel/'], ['web_rotunda', 'The Flooded Rotunda', 'A sketchbook where the statue turns to greet you', 'half', 'https://su3doesign.github.io/flooded-rotunda-site/'], ['web_hyperion', 'Hyperion', 'Live 3D: sweep a light over it, spin it, take it apart', 'half', 'https://su3doesign.github.io/hyperion-site/'], ['web_f1', 'Alpine F1 Study', 'A wind tunnel, an exploded view and a night pit lane', 'half', 'https://su3doesign.github.io/hyperion-site/f1.html'], ['web_vanta', 'Vanta Flightworks', 'Brand site for a flight-helmet maker', 'half', 'https://su3doesign.github.io/vanta-flightworks/'], ['web_parian', 'Parian Atelier', 'A marble head that turns as you scroll', 'half', 'https://su3doesign.github.io/parian-atelie/'], ['web_vespera', 'Vespera', 'A fashion boutique of the blue hour', 'half', 'https://su3doesign.github.io/Vespera-Boutique/'], ['web_volta', 'VOLTA', 'Clothes with voltage: a loud fashion store', 'half', 'https://su3doesign.github.io/VOLTA/'], ['web_aevum', 'Aevum', 'A quiet fashion house, the third of three', 'half', 'https://su3doesign.github.io/Aevum/'], ['web_coachwork', 'Coachwork', 'A car magazine you read by scrolling', 'half', 'https://su3doesign.github.io/Coachwork/'], ['web_halden', 'Halden', 'Portrait studio', 'half', 'https://su3doesign.github.io/halden-portrait-studio/'], ['web_lotus', 'Lotus Constructions', 'Website and 3D for a Hyderabad builder', 'half', 'https://lotusconstructions.in/'], ['web_vedapriya', 'Vedapriya', 'Portfolio for a visual designer', 'half', 'https://su3doesign.github.io/Vedapriya-portfolio/'], ['web_meridian', 'Meridian', 'An earlier portfolio of mine, lit by storm light', 'half', 'https://su3doesign.github.io/Portfolio/'], ['web_overgrown', 'The Overgrown Archive', 'My previous portfolio, walked through at night', 'half', '']] },
+    { key: 'brand', n: '03', title: 'Brand', line: 'Marks that carry weight.', note: 'Identity systems, packaging and campaigns. Concept work is marked as concept.', cover: 'img/f2_mitti.jpg', coverName: 'Mitti',
+      items: [['b_maruneta', 'Maruneta', 'Colour that comes back', 'half'], ['b_kerb_full', 'Kerb', 'Coffee roasted at race pace', 'half'], ['mg_can', 'Magma', 'Energy drink', 'third'], ['b_rem', 'REM', 'After-hours food and dreamwear', 'two'], ['b_jigri', 'Jigri', 'A friend in every cutting', 'third'], ['b_deccan', 'Deccan Night Run', 'Event identity', 'half'], ['b_kosh', 'Kosh', 'Investing that feels like a game', 'half'], ['b_lagrange', 'Lagrange', 'Where systems hold still', 'wide']] },
   ];
 
   // ---------- the mark's geometry: three faces on a triangular lattice (same construction as the logo) ----------
@@ -53,7 +66,7 @@
   const HEAD = '.view__hero .rise > *', SOFT = '.view__hero .fade, #back';
   const headIn = (tl, at) => tl.fromTo(HEAD, { yPercent: 110 }, { yPercent: 0, duration: 1.15, ease: OUT, stagger: 0.09 }, at).fromTo(SOFT, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.9, ease: OUT, stagger: 0.06 }, at + 0.25);
 
-  function enter(i, e) { if (busy || open === i) return; if (open >= 0) return swap(i); busy = true; open = i; hover = null; mark.classList.remove('is-dim'); cursor.classList.remove('is-big'); fill(i);
+  function enter(i, e) { if (busy || open === i) return; settleFaces(); if (open >= 0) return swap(i); busy = true; open = i; hover = null; mark.classList.remove('is-dim'); cursor.classList.remove('is-big'); fill(i);
     view.hidden = false; view.scrollTop = 0; scrollK = 0; vHero.style.setProperty('--veil', gl && G && !reduce ? 0 : 1); if (G) G.set(HEAD, { yPercent: 110 }), G.set(SOFT, { opacity: 0 }); document.body.classList.add('is-inside');
     if (!gl || !G || reduce) { if (gl) { S.active = i; S.grow[i] = 4000; T.rk[i] = 1; S.zoom[i] = 1; S.ink = 0; S.reveal = 0; S.topo = 0; [0, 1, 2].forEach(k => { if (k !== i) S.alpha[k] = 0; }); } G && G.set('.stage > *', { opacity: 0 }); busy = false; return; }
     const diag = Math.hypot(innerWidth, innerHeight), others = [0, 1, 2].filter(k => k !== i); S.active = i; S.click = e && e.clientX ? [e.clientX, e.clientY] : [innerWidth / 2, innerHeight / 2];
@@ -78,7 +91,7 @@
     tl.to(S, { ink: 1, duration: 0.6 }, 1.2).to(S, { reveal: 1, topo: 1, duration: 1.2, ease: 'power2.out' }, 1.3).to('.stage > *', { opacity: 1, duration: 0.8, ease: OUT, stagger: 0.04 }, 1.1); }
 
   // one section melts into the next: the new picture rises through the old one
-  function swap(j) { const i = open; if (busy || i === j) return; busy = true; stopSmooth();
+  function swap(j) { const i = open; if (busy || i === j) return; busy = true; stopSmooth(); settleFaces();
     const settle = () => { if (gl) { S.alpha[i] = 0; S.grow[i] = -50; T.rk[i] = 0; T.off[i] = 520; S.zoom[i] = 1.12; S.depth[i] = [0.012, 0.018, 0.024][i]; S.active = j; S.alpha[j] = 1; S.grow[j] = Math.hypot(innerWidth, innerHeight); T.rk[j] = 1; T.off[j] = 0; S.zoom[j] = 1; S.depth[j] = 0.004; S.swap = 0; S.dim = 0; } open = j; };
     if (!gl || !G || reduce) { settle(); fill(j); view.scrollTop = 0; scrollK = 0; busy = false; return; }
     S.swapTo = j; const tl = G.timeline({ onComplete: () => { busy = false; } });
@@ -107,7 +120,7 @@
 
   // ---------- arrival: count the pictures in, then the faces fill from their spines ----------
   const load = $('#load'), loadN = $('#loadN'); let got = 0;
-  const ready = () => { load.classList.add('is-done'); document.body.classList.remove('is-loading'); if (!G || reduce) { if (gl) { S.grow = [0, 0, 0]; S.topo = 1; S.reveal = reduce ? 0 : 1; } return; }
+  const ready = () => { load.classList.add('is-done'); document.body.classList.remove('is-loading'); startFaces(); if (!G || reduce) { if (gl) { S.grow = [0, 0, 0]; S.topo = 1; S.reveal = reduce ? 0 : 1; } return; }
     const tl = G.timeline(); if (gl) { S.reveal = 1; tl.fromTo(S, { topo: 0 }, { topo: 1, duration: 2.4, ease: 'power2.out' }, 0.2); S.edge = [46, 46, 46]; [2, 0, 1].forEach((k, j) => tl.to(S.grow, { [k]: 0, duration: 1.7, ease: OUT }, 0.15 + j * 0.16).to(S.edge, { [k]: 0, duration: 1.5, ease: 'power2.out' }, 0.35 + j * 0.16)); tl.fromTo(S, { ink: 0 }, { ink: 1, duration: 0.9 }, 1.0); }
     tl.to('.trace', { opacity: 0, duration: 0.8, ease: 'power2.out' }, 1.1);
     tl.from('.say .rise > *', { yPercent: 110, duration: 1.2, ease: OUT, stagger: 0.1 }, 0.5).from('.bar > *, .now, .hint, #labels li', { opacity: 0, y: 12, duration: 1, ease: OUT, stagger: 0.05 }, 0.9); };
@@ -116,6 +129,24 @@
   let loaded = false, traced = reduce || !G; const go = () => { if (loaded && traced) setTimeout(ready, 120); };
   if (!traced) G.timeline({ onComplete: () => { traced = true; go(); } }).fromTo(traces, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.85, ease: 'power2.inOut', stagger: 0.32 }, 0.15);
   else traces.forEach(t => t.setAttribute('hidden', ''));
+  // ---------- the faces never sit still: each moves through its own projects, at its own pace, with a slow dissolve ----------
+  const F = (k, list) => list.map(([f, name]) => [`img/f${k}_${f}.jpg`, name]);
+  const FACES = [
+    { every: 6.8, list: F(0, [['koi', 'Koi Pond'], ['castle', 'The Castle on the Crag'], ['roman', 'Rōman no Yoake'], ['hyperion', 'Hyperion GEN.2'], ['ringgate', 'The Ring Gate'], ['fudo', 'Fudō Myō-ō'], ['f1', 'Alpine F1 Study'], ['altair', 'Altair Estates'], ['rotunda', 'The Flooded Rotunda']]) },
+    { every: 9.6, list: F(1, [['vanta', 'Vanta Flightworks'], ['altair', 'Altair Estates'], ['parian', 'Parian Atelier'], ['ringgate', 'The Ring Gate'], ['hyperion', 'Hyperion'], ['rotunda', 'The Flooded Rotunda'], ['coachwork', 'Coachwork']]) },
+    { every: 8.2, list: F(2, [['mitti', 'Mitti'], ['magma', 'Magma'], ['jigri', 'Jigri'], ['maruneta', 'Maruneta'], ['kerb', 'Kerb'], ['kosh', 'Kosh'], ['rem', 'REM'], ['deccan', 'Deccan Night Run']]) },
+  ];
+  const cyc = FACES.map(() => ({ k: 0, tw: null, to: 0 })), labelName = labels.map(l => l.querySelector('i'));
+  const swapLabel = (i, name) => { const el = labelName[i]; if (!el || !G) { if (el) el.textContent = name; return; }
+    G.to(el, { opacity: 0, y: -5, duration: 0.35, ease: 'power2.in', onComplete: () => { el.textContent = name; G.fromTo(el, { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.7, ease: OUT }); } }); };
+  function cycleNext(i) { const f = FACES[i], c = cyc[i], later = (sec) => { clearTimeout(c.to); c.to = setTimeout(() => cycleNext(i), sec * 1000); };
+    if (open >= 0 || busy || hover === i || document.hidden || covered() || document.body.classList.contains('is-about')) return later(1.6);
+    const j = (c.k + 1) % f.list.length, im = new Image();
+    im.onload = () => { if (open >= 0 || busy) return later(1.6); gl.setNext(i, im); swapLabel(i, f.list[j][1]);
+      c.tw = G.to(S.mix, { [i]: 1, duration: 2.8, ease: 'sine.inOut', onComplete: () => { gl.settle(i, im); c.k = j; WORK[i].cover = f.list[j][0]; WORK[i].coverName = f.list[j][1]; c.tw = null; later(f.every); } }); };
+    im.onerror = () => { c.k = j; later(f.every); }; im.src = f.list[j][0]; }
+  function settleFaces() { cyc.forEach(c => { if (c.tw) c.tw.progress(1); }); }
+  const startFaces = () => { if (!gl || !G || reduce) return; FACES.forEach((f, i) => { cyc[i].to = setTimeout(() => cycleNext(i), (3.2 + i * 1.9 + f.every * 0.35) * 1000); }); };
   WORK.forEach((w, i) => { const im = new Image(); im.onload = im.onerror = () => { if (gl && im.naturalWidth) gl.setImage(i, im); got++; loadN.textContent = String(Math.round(got / 3 * 100)).padStart(3, '0'); if (got === 3) { loaded = true; go(); } }; im.src = w.cover; });
   if (!gl) SHAPES.forEach((pts, i) => { const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]), x0 = Math.min(...xs), y0 = Math.min(...ys); const cp = el('clipPath', { id: 'clip' + i }, svg); el('polygon', { points: pts.map(p => p.join(',')).join(' ') }, cp); svg.insertBefore(el('image', { href: WORK[i].cover, x: x0 - 60, y: y0 - 60, width: Math.max(...xs) - x0 + 120, height: Math.max(...ys) - y0 + 120, preserveAspectRatio: 'xMidYMid slice', 'clip-path': `url(#clip${i})` }), svg.firstChild); });
 
@@ -170,6 +201,10 @@
     if (!G || reduce) return done(); G.to(about, { clipPath: 'inset(0% 0% 100% 0%)', duration: 0.9, ease: INOUT, onComplete: done }); }
   $$('[data-about]').forEach(a => a.addEventListener('click', (e) => { e.preventDefault(); closeMenu(openAbout); }));
   $('.about__close', about).addEventListener('click', closeAbout);
+  // the last two words of each piece of copy stay together, so no paragraph ends on a word by itself (also where text-wrap: pretty is not supported)
+  const tie = (el) => { const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); let last = null; while (w.nextNode()) if (/\S/.test(w.currentNode.nodeValue)) last = w.currentNode;
+    if (last) last.nodeValue = last.nodeValue.replace(/[ \t\n]+(\S+\s*)$/, ' $1'); };
+  $$('.about__who, .job li, .job__at, .tools, .hint span:last-child, .menu__links i').forEach(tie);
   // as you read the About page, its lists light up word by word
   const words = []; $$('.brands span, .tools, .about__who', about).forEach(el => { if (el.classList.contains('tools') || el.classList.contains('about__who')) { el.innerHTML = el.innerHTML.split(/(\s+)/).map(w => /\S/.test(w) && !/[<>]/.test(w) ? `<span class="lit">${w}</span>` : w).join(''); $$('.lit', el).forEach(w => words.push(w)); } else { el.classList.add('lit'); words.push(el); } });
   const light = () => { const vh = innerHeight; for (const w of words) { const r = w.getBoundingClientRect(); const k = Math.max(0, Math.min(1, (vh * 0.92 - r.top) / (vh * 0.42))); w.style.opacity = (0.14 + 0.86 * k).toFixed(3); } };
