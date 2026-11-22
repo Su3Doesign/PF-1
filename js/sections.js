@@ -170,9 +170,17 @@
       el.style.setProperty('--amb', c); el.classList.toggle('is-light', lum(c) > 0.55); el.style.setProperty('--p', p.toFixed(4));
       $('.reader__pct b', el).textContent = String(Math.round(p * 100)).padStart(2, '0');
       const m = $('.reader__map i', el); m.style.top = `${(sc.scrollTop / Math.max(1, bh) * 100).toFixed(2)}%`; m.style.height = `${Math.min(100, sc.clientHeight / Math.max(1, bh) * 100).toFixed(2)}%`; }
+    // the side panel and the mini-map only appear where the board leaves them room; otherwise a thin progress line runs along the top
+    function fit() { if (!el) return; const board = $('.reader__board', el), w = board.offsetWidth || Math.min(innerWidth, 1400), m = (innerWidth - w) / 2;
+      el.style.setProperty('--bwv', w + 'px'); el.classList.toggle('has-side', m >= 240); el.classList.toggle('has-map', m >= 64); }
+    addEventListener('resize', () => { if (el && !el.hidden) fit(); });
     function show(i, swap) { const b = window.BOARDS[i]; cur = i; const sc = $('.reader__scroll', el), board = $('.reader__board', el);
-      const fill = () => { board.style.setProperty('--bw', b.w + 'px');
-        board.innerHTML = Array.from({ length: b.tiles }, (_, k) => { const h = Math.min(b.tile, b.h - k * b.tile); return `<img src="boards/${b.key}/t_${String(k).padStart(2, '0')}.jpg" width="${b.w}" height="${h}" alt="${k ? '' : b.name + ' brand board'}" ${k > 1 ? 'loading="lazy"' : ''} decoding="async">`; }).join('');
+      // the board at its native width (never upscaled); each tile repeats the last rows of the one above and is pulled up by
+      // exactly that much, so the stitching never shows; a soft copy of the whole board sits underneath until each tile arrives
+      const fill = () => { const ov = b.ov || 0; board.style.setProperty('--bw', b.w + 'px'); board.style.setProperty('--ovf', (ov / b.w).toFixed(6)); board.style.backgroundImage = `url(boards/${b.key}/shelf.jpg)`;
+        board.innerHTML = Array.from({ length: b.tiles }, (_, k) => { const h = Math.min(b.tile, b.h - k * b.tile) + (k ? ov : 0); return `<img src="boards/${b.key}/t_${String(k).padStart(2, '0')}.jpg" width="${b.w}" height="${h}" alt="${k ? '' : b.name + ' brand board'}" ${k > 1 ? 'loading="lazy"' : ''} decoding="async">`; }).join('');
+        $$('img', board).forEach(im => { if (im.complete && im.naturalWidth) im.classList.add('is-in'); else im.addEventListener('load', () => im.classList.add('is-in'), { once: true }); });
+        fit();
         $('.reader__num', el).textContent = `${pad(i + 1)} / ${pad(window.BOARDS.length)}`; $('.reader__name', el).textContent = b.name; $('.reader__line', el).textContent = b.line; $('.reader__role', el).textContent = b.role || '';
         $('.reader__map img', el).src = `boards/${b.key}/shelf.jpg`; const nx = window.BOARDS[(i + 1) % window.BOARDS.length]; $('.reader__next b', el).textContent = nx.name;
         smooth = false; sc.scrollTop = 0; paint(); };
@@ -180,7 +188,7 @@
       else fill(); }
     function rectClip(r) { return r ? `inset(${r.top}px ${innerWidth - r.right}px ${innerHeight - r.bottom}px ${r.left}px)` : 'inset(50% 50% 50% 50%)'; }
     function open(key, rect) { if (!el) build(); const i = window.BOARDS.findIndex(b => b.key === key); if (i < 0) return; from = rect; show(i, false);
-      el.hidden = false; document.body.classList.add('is-reading'); const cursor = $('#cursor'); if (cursor) cursor.classList.remove('is-big');
+      el.hidden = false; fit(); document.body.classList.add('is-reading'); const cursor = $('#cursor'); if (cursor) cursor.classList.remove('is-big');
       if (!G || reduce) return; G.fromTo(el, { clipPath: rectClip(rect) }, { clipPath: 'inset(0px 0px 0px 0px)', duration: 1.15, ease: 'expo.inOut' });
       G.fromTo([$('.reader__board', el), $('.reader__side', el)], { y: 90, opacity: 0 }, { y: 0, opacity: 1, duration: 1.2, ease: 'expo.out', delay: 0.45, stagger: 0.08 });
       G.fromTo([$('.reader__map', el), $('.reader__close', el)], { opacity: 0 }, { opacity: 1, duration: 0.8, delay: 0.8 }); }
