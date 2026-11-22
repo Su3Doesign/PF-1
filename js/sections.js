@@ -81,7 +81,7 @@
           <p class="jg__note mono">Jigri · Irani Classic · 200 ml</p></div>
         <div class="shelf"><div class="shelf__head"><p><b>${pad(NB)}</b> brands, read at once</p><p class="shelf__hint">${nId} identities, then ${NB - nId} for clients and companies.<br>${fine ? 'Move across them. Click one to read it whole.' : 'Scroll down to move through them. Tap one to read it whole.'}</p>
           <p class="shelf__count mono" aria-hidden="true"><b>01</b> / ${pad(NB)} <span></span><i><i></i></i></p></div>
-          <div class="shelf__cols">${cols}</div></div>
+          <div class="shelf__cols">${cols}</div><p class="shelf__more mono" aria-hidden="true">Scroll for <b>${NB - 1}</b> more <i>→</i></p></div>
       </div></div>`;
 
     // the can: ray-traced frames of one full turn; dragging sets the angle, and it keeps a little momentum
@@ -109,7 +109,7 @@
     // On touch screens there is no pointer to sweep across the columns, so the shelf travels sideways as you scroll down:
     // the section grows by one stretch of scroll per brand (S, in vh), and every later moment keeps the timing it has on a desktop.
     const touch = !fine, S = touch ? Math.max(162, NB * 24) : 162, AFTER = 378; duo.style.height = `${100 + S + AFTER}vh`;
-    const count = $('.shelf__count b', root), countName = $('.shelf__count span', root), countBar = $('.shelf__count i i', root); let centers = [], travel = 0, lastC = -1;
+    const count = $('.shelf__count b', root), countName = $('.shelf__count span', root), countBar = $('.shelf__count i i', root), more = $('.shelf__more', root), moreN = $('.shelf__more b', root); let centers = [], travel = 0, lastC = -1;
     const SW = NB > 14 ? 5.6 : 3.4, SS = NB > 14 ? 2.2 : 1.3;   // the more boards, the stronger the swell, so the one you look at still opens wide
     const st = B.map((b, i) => ({ off: (i * 977) % 3000, dir: i % 2 ? -1 : 1, base: 16 + (i % 3) * 7, grow: 1, h: 0 }));
     let hx = null, lastTop = view.scrollTop, vel = 0, t0 = performance.now(), draw = -1, hoverI = -1, raf;
@@ -140,7 +140,8 @@
         const u = clamp((sv / S - 0.03) / 0.94) * (NB - 1), k = Math.min(NB - 2, Math.floor(u)), t = u - k, e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2, f = lerp(t, e, 0.85);
         const cx = lerp(centers[k], centers[k + 1], f), xs = clamp(cx - shelf.clientWidth / 2, 0, travel), mid = cx;
         colsEl.style.transform = `translate3d(${(-xs).toFixed(1)}px, 0, 0)`; let bi = 0, bd = 1e9; centers.forEach((c, k) => { const d = Math.abs(c - mid); if (d < bd) { bd = d; bi = k; } }); ctr = bi;
-        if (bi !== lastC) { lastC = bi; count.textContent = pad(bi + 1); countName.textContent = '· ' + B[bi].name; }
+        if (bi !== lastC) { lastC = bi; count.textContent = pad(bi + 1); countName.textContent = '· ' + B[bi].name; moreN.textContent = NB - 1 - bi; }
+        more.style.opacity = String(bi >= NB - 1 || p > 0.28 ? 0 : 1);
         countBar.style.transform = `scaleX(${Math.min(1, sv / S).toFixed(4)})`; }
       // doors: centre columns part first, odd ones lift, even ones drop
       const door = sm(0.3, 0.46, p), live = door < 0.98;

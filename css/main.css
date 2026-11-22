@@ -354,3 +354,12 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .shelf__count > i i { display: block; height: 100%; background: var(--accent); transform-origin: left; transform: scaleX(0); }
 .shelf__head { flex-wrap: wrap; }
 @media (hover: none), (pointer: coarse) { .shelf__count { display: flex; } }
+
+/* a quiet cue on touch screens that there is more on the shelf: a pill in the corner with an arrow that drifts, never blinks */
+.shelf__more { display: none; position: absolute; z-index: 4; right: 12px; top: 56%; align-items: center; gap: 5px; padding: 7px 12px 7px 13px; border-radius: 999px;
+  background: rgba(13, 13, 13, 0.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: var(--white); pointer-events: none; transition: opacity 0.6s; }
+.shelf__more b { color: var(--accent); font-weight: 500; }
+.shelf__more i { display: inline-block; font-style: normal; animation: nudge 1.9s var(--out) infinite; }
+@keyframes nudge { 0%, 100% { transform: translateX(0); } 45% { transform: translateX(5px); } }
+@media (hover: none), (pointer: coarse) { .shelf__more { display: flex; } }
+@media (prefers-reduced-motion: reduce) { .shelf__more i { animation: none; } }
