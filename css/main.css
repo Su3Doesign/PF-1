@@ -341,3 +341,6 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .lit { transition: opacity 0.25s linear; }
 @media (max-width: 760px) { .rail { display: none; } .menu__item { width: 72px; height: 50px; } }
 @media (prefers-reduced-motion: reduce) { .menu__track { animation: none; } .lit { opacity: 1 !important; } }
+
+/* the closing line is the email link */
+.about__go a { transition: color 0.4s; } .about__go a:hover { color: var(--accent); }
