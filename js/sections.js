@@ -79,7 +79,8 @@
             <ul class="jg__fl">${FLAVOURS.map(([n, c]) => `<li><i style="background:${c}"></i>${n}</li>`).join('')}</ul>
             <button class="jg__read" type="button" data-key="jigri">Read the Jigri board</button></div>
           <p class="jg__note mono">Jigri · Irani Classic · 200 ml</p></div>
-        <div class="shelf"><div class="shelf__head"><p><b>${pad(NB)}</b> brands, read at once</p><p class="shelf__hint">${nId} identities, then ${NB - nId} for clients and companies.<br>Move across them. Click one to read it whole.</p></div>
+        <div class="shelf"><div class="shelf__head"><p><b>${pad(NB)}</b> brands, read at once</p><p class="shelf__hint">${nId} identities, then ${NB - nId} for clients and companies.<br>${fine ? 'Move across them. Click one to read it whole.' : 'Scroll down to move through them. Tap one to read it whole.'}</p>
+          <p class="shelf__count mono" aria-hidden="true"><b>01</b> / ${pad(NB)} <span></span><i><i></i></i></p></div>
           <div class="shelf__cols">${cols}</div></div>
       </div></div>`;
 
@@ -105,10 +106,14 @@
     const sep = $('.shelf__sep', root), duo = $('.duo', root), shelf = $('.shelf', root), head = $('.shelf__head', root), colsEl = $('.shelf__cols', root), colEls = $$('.col', root), strips = $$('.col__strip', root);
     const jg = $('.jg', root), jcv = $('.jg__cv', root), jcx = jcv.getContext('2d'), words = $('.jg__words', root), endc = $('.jg__end', root), note = $('.jg__note', root);
     const view = root.closest('.view') || document.scrollingElement, cursor = $('#cursor'), cursorTxt = cursor && cursor.querySelector('span');
+    // On touch screens there is no pointer to sweep across the columns, so the shelf travels sideways as you scroll down:
+    // the section grows by one stretch of scroll per brand (S, in vh), and every later moment keeps the timing it has on a desktop.
+    const touch = !fine, S = touch ? Math.max(162, NB * 24) : 162, AFTER = 378; duo.style.height = `${100 + S + AFTER}vh`;
+    const count = $('.shelf__count b', root), countName = $('.shelf__count span', root), countBar = $('.shelf__count i i', root); let centers = [], travel = 0, lastC = -1;
     const SW = NB > 14 ? 5.6 : 3.4, SS = NB > 14 ? 2.2 : 1.3;   // the more boards, the stronger the swell, so the one you look at still opens wide
     const st = B.map((b, i) => ({ off: (i * 977) % 3000, dir: i % 2 ? -1 : 1, base: 16 + (i % 3) * 7, grow: 1, h: 0 }));
     let hx = null, lastTop = view.scrollTop, vel = 0, t0 = performance.now(), draw = -1, hoverI = -1, raf;
-    const jframes = []; let jload = false, hs = []; const measure = () => { hs = strips.map(x => x.firstElementChild.offsetHeight); }; addEventListener('resize', measure); kills.push(() => removeEventListener('resize', measure));
+    const jframes = []; let jload = false, hs = []; const measure = () => { hs = strips.map(x => x.firstElementChild.offsetHeight); centers = colEls.map(c => c.offsetLeft + c.offsetWidth / 2); travel = Math.max(0, colsEl.scrollWidth - shelf.clientWidth); }; addEventListener('resize', measure); kills.push(() => removeEventListener('resize', measure));
     strips.forEach(x => x.firstElementChild.addEventListener('load', measure));
     const loadJ = () => { if (jload) return; jload = true; for (let i = 0; i < JF; i++) { const im = new Image(); im.src = `jigri/j_${String(i).padStart(4, '0')}.jpg`; jframes[i] = im; } };
     colsEl.addEventListener('pointermove', (e) => { if (!fine) return; const r = colsEl.getBoundingClientRect(); hx = (e.clientX - r.left) / r.width * NB - 0.5; });
@@ -126,18 +131,28 @@
     if (G) { G.set(words.querySelectorAll('.rise > *'), { yPercent: 110 }); G.set(endc.querySelectorAll('.rise > *'), { yPercent: 110 }); }
     (function tick(now) { raf = requestAnimationFrame(tick); const dt = Math.min(0.05, (now - t0) / 1000); t0 = now;
       const r = duo.getBoundingClientRect(); if (r.bottom < -50 || r.top > innerHeight * 2) return; if (r.top < innerHeight * 3) loadJ();
-      const p = clamp(-r.top / Math.max(1, r.height - innerHeight)), top = view.scrollTop; vel = lerp(vel, top - lastTop, 0.25); lastTop = top;
+      // sv: how far into the section you have scrolled, in vh. p: the same moment on the desktop timeline (the shelf owns 0 to 0.3)
+      const sv = clamp(-r.top, 0, Math.max(1, r.height - innerHeight)) / innerHeight * 100, p = sv < S ? 0.3 * sv / S : Math.min(1, 0.3 + (sv - S) / 540);
+      const top = view.scrollTop; vel = lerp(vel, top - lastTop, 0.25); lastTop = top;
+      let ctr = (NB - 1) / 2;
+      if (touch) { if (!centers.length) measure();
+        // the row steps from brand to brand: it rests with one brand in the middle, then glides to the next
+        const u = clamp((sv / S - 0.03) / 0.94) * (NB - 1), k = Math.min(NB - 2, Math.floor(u)), t = u - k, e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2, f = lerp(t, e, 0.85);
+        const cx = lerp(centers[k], centers[k + 1], f), xs = clamp(cx - shelf.clientWidth / 2, 0, travel), mid = cx;
+        colsEl.style.transform = `translate3d(${(-xs).toFixed(1)}px, 0, 0)`; let bi = 0, bd = 1e9; centers.forEach((c, k) => { const d = Math.abs(c - mid); if (d < bd) { bd = d; bi = k; } }); ctr = bi;
+        if (bi !== lastC) { lastC = bi; count.textContent = pad(bi + 1); countName.textContent = '· ' + B[bi].name; }
+        countBar.style.transform = `scaleX(${Math.min(1, sv / S).toFixed(4)})`; }
       // doors: centre columns part first, odd ones lift, even ones drop
       const door = sm(0.3, 0.46, p), live = door < 0.98;
-      if (live) { const c = (NB - 1) / 2;
+      if (live) { const c = ctr, cs = Math.max(c, NB - 1 - c, 1);
         let best = -1, bd = 9;
         colEls.forEach((el, i) => { const s = st[i];
           s.off += s.dir * (s.base * dt * (reduce ? 0 : 1) + vel * 0.55);
           const g = hx === null || door > 0.05 ? 1 : 1 + SW * Math.exp(-((i - hx) ** 2) / SS); s.grow = lerp(s.grow, g, 0.14); if (fine) el.style.flexGrow = s.grow.toFixed(3);
           if (hx !== null && Math.abs(i - hx) < bd) { bd = Math.abs(i - hx); best = i; }
           if (!hs[i]) measure(); const h = hs[i] || 1, y = ((s.off % h) + h) % h; strips[i].style.transform = `translate3d(-50%, ${(-y).toFixed(1)}px, 0)`;
-          const k = clamp((door - Math.abs(i - c) / c * 0.35) / 0.65), e = k * k * (3 - 2 * k); el.style.transform = e > 0 ? `translate3d(0, ${(i % 2 ? -1 : 1) * e * 105}%, 0)` : ''; });
-        setHover(door > 0.05 ? -1 : best); shelf.style.visibility = 'visible'; } else shelf.style.visibility = 'hidden';
+          const k = clamp((door - Math.abs(i - c) / cs * 0.35) / 0.65), e = k * k * (3 - 2 * k); el.style.transform = e > 0 ? `translate3d(0, ${(i % 2 ? -1 : 1) * e * 105}%, 0)` : ''; });
+        setHover(door > 0.05 ? -1 : touch ? ctr : best); shelf.style.visibility = 'visible'; } else shelf.style.visibility = 'hidden';
       head.style.opacity = String(1 - sm(0.27, 0.34, p)); if (sep) sep.style.opacity = String(1 - sm(0.29, 0.33, p)); shelf.style.pointerEvents = door > 0.3 ? 'none' : '';
       // behind the doors: the café, and the camera moving in on the bottle
       const jp = sm(0.44, 0.93, p), f = lerp(jp * (JF - 1), jframeAt(jp), 0.65); jcv.style.transform = `scale(${(1.1 - 0.1 * door).toFixed(4)})`;
