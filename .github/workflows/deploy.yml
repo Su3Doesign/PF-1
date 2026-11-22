@@ -19,15 +19,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm run build
+      # The site is static: no build step. Only the files the page loads are published.
+      - name: Collect the site
+        run: |
+          mkdir _site
+          cp -r index.html CNAME .nojekyll css js img boards can jigri _site/   # backup/ is not published
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: _site
 
   deploy:
     needs: build

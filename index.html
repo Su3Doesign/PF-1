@@ -3,196 +3,107 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Amidyala Sai Sumanth — 3D Environment Artist &amp; Visual Designer</title>
-<meta name="description" content="Portfolio of Amidyala Sai Sumanth, 3D environment artist and visual designer in Hyderabad. Walk an overgrown neon forest archive: shrines, ponds and pagodas, sixteen commercial clients, and thirty-nine studies.">
+<title>s3.atelier</title>
+<meta name="description" content="s3.atelier is the studio of Sumanth Richie in Hyderabad. Worlds, websites and brands, built as one thing.">
 <link rel="canonical" href="https://www.thesumanth.com/">
-<meta name="theme-color" content="#030605">
-<meta property="og:type" content="website">
+<meta property="og:title" content="s3.atelier · Sumanth Richie">
 <meta property="og:url" content="https://www.thesumanth.com/">
-<meta property="og:title" content="Amidyala Sai Sumanth — 3D Environment Artist">
-<meta property="og:description" content="An overgrown neon forest archive of worlds built in Maya, lit in Arnold, finished on deadline.">
-<meta property="og:image" content="https://www.thesumanth.com/assets/images/japa-render-1.webp">
-<meta name="twitter:card" content="summary_large_image">
-<link rel="icon" href="favicon.svg" type="image/svg+xml">
-<script type="application/ld+json">
-{"@context":"https://schema.org","@type":"Person","name":"Amidyala Sai Sumanth","url":"https://www.thesumanth.com/","jobTitle":"3D Environment Artist","address":{"@type":"PostalAddress","addressLocality":"Hyderabad","addressCountry":"IN"},"email":"sumanth.richie25@icloud.com","sameAs":["https://behance.net/sumanthrichie","https://instagram.com/sumofDanth"]}
-</script>
-<script>
-  // no WebGL2 → the flat portfolio, before anything heavy loads
-  (function () {
-    try { var c = document.createElement('canvas'); if (!c.getContext('webgl2')) location.replace('work.html?from=forest'); }
-    catch (e) { location.replace('work.html?from=forest'); }
-  })();
-</script>
-<script type="module" src="/src/main.ts"></script>
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/main.css">
 </head>
 <body class="is-loading">
-<a class="skip" href="work.html">Skip to the flat portfolio</a>
-
-
 <canvas id="gl" aria-hidden="true"></canvas>
 
-<div class="loader" id="loader">
-  <div class="loader__core">
-    <div class="loader__kanji" aria-hidden="true">苔</div>
-    <div class="loader__log" id="loader-log" aria-hidden="true"></div>
-    <div class="loader__bar"><i id="loader-bar"></i></div>
-    <div class="loader__row" role="status" aria-live="polite"><span id="loader-label">booting the signal</span><span id="loader-pct" aria-hidden="true">000</span></div>
-    <div class="loader__enter">
-      <button class="btn btn--neon" id="enter-sound" type="button">Enter with sound</button>
-      <button class="btn" id="enter-quiet" type="button">Enter quietly</button>
-    </div>
-    <p class="loader__note">The forest runs in your browser. In a hurry? <a href="work.html">Open the flat portfolio</a>.</p>
-  </div>
-</div>
+<div class="load" id="load" aria-hidden="true"><span>s3.atelier</span><b id="loadN">000</b></div>
 
-<header class="hud">
-  <a class="logo" href="#top" aria-label="Back to the pond"><i></i><b>SUMANTH</b><span>苔の経蔵</span></a>
-  <div class="hud__stop mono" aria-live="polite"><b id="hud-k">池</b><span data-name id="hud-name">THE POND</span><span id="hud-idx">01 / 09</span></div>
-  <div class="hud__end">
-    <div class="kodama-count mono" id="kodama-count" hidden title="Kodama found in the forest"><span aria-hidden="true">木霊</span><b>0/7</b></div>
-    <button class="btn hud__btn snd" id="snd" type="button" aria-pressed="false" aria-label="Sound"><i aria-hidden="true"><s></s><s></s><s></s></i><span class="hud__label">Sound</span></button>
-    <a class="btn hud__btn" href="work.html">Flat view</a>
-    <button class="btn hud__btn" id="menu-btn" type="button" aria-haspopup="dialog">Index</button>
-  </div>
+<header class="bar">
+  <a class="bar__name" href="#top">s3.atelier</a>
+  <nav class="bar__nav" aria-label="Work"><a href="#world" data-face="0">World</a><a href="#web" data-face="1">Web</a><a href="#brand" data-face="2">Brand</a><a href="#about" data-about>About</a></nav>
+  <div class="bar__end"><a class="bar__cta" href="https://www.instagram.com/s3.atelier/" target="_blank" rel="noopener">Contact</a><button class="bar__menu" id="menuBtn" type="button" aria-label="Open the menu" aria-expanded="false" aria-controls="menu"><i></i><i></i></button></div>
 </header>
 
-<nav class="rail" id="rail" aria-label="Stops in the forest"></nav>
+<main id="top" class="stage">
+  <h1 class="say"><span class="rise"><span>Brands,</span></span><span class="rise"><span>built as <em>worlds.</em></span></span></h1>
 
-<main id="top">
-  <section class="st st--landing is-live" data-station="landing" data-h="210">
-    <div class="st__sticky">
-      <div class="hero">
-        <div class="hero__who mono"><h1>Amidyala Sai Sumanth</h1><span>3D Environment Artist</span><span>Visual Designer</span><span>Hyderabad · 17.38°N</span></div>
-        <p class="hero__line">I build places that don't exist, then decide how the light behaves once it gets there.</p>
-        <div class="hero__cta">
-          <button class="btn btn--neon" type="button" data-go="worlds">Enter the forest <i aria-hidden="true">↓</i></button>
-          <a class="btn btn--ghost" href="work.html">Flat view</a>
-        </div>
-      </div>
-      <div class="scrollcue mono" aria-hidden="true"><span>Scroll</span><i></i></div>
-    </div>
-  </section>
+  <div class="mark" id="mark">
+    <svg id="markSvg" viewBox="-520 -470 1040 900" role="group" aria-label="The s3.atelier mark, an impossible triangle. Each of its three faces opens one kind of work."></svg>
+    <ol class="mark__labels" id="labels">
+      <li data-face="0"><span>01</span>World<i>Koi Pond</i></li>
+      <li data-face="1"><span>02</span>Web<i>The Overgrown Archive</i></li>
+      <li data-face="2"><span>03</span>Brand<i>Mitti</i></li>
+    </ol>
+  </div>
 
-  <section class="st" data-station="worlds" id="worlds" data-h="250">
-    <div class="st__sticky">
-      <article class="panel" aria-labelledby="h-worlds">
-        <div class="panel__eyebrow mono"><b>世界</b><span>01 · Selected worlds</span></div>
-        <h2 class="display" id="h-worlds">Three places, built to be stood in.</h2>
-        <p>Personal environments: modelled in Maya, sculpted in ZBrush, textured in Substance, lit in Arnold. Pick a screen in the clearing, or a title below.</p>
-        <div class="cards" id="world-cards"></div>
-      </article>
-    </div>
-  </section>
-
-  <section class="st" data-station="method" id="method" data-h="300">
-    <div class="st__sticky">
-      <article class="panel panel--right" aria-labelledby="h-method">
-        <div class="panel__eyebrow mono"><b>七手</b><span>02 · Method</span></div>
-        <h2 class="display" id="h-method">Seven moves, every time.</h2>
-        <p>In order. Skipping one shows up in the render three weeks later. A lantern lights for each.</p>
-        <ol class="steps" id="steps"></ol>
-      </article>
-    </div>
-  </section>
-
-  <section class="st" data-station="clients" id="clients" data-h="240">
-    <div class="st__sticky">
-      <article class="panel" aria-labelledby="h-clients">
-        <div class="panel__eyebrow mono"><b>顧客</b><span>03 · Commercial</span></div>
-        <h2 class="display" id="h-clients">Sixteen clients who needed it Tuesday.</h2>
-        <p>Through The Classic Partnership (Toronto) and VS Design Studio, plus direct freelance. Each monitor in the rack is a client.</p>
-        <div class="clients" id="client-list"></div>
-      </article>
-    </div>
-  </section>
-
-  <section class="st" data-station="studies" id="studies" data-h="260">
-    <div class="st__sticky">
-      <article class="panel panel--right" aria-labelledby="h-studies">
-        <div class="panel__eyebrow mono"><b>書庫</b><span>04 · The library</span></div>
-        <h2 class="display" id="h-studies">The other half of the desk.</h2>
-        <p>Packaging, posters, automotive viz, hard-surface practice and the occasional Sunday illustration, shelved around the oldest tree in the forest. Drag the ring to spin it.</p>
-        <div class="now" id="study-now" aria-live="polite">
-          <img alt="" id="study-img" width="96" height="120">
-          <div><b id="study-name">—</b><small id="study-kind">—</small><em id="study-count">01 / 39</em></div>
-        </div>
-        <div class="row">
-          <button class="btn" type="button" id="study-prev" aria-label="Previous study">←</button>
-          <button class="btn btn--neon" type="button" id="study-open">Open</button>
-          <button class="btn" type="button" id="study-next" aria-label="Next study">→</button>
-          <button class="btn btn--ghost" type="button" id="study-all">All 39</button>
-        </div>
-      </article>
-    </div>
-  </section>
-
-  <section class="st" data-station="commissions" id="commissions" data-h="220">
-    <div class="st__sticky">
-      <article class="panel" aria-labelledby="h-comm">
-        <div class="panel__eyebrow mono"><b>絵馬</b><span>05 · Commissions</span></div>
-        <h2 class="display" id="h-comm">Buy the scope, not the hours.</h2>
-        <p>Every commission runs concept → blockout → look-dev → final. What changes is how much world you get.</p>
-        <div class="tiers" id="tiers"></div>
-        <div class="row" style="margin-top:14px"><a class="btn btn--neon" href="mailto:sumanth.richie25@icloud.com?subject=Commission%20enquiry">Start a commission</a></div>
-      </article>
-    </div>
-  </section>
-
-  <section class="st" data-station="about" id="about" data-h="270">
-    <div class="st__sticky">
-      <article class="panel" aria-labelledby="h-about">
-        <div class="panel__eyebrow mono"><b>洞</b><span>06 · About</span></div>
-        <h2 class="display" id="h-about">A place that looks kept.</h2>
-        <div id="about-text"></div>
-        <dl class="meta" id="about-tools"></dl>
-      </article>
-    </div>
-  </section>
-
-  <section class="st" data-station="archive" id="archive" data-h="260">
-    <div class="st__sticky">
-      <article class="panel panel--right" aria-labelledby="h-archive">
-        <div class="panel__eyebrow mono"><b>経蔵</b><span>07 · The archive</span></div>
-        <h2 class="display" id="h-archive">Everything ends up on a wall.</h2>
-        <p>The heart of the forest: frames from the worlds and the client work, hung where the light is good. Pick one on the wall, or here.</p>
-        <div class="archive-grid" id="archive-list"></div>
-        <div class="row" style="margin-top:14px"><button class="btn btn--neon" type="button" id="archive-open">Walk the archive</button><button class="btn btn--ghost" type="button" data-go="contact">Out to the sea →</button></div>
-      </article>
-    </div>
-  </section>
-
-  <section class="st" data-station="contact" id="contact" data-h="210">
-    <div class="st__sticky">
-      <article class="panel contact" aria-labelledby="h-contact">
-        <div class="panel__eyebrow mono"><b>手紙</b><span>08 · Contact</span></div>
-        <h2 class="display" id="h-contact">Say hello</h2>
-        <p class="contact__line">The walk ends at the sea. The cranes are carrying letters out toward the moon; yours can go with them.</p>
-        <a class="mail" href="mailto:sumanth.richie25@icloud.com">sumanth.richie25@icloud.com</a>
-        <div class="links">
-          <button class="btn" type="button" id="copy-mail">Copy email</button>
-          <a class="btn" href="https://behance.net/sumanthrichie" target="_blank" rel="noopener">Behance ↗</a>
-          <a class="btn" href="https://instagram.com/sumofDanth" target="_blank" rel="noopener">Instagram ↗</a>
-          <a class="btn" href="https://su3doesign.github.io/Resume/" target="_blank" rel="noopener">Résumé ↗</a>
-        </div>
-        <dl class="meta">
-          <dt>Status</dt><dd class="live">Open — commission, full-time, collaboration</dd>
-          <dt>Local time</dt><dd id="hyd-time">Hyderabad</dd>
-        </dl>
-        <div class="foot mono"><span>© 2026 Amidyala Sai Sumanth</span><span>Rendered in your browser</span><button class="hat" type="button" id="egg" aria-label="Straw hat">🎩</button></div>
-      </article>
-    </div>
-  </section>
+  <p class="rail" aria-hidden="true">s3.atelier — 3D · Web · Identity — 17.38°N 78.48°E</p>
+  <a class="now" href="#about" data-about aria-label="About Sumanth Richie"><span class="now__k"><i></i>Now</span><b>Head of Marketing</b><span>CapQ Financial Advisory</span><span class="now__t"><b id="clock">--:--</b> Hyderabad</span></a>
+  <p class="hint"><span class="hint__k">Sumanth Richie · 3D, web and identity</span><span>Move across the mark to see each world drawn.<br>Choose a face to step inside.</span></p>
 </main>
 
-<div class="toast mono" id="toast" role="status" aria-live="polite"></div>
+<section class="view" id="view" hidden>
+  <button class="back" id="back" type="button">Back to the mark</button>
+  <header class="view__hero" id="viewHero">
+    <div class="view__head">
+      <p class="fade view__num" id="viewNum"></p>
+      <h2 class="view__title"><span class="rise"><span id="viewTitle"></span></span></h2>
+      <p class="view__line"><span class="rise"><span id="viewLine"></span></span></p>
+    </div>
+    <p class="fade view__note" id="viewNote"></p>
+    <p class="fade view__cap"><span id="viewCap"></span><i>Scroll</i></p>
+  </header>
+  <div class="view__rest">
+    <div class="view__body" id="viewBody"></div>
+    <button class="next" id="viewNext" type="button"></button>
+  </div>
+</section>
 
-<div class="cursor" id="cursor" aria-hidden="true"><div class="cursor__ring"></div><div class="cursor__label" id="cursor-label"></div></div>
+<nav class="menu" id="menu" hidden aria-label="Site">
+  <canvas class="topo" aria-hidden="true"></canvas>
+  <ol class="menu__links">
+    <li><a href="#world" data-face="0"><span>01</span><b>World</b><i>Places that don’t exist yet</i></a></li>
+    <li><a href="#web" data-face="1"><span>02</span><b>Web</b><i>Sites you can walk through</i></a></li>
+    <li><a href="#brand" data-face="2"><span>03</span><b>Brand</b><i>Marks that carry weight</i></a></li>
+    <li><a href="#about" data-about><span>04</span><b>About</b><i>Off the screen</i></a></li>
+  </ol>
+  <figure class="menu__peek" aria-hidden="true"><img alt="" src="img/world.jpg"></figure>
+  <div class="menu__reel" aria-label="Index of the work"><div class="menu__track"></div><p class="menu__cap mono"><span>Index</span><b></b></p></div>
+  <div class="menu__foot"><a href="https://www.instagram.com/s3.atelier/" target="_blank" rel="noopener">Instagram</a><a href="https://www.behance.net/sumanthrichie" target="_blank" rel="noopener">Behance</a><a href="https://www.linkedin.com/in/amidyala-sumanth-1ab236250" target="_blank" rel="noopener">LinkedIn</a><span>Hyderabad <b id="clock2">--:--</b></span></div>
+</nav>
 
-<noscript>
-  <p style="position:fixed;inset:auto 0 0 0;padding:24px;background:#030605;color:#e3ebe1;font-family:monospace;z-index:999">
-    The forest needs JavaScript. The <a href="work.html">flat portfolio</a> works without it, or write to sumanth.richie25@icloud.com.
-  </p>
-</noscript>
+<section class="about" id="about" hidden aria-label="About">
+  <canvas class="topo" aria-hidden="true"></canvas>
+  <button class="about__close" type="button">Close</button>
+  <div class="about__scroll">
+    <header class="about__head">
+      <p class="mono">04 / About</p>
+      <h2 class="about__say"><span class="rise"><span>I build places that don’t exist,</span></span><span class="rise"><span>then decide how the light</span></span><span class="rise"><span>behaves once it gets there.</span></span></h2>
+      <p class="about__who">Sumanth Richie (Amidyala Sai Sumanth). 3D, web and identity, from Hyderabad. <b>s3.atelier</b> is where the three meet.</p>
+    </header>
+    <div class="about__rows">
+      <section class="about__row"><p class="mono">Experience</p><div>
+        <article class="job"><p class="mono job__when">Jan 2026 — Present</p><h3>Head of Marketing</h3><p class="job__at">CapQ Financial Advisory · Hyderabad</p>
+          <ul><li>Marketing end to end: strategy, digital, campaigns and the brand narrative.</li><li>The identity and design system: guidelines, collateral and pitch material, all in-house.</li><li>Designed and built the company website; expo and corporate-park activations.</li></ul></article>
+        <article class="job"><p class="mono job__when">Oct 2024 — Dec 2025</p><h3>Graphic Designer</h3><p class="job__at">The Classic Partnership Inc. · Toronto</p>
+          <ul><li>Creative production across 9+ international brand accounts at once.</li><li>Midea Canada’s multi-sub-brand system: Eureka, Pelonis, Comfee.</li><li>Spatial marketing assets for Investohome’s Puerto Rico properties.</li><li>Branded activations for Home Depot and Kawasaki Canada via KD Displays.</li></ul></article>
+      </div></section>
+      <section class="about__row"><p class="mono">Brands I’ve worked with</p><p class="brands"><span>Midea</span><span>Eureka</span><span>Pelonis</span><span>Comfee</span><span>The Home Depot</span><span>Kawasaki</span><span>KD Displays</span><span>Investohome</span><span>GC Burger</span><span>CapQ</span></p></section>
+      <section class="about__row"><p class="mono">Education</p><div class="pairs">
+        <p><b>BA Hons. Multimedia — JNAFAU</b><span>via ICAT Design &amp; Media College</span><i class="mono">2021 — 2025</i></p>
+        <p><b>PGP — Automotive Design &amp; Mfg.</b><span>ASDC · BOSCH JCC · IIT Guwahati E&amp;ICT</span><i class="mono">2026</i></p></div></section>
+      <section class="about__row"><p class="mono">Tools</p><p class="tools">Blender · Unreal Engine 5 · ZBrush · Maya · Substance · Photoshop · Illustrator · Three.js · GSAP · HTML, CSS, JS · CATIA V5</p></section>
+    </div>
+    <footer class="about__end"><p class="mono">Contact</p><h2 class="about__go">Let’s make it move.</h2>
+      <p class="about__links"><a href="https://www.instagram.com/s3.atelier/" target="_blank" rel="noopener">Instagram <span>@s3.atelier</span></a><a href="https://www.behance.net/sumanthrichie" target="_blank" rel="noopener">Behance <span>sumanthrichie</span></a><a href="https://www.linkedin.com/in/amidyala-sumanth-1ab236250" target="_blank" rel="noopener">LinkedIn <span>Amidyala Sumanth</span></a></p>
+      <p class="about__fine mono">© 2026 s3.atelier · Hyderabad</p></footer>
+  </div>
+</section>
+
+<div class="cursor" id="cursor" aria-hidden="true"><span>Enter</span></div>
+<div class="grain" aria-hidden="true"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="js/gl.js"></script>
+<script src="js/boards.js"></script>
+<script src="js/sections.js"></script>
+<script src="js/main.js"></script>
 </body>
 </html>
